@@ -36,4 +36,4 @@ For the instructions on how to use the product, visit the [Help](https://github.
 
 **How to contribute**
 
-Before you start, please read the [Contribution Guide](https://github.com/Runtime-Radar/Runtime-Radar/blob/main/docs/contributing.md).
+Before you start, please read the [Contribution Guide](https://github.com/Runtime-Radar/Runtime-Radar/blob/main/CONTRIBUTING.md).
