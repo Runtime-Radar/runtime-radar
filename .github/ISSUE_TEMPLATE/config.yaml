@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/Runtime-Radar/runtime-radar/tree/main/docs
+    about: Please check our documentation before submitting issues
