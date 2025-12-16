@@ -1,0 +1,45 @@
+name: ❓ Question
+description: Ask a question about usage, configuration, or concepts
+title: "[QUESTION]: "
+labels: ["question", "help wanted"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for asking a question! We're here to help.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: "Your Question"
+      description: "Please describe your question in detail"
+      placeholder: "I'm trying to understand how to... Can you explain..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: "Relevant Context"
+      description: "What are you trying to achieve? Provide any relevant background information."
+      placeholder: "I'm building X and need to understand Y because..."
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: "What have you tried?"
+      description: "What steps have you taken to find the answer yourself?"
+      placeholder: |
+        - I've searched the documentation...
+        - I've looked at existing issues...
+        - I've tried the following approach...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: "Pre-submission Checklist"
+      options:
+        - label: "I have searched the existing issues and documentation"
+          required: true
+        - label: "I have provided all relevant information to help answer my question"

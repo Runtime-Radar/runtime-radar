@@ -1,0 +1,95 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG]: "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please provide as much detail as possible to help us reproduce and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Bug Description"
+      description: "A clear and concise description of what the bug is."
+      placeholder: "When I do X, I expect Y to happen, but instead Z occurs..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps To Reproduce"
+      description: "Step-by-step instructions to reproduce the behavior"
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "A clear and concise description of what you expected to happen."
+      placeholder: "I expected that..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      description: "A clear and concise description of what actually happened."
+      placeholder: "But instead..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots/Logs"
+      description: "If applicable, add screenshots or log excerpts to help explain your problem."
+      placeholder: "You can drag and drop images or log files here..."
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severity"
+      description: "How severely does this bug impact your workflow?"
+      options:
+        - Low (minor visual issue, doesn't affect functionality)
+        - Medium (some functionality impaired but workarounds exist)
+        - High (key functionality broken, significantly impacts usage)
+        - Critical (system crash, data loss, security issue)
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Please provide details about your environment"
+      placeholder: "e.g., OS: Windows 11, Browser: Chrome 119, App Version: 2.1.0"
+
+  - type: textarea
+    id: context
+    attributes:
+      label: "Additional Context"
+      description: "Add any other context about the problem here."
+      placeholder: "This started happening after the latest update..."
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: "Acknowledgement"
+      options:
+        - label: "I have searched the existing issues and confirmed this is not a duplicate"
+          required: true
+        - label: "I have provided all the relevant information I have available"
+          required: true
