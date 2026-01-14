@@ -5,6 +5,8 @@ Return true if TLS is enabled for CS
 {{- $globalTLS := hasKey ((.Values.global).tls) "enabled" | ternary ((.Values.global).tls).enabled true -}}
 {{- if eq (default $globalTLS (.Values.tls).enabled | toString) "true" -}}
     {{- true -}}
+{{- else -}}
+    {{- false -}}
 {{- end -}}
 {{- end -}}
 
