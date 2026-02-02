@@ -14,7 +14,7 @@ task detectors
 ```
 в директории `/event-processor` репозитория продукта.
 
-Обратите внимание, что на текущий момент времени RuntimeRadar поддерживает только детекторы, собранные компилятором TinyGo версии v0.34.0.
+Обратите внимание, что на текущий момент времени RuntimeRadar поддерживает только детекторы, собранные компилятором TinyGo версии v0.39.0.
 
 ## Настройка окружения
 
@@ -23,8 +23,8 @@ task detectors
 Для работы с кодом детекторов рекомендуется открыть директорию `/event-processor/detector/wasm/` в отдельном инстансе VS Code. Настройки подключатся автоматически. Если это первый запуск VS Code в контексте Go, необходимо установить рекомендуемые расширения и перезапустить IDE.
 
 Также необходимо установить 
-	- go1.23
-	- TinyGo v0.34.0
+	- go1.25
+	- TinyGo v0.39.0
 
 Проверить что в системе установлены правильные версии тулчейна Go и TinyGo можно командой
 ```
@@ -61,6 +61,33 @@ const (
 ```
 
 После загрузки детектора в систему эти метаданные будут отображаться в интерфейсе.
+
+Далее объявляется секция с критериями для запуска текущего детектора - это необходимо для оптимизации работы детекторов. Точечное описание критериев позволяет запускать конкретный детектор только для конкретных типов событий и для конкретных функций, тем самым существенно сокращая суммарное время обработки события.
+
+В критериях указываются типы событий, которые детектор должен обрабатывать, и названия функций (для тех типов, где это актуально). Подробнее с типами событий можно ознакомиться по [ссылке](https://tetragon.io/docs/reference/grpc-api/#eventtype). Детектор может работать одновременно как с разными типами событий, так и с разными функциями. Для корректной работы детектора необходимо указывать те функции, которые отслеживаются в соответствии с загруженными в систему TracingPolicy. 
+
+Если требуется запускать детектор для всех событий, необходимо указать все типы событий, которые отслеживаются в соответствии с загруженными в систему TracingPolicy. Политики, [поставляемые](https://github.com/Runtime-Radar/runtime-radar/tree/main/runtime-monitor/pkg/model/tracingpolicy) вместе с Runtime Radar, на текущий момент работают только с `PROCESS_EXEC` и `PROCESS_KPROBE`. Если необходимо, чтобы детектор запускался для всех вызываемых функций, следует оставить список функций пустым или указать в качестве значения `*`.
+
+Нас интересует только одна функция ядра `inet_csk_listen_start` и мы не хотим, чтобы детектор срабатывал при вызове других функций или при возникновении событий других типов. 
+```go
+var (
+	// triggerCriteria sets Trigger Criteria as map of events types to corresponding functions
+	// which will be used by Detector. If function names are not applicable for
+	// a particular event type, such as "PROCESS_EXEC", leave slice empty or use
+	// wildcard "*".
+	triggerCriteria = map[string][]string{
+		"PROCESS_KPROBE": {"inet_csk_listen_start"},
+
+		// Examples:
+		//
+		// "PROCESS_KPROBE": {"security_file_permission", "security_mmap_file", "security_path_truncate"},
+		// In order to process all possible functions leave right-hand part empty or use wildcard "*":
+		// "PROCESS_EXEC": {},
+		// same as:
+		// "PROCESS_EXEC": {"*"},
+	}
+)
+```
 
 После этой секции в детекторе определяются некоторые переменные, например `sshdBin`, которая задает glob-паттерн для матчинга исполняемого файла `sshd` по имени, с учетом его полного пути. Заменим эту переменную на соответствующий шаблон для `nc`:
 ```go
@@ -192,6 +219,24 @@ const (
 )
 
 var (
+	// triggerCriteria sets Trigger Criteria as map of events types to corresponding functions
+	// which will be used by Detector. If function names are not applicable for
+	// a particular event type, such as "PROCESS_EXEC", leave slice empty or use
+	// wildcard "*".
+	triggerCriteria = map[string][]string{
+		"PROCESS_KPROBE": {"inet_csk_listen_start"},
+
+		// Examples:
+		//
+		// "PROCESS_KPROBE": {"security_file_permission", "security_mmap_file", "security_path_truncate"},
+		// In order to process all possible functions leave right-hand part empty or use wildcard "*":
+		// "PROCESS_EXEC": {},
+		// same as:
+		// "PROCESS_EXEC": {"*"},
+	}
+)
+
+var (
 	nc = glob.MustCompile("*/nc")
 )
 
@@ -260,6 +305,18 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		// Nothing here
 	case *tetragon.GetEventsResponse_ProcessTracepoint:
 		// Nothing here
+	}
+
+	return resp, nil
+}
+
+func (d Detector) TriggerCriteria(ctx context.Context, req *api.TriggerCriteriaReq) (*api.TriggerCriteriaResp, error) {
+	resp := &api.TriggerCriteriaResp{
+		Criteria: make(map[string]*api.TriggerCriteriaResp_FuncNames, len(triggerCriteria)),
+	}
+
+	for k, v := range triggerCriteria {
+		resp.Criteria[k] = &api.TriggerCriteriaResp_FuncNames{FuncNames: v}
 	}
 
 	return resp, nil

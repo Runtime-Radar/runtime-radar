@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	readTimeout  = 5 * time.Second
-	writeTimeout = 5 * time.Second
+	readTimeout  = 30 * time.Second
+	writeTimeout = 30 * time.Second
 	// Maximum message size for grpc request
 	MaxRecvMsgSize = 10 * 1024 * 1024 // 10MB
 )

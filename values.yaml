@@ -1,0 +1,69 @@
+global:
+  imageTag: v0.0.0-izy1
+  keys:
+    encryption: 29e41dc147c14e8be3da5ac88abe58c4e2e13d4b086652dc0c9fd5859fb26621
+    publicAccessTokenSalt: 6c1aa47a391ae667eccc458dd9ff3bda2cfb66e3e0816e9a52f32eabe511ad6f6c1aa47a391ae667eccc458dd9ff3bda2cfb66e3e0816e9a52f32eabe511ad6f
+  csVersion: v0.0.1
+  imageRegistry: docker-ptcs-dev.devops.ptsecurity.ru
+  ownCsUrl: https://izy-k8s.appsec-stand.ptsecurity.cloud:32690
+  # ownCsUrl: https://nla-k8s.appsec-stand.ptsecurity.cloud:30582
+  centralCsUrl: ""
+  postgresql:
+    tls:
+      verify: true
+      enabled: true
+  redis:
+    tls:
+      verify: true
+      enabled: true
+  clickhouse:
+    tls:
+      verify: true
+      enabled: true
+  devMode: true
+tls:
+  verify: true
+auth-center:
+  administrator:
+    username: ptcs
+    password: |-
+      ptcs
+history-api:
+  retentionInterval: 8760h
+postgresql:
+  auth:
+    username: ptcs
+    password: |-
+      ptcs
+  persistence:
+    enabled: false
+    storageClass: nfs-client
+redis:
+  auth:
+    username: ptcs
+    password: |-
+      ptcs
+  persistence:
+    enabled: false
+rabbitmq:
+  auth:
+    username: ptcs
+    password: |-
+      ptcs
+  persistence:
+    enabled: false
+    storageClass: nfs-client
+clickhouse:
+  auth:
+    username: ptcs
+    password: |-
+      ptcs
+  persistence:
+    enabled: false
+    storageClass: nfs-client
+admission-controller:
+  webhookBlockOnFailure: false
+reverse-proxy:
+  ingress:
+    enabled: true
+    class: "nginx"

@@ -55,6 +55,8 @@ tasks:
           - event-processor
           - runtime-monitor
           - cs-manager
+          - public-api
+          - lib
         task: "{{.ITEM}}:proto"
 
   proto-clean:
@@ -110,3 +112,9 @@ tasks:
     cmds:
       - for: *backend-services
         task: "{{.ITEM}}:lint"
+
+  vendor:
+    desc: "vendor"
+    cmds:
+      - for: *backend-services
+        cmd: "cd {{.ITEM}} && go mod tidy && go mod vendor && cd .."

@@ -95,7 +95,7 @@ tasks:
     vars:
       TINYGO_CURRENT_VERSION:
         sh: "tinygo version | cut -d' ' -f3"
-      TINYGO_REQUIRED_VERSION: "0.34.0"
+      TINYGO_REQUIRED_VERSION: "0.39.0"
       DETECTOR_DIR: detector/wasm
       DEPLOY_DIR: deploy
     cmds:
@@ -106,7 +106,7 @@ tasks:
       - |
         detectors=`ls {{.DETECTOR_DIR}}`
         for detector in $detectors; do
-          tinygo build -o {{.DEPLOY_DIR}}/${detector}.wasm -scheduler=none -target=wasip1 --no-debug ./{{.DETECTOR_DIR}}/${detector}
+          tinygo build -o {{.DEPLOY_DIR}}/${detector}.wasm -scheduler=none -target=wasip1 -buildmode=wasi-legacy --no-debug ./{{.DETECTOR_DIR}}/${detector}
         done
     sources:
       - "go.mod"

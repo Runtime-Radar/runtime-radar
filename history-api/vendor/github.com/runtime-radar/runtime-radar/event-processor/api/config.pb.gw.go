@@ -10,6 +10,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -25,72 +26,77 @@ import (
 )
 
 // Suppress "imported and not used" errors
-var _ codes.Code
-var _ io.Reader
-var _ status.Status
-var _ = runtime.String
-var _ = utilities.NewDoubleArray
-var _ = metadata.Join
+var (
+	_ codes.Code
+	_ io.Reader
+	_ status.Status
+	_ = errors.New
+	_ = runtime.String
+	_ = utilities.NewDoubleArray
+	_ = metadata.Join
+)
 
 func request_ConfigController_Add_0(ctx context.Context, marshaler runtime.Marshaler, client ConfigControllerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Config
-	var metadata runtime.ServerMetadata
-
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+	var (
+		protoReq Config
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
 	msg, err := client.Add(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ConfigController_Add_0(ctx context.Context, marshaler runtime.Marshaler, server ConfigControllerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Config
-	var metadata runtime.ServerMetadata
-
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+	var (
+		protoReq Config
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.Add(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 func request_ConfigController_Read_0(ctx context.Context, marshaler runtime.Marshaler, client ConfigControllerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
-	var metadata runtime.ServerMetadata
-
+	var (
+		protoReq emptypb.Empty
+		metadata runtime.ServerMetadata
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
 	msg, err := client.Read(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_ConfigController_Read_0(ctx context.Context, marshaler runtime.Marshaler, server ConfigControllerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
-	var metadata runtime.ServerMetadata
-
+	var (
+		protoReq emptypb.Empty
+		metadata runtime.ServerMetadata
+	)
 	msg, err := server.Read(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 // RegisterConfigControllerHandlerServer registers the http handlers for service ConfigController to "mux".
 // UnaryRPC     :call ConfigControllerServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterConfigControllerHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterConfigControllerHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ConfigControllerServer) error {
-
-	mux.Handle("POST", pattern_ConfigController_Add_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ConfigController_Add_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_config.ConfigController/Add", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_config.ConfigController/Add", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -102,20 +108,15 @@ func RegisterConfigControllerHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ConfigController_Add_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ConfigController_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ConfigController_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_config.ConfigController/Read", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_config.ConfigController/Read", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -127,9 +128,7 @@ func RegisterConfigControllerHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ConfigController_Read_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	return nil
@@ -156,7 +155,6 @@ func RegisterConfigControllerHandlerFromEndpoint(ctx context.Context, mux *runti
 			}
 		}()
 	}()
-
 	return RegisterConfigControllerHandler(ctx, mux, conn)
 }
 
@@ -170,16 +168,13 @@ func RegisterConfigControllerHandler(ctx context.Context, mux *runtime.ServeMux,
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ConfigControllerClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ConfigControllerClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ConfigControllerClient" to call the correct interceptors.
+// "ConfigControllerClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterConfigControllerHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ConfigControllerClient) error {
-
-	mux.Handle("POST", pattern_ConfigController_Add_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_ConfigController_Add_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/runtime_config.ConfigController/Add", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/runtime_config.ConfigController/Add", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -190,18 +185,13 @@ func RegisterConfigControllerHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ConfigController_Add_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_ConfigController_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_ConfigController_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/runtime_config.ConfigController/Read", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/runtime_config.ConfigController/Read", runtime.WithHTTPPathPattern("/api/v1/config/event-processor"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -212,22 +202,17 @@ func RegisterConfigControllerHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_ConfigController_Read_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
 	return nil
 }
 
 var (
-	pattern_ConfigController_Add_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "config", "event-processor"}, ""))
-
+	pattern_ConfigController_Add_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "config", "event-processor"}, ""))
 	pattern_ConfigController_Read_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "config", "event-processor"}, ""))
 )
 
 var (
-	forward_ConfigController_Add_0 = runtime.ForwardResponseMessage
-
+	forward_ConfigController_Add_0  = runtime.ForwardResponseMessage
 	forward_ConfigController_Read_0 = runtime.ForwardResponseMessage
 )
