@@ -31,7 +31,7 @@ func Recovery(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, 
 
 const CorrelationHeader = "correlation-id"
 
-func Correlation(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+func Correlation(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	var corrID string
 
 	md, ok := metadata.FromIncomingContext(ctx)

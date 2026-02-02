@@ -10,7 +10,7 @@ env:
   TASK_VERSION: '3.38.0'
   REGISTRY: ghcr.io
   REPO: runtime-radar
-  GO_VERSION: '1.24'
+  GO_VERSION: '1.25'
 
 jobs:
   build-and-push:

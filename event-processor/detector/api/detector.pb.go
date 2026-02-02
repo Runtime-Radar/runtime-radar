@@ -55,92 +55,6 @@ func (x DetectResp_Severity) Enum() *DetectResp_Severity {
 	return p
 }
 
-type DetectReq struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Event *tetragon.GetEventsResponse `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
-}
-
-func (x *DetectReq) ProtoReflect() protoreflect.Message {
-	panic(`not implemented`)
-}
-
-func (x *DetectReq) GetEvent() *tetragon.GetEventsResponse {
-	if x != nil {
-		return x.Event
-	}
-	return nil
-}
-
-type DetectResp struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id          string              `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name        string              `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description string              `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Version     uint32              `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"`
-	Author      string              `protobuf:"bytes,5,opt,name=author,proto3" json:"author,omitempty"`
-	Contact     string              `protobuf:"bytes,6,opt,name=contact,proto3" json:"contact,omitempty"`
-	Severity    DetectResp_Severity `protobuf:"varint,8,opt,name=severity,proto3,enum=detector.DetectResp_Severity" json:"severity,omitempty"`
-}
-
-func (x *DetectResp) ProtoReflect() protoreflect.Message {
-	panic(`not implemented`)
-}
-
-func (x *DetectResp) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *DetectResp) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *DetectResp) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *DetectResp) GetVersion() uint32 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
-func (x *DetectResp) GetAuthor() string {
-	if x != nil {
-		return x.Author
-	}
-	return ""
-}
-
-func (x *DetectResp) GetContact() string {
-	if x != nil {
-		return x.Contact
-	}
-	return ""
-}
-
-func (x *DetectResp) GetSeverity() DetectResp_Severity {
-	if x != nil {
-		return x.Severity
-	}
-	return DetectResp_NONE
-}
-
 type InfoReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -218,9 +132,97 @@ func (x *InfoResp) GetLicense() string {
 	return ""
 }
 
+type DetectReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Event *tetragon.GetEventsResponse `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
+}
+
+func (x *DetectReq) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *DetectReq) GetEvent() *tetragon.GetEventsResponse {
+	if x != nil {
+		return x.Event
+	}
+	return nil
+}
+
+type DetectResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Severity DetectResp_Severity `protobuf:"varint,8,opt,name=severity,proto3,enum=detector.DetectResp_Severity" json:"severity,omitempty"`
+}
+
+func (x *DetectResp) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *DetectResp) GetSeverity() DetectResp_Severity {
+	if x != nil {
+		return x.Severity
+	}
+	return DetectResp_NONE
+}
+
+type TriggerCriteriaReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *TriggerCriteriaReq) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+type TriggerCriteriaResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Criteria links event types with function names. Supported event types are defined in history-api/pkg/model/RuntimeEventType* constants.
+	Criteria map[string]*TriggerCriteriaResp_FuncNames `protobuf:"bytes,1,rep,name=criteria,proto3" json:"criteria,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+}
+
+func (x *TriggerCriteriaResp) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *TriggerCriteriaResp) GetCriteria() map[string]*TriggerCriteriaResp_FuncNames {
+	if x != nil {
+		return x.Criteria
+	}
+	return nil
+}
+
+type TriggerCriteriaResp_FuncNames struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FuncNames []string `protobuf:"bytes,1,rep,name=func_names,json=funcNames,proto3" json:"func_names,omitempty"`
+}
+
+func (x *TriggerCriteriaResp_FuncNames) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *TriggerCriteriaResp_FuncNames) GetFuncNames() []string {
+	if x != nil {
+		return x.FuncNames
+	}
+	return nil
+}
+
 // Detector service definition.
 // go:plugin type=plugin version=1
 type Detector interface {
 	Info(context.Context, *InfoReq) (*InfoResp, error)
 	Detect(context.Context, *DetectReq) (*DetectResp, error)
+	TriggerCriteria(context.Context, *TriggerCriteriaReq) (*TriggerCriteriaResp, error)
 }

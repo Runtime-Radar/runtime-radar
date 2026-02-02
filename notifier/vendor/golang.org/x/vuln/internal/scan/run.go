@@ -15,8 +15,11 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/telemetry/counter"
 	"golang.org/x/vuln/internal/client"
 	"golang.org/x/vuln/internal/govulncheck"
+	"golang.org/x/vuln/internal/openvex"
+	"golang.org/x/vuln/internal/sarif"
 )
 
 // RunGovulncheck performs main govulncheck functionality and exits the
@@ -27,9 +30,6 @@ func RunGovulncheck(ctx context.Context, env []string, r io.Reader, stdout io.Wr
 	if err := parseFlags(cfg, stderr, args); err != nil {
 		return err
 	}
-	if cfg.mode == modeConvert {
-		return convertJSONToText(r, stdout)
-	}
 
 	client, err := client.NewClient(cfg.db, nil)
 	if err != nil {
@@ -38,42 +38,48 @@ func RunGovulncheck(ctx context.Context, env []string, r io.Reader, stdout io.Wr
 
 	prepareConfig(ctx, cfg, client)
 	var handler govulncheck.Handler
-	switch {
-	case cfg.json:
+	switch cfg.format {
+	case formatJSON:
 		handler = govulncheck.NewJSONHandler(stdout)
+	case formatSarif:
+		handler = sarif.NewHandler(stdout)
+	case formatOpenVEX:
+		handler = openvex.NewHandler(stdout)
 	default:
 		th := NewTextHandler(stdout)
-		th.Show(cfg.show)
+		cfg.show.Update(th)
 		handler = th
 	}
 
-	// Write the introductory message to the user.
 	if err := handler.Config(&cfg.Config); err != nil {
 		return err
 	}
 
-	switch cfg.mode {
-	case modeSource:
+	incTelemetryFlagCounters(cfg)
+
+	switch cfg.ScanMode {
+	case govulncheck.ScanModeSource:
 		dir := filepath.FromSlash(cfg.dir)
 		err = runSource(ctx, handler, cfg, client, dir)
-	case modeBinary:
+	case govulncheck.ScanModeBinary:
 		err = runBinary(ctx, handler, cfg, client)
-	case modeQuery:
+	case govulncheck.ScanModeExtract:
+		return runExtract(cfg, stdout)
+	case govulncheck.ScanModeQuery:
 		err = runQuery(ctx, handler, cfg, client)
+	case govulncheck.ScanModeConvert:
+		err = govulncheck.HandleJSON(r, handler)
 	}
 	if err != nil {
 		return err
 	}
-	if err := Flush(handler); err != nil {
-		return err
-	}
-	return nil
+	return Flush(handler)
 }
 
 func prepareConfig(ctx context.Context, cfg *config, client *client.Client) {
 	cfg.ProtocolVersion = govulncheck.ProtocolVersion
 	cfg.DB = cfg.db
-	if cfg.mode == modeSource && cfg.GoVersion == "" {
+	if cfg.ScanMode == govulncheck.ScanModeSource && cfg.GoVersion == "" {
 		const goverPrefix = "GOVERSION="
 		for _, env := range cfg.env {
 			if val := strings.TrimPrefix(env, goverPrefix); val != env {
@@ -82,7 +88,7 @@ func prepareConfig(ctx context.Context, cfg *config, client *client.Client) {
 		}
 		if cfg.GoVersion == "" {
 			if out, err := exec.Command("go", "env", "GOVERSION").Output(); err == nil {
-				cfg.GoVersion = string(out)
+				cfg.GoVersion = strings.TrimSpace(string(out))
 			}
 		}
 	}
@@ -133,13 +139,22 @@ func scannerVersion(cfg *config, bi *debug.BuildInfo) {
 	cfg.ScannerVersion = buf.String()
 }
 
-// convertJSONToText converts r, which is expected to be the JSON output of govulncheck,
-// into the text output, and writes the output to w.
-func convertJSONToText(r io.Reader, w io.Writer) error {
-	h := NewTextHandler(w)
-	if err := govulncheck.HandleJSON(r, h); err != nil {
-		return err
+func incTelemetryFlagCounters(cfg *config) {
+	counter.Inc(fmt.Sprintf("govulncheck/mode:%s", cfg.ScanMode))
+	counter.Inc(fmt.Sprintf("govulncheck/scan:%s", cfg.ScanLevel))
+	counter.Inc(fmt.Sprintf("govulncheck/format:%s", cfg.format))
+
+	if len(cfg.show) == 0 {
+		counter.Inc("govulncheck/show:none")
 	}
-	Flush(h)
+	for _, s := range cfg.show {
+		counter.Inc(fmt.Sprintf("govulncheck/show:%s", s))
+	}
+}
+
+func Flush(h govulncheck.Handler) error {
+	if th, ok := h.(interface{ Flush() error }); ok {
+		return th.Flush()
+	}
 	return nil
 }
