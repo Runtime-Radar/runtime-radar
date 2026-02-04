@@ -14,9 +14,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/vuln/internal"
 	"golang.org/x/vuln/internal/govulncheck"
 	"golang.org/x/vuln/internal/osv"
+	"golang.org/x/vuln/internal/traces"
 )
 
 type findingSummary struct {
@@ -26,9 +26,11 @@ type findingSummary struct {
 }
 
 type summaryCounters struct {
-	VulnerabilitiesCalled int
-	ModulesCalled         int
-	StdlibCalled          bool
+	VulnerabilitiesCalled   int
+	ModulesCalled           int
+	VulnerabilitiesImported int
+	VulnerabilitiesRequired int
+	StdlibCalled            bool
 }
 
 func fixupFindings(osvs []*osv.Entry, findings []*findingSummary) {
@@ -74,27 +76,22 @@ func groupBy(findings []*findingSummary, compare func(left, right *findingSummar
 	return result
 }
 
-func counters(findings []*findingSummary) summaryCounters {
-	vulns := map[string]struct{}{}
-	modules := map[string]struct{}{}
+func isRequired(findings []*findingSummary) bool {
 	for _, f := range findings {
-		if f.Trace[0].Function == "" {
-			continue
+		if f.Trace[0].Module != "" {
+			return true
 		}
-		id := f.OSV.ID
-		vulns[id] = struct{}{}
-		mod := f.Trace[0].Module
-		modules[mod] = struct{}{}
 	}
-	result := summaryCounters{
-		VulnerabilitiesCalled: len(vulns),
-		ModulesCalled:         len(modules),
+	return false
+}
+
+func isImported(findings []*findingSummary) bool {
+	for _, f := range findings {
+		if f.Trace[0].Package != "" {
+			return true
+		}
 	}
-	if _, found := modules[internal.GoStdModulePath]; found {
-		result.StdlibCalled = true
-		result.ModulesCalled--
-	}
-	return result
+	return false
 }
 
 func isCalled(findings []*findingSummary) bool {
@@ -105,6 +102,7 @@ func isCalled(findings []*findingSummary) bool {
 	}
 	return false
 }
+
 func getOSV(osvs []*osv.Entry, id string) *osv.Entry {
 	for _, entry := range osvs {
 		if entry.ID == id {
@@ -184,7 +182,13 @@ func posToString(p *govulncheck.Position) string {
 
 func symbol(frame *govulncheck.Frame, short bool) string {
 	buf := &strings.Builder{}
-	addSymbolName(buf, frame, short)
+	addSymbol(buf, frame, short)
+	return buf.String()
+}
+
+func symbolName(frame *govulncheck.Frame) string {
+	buf := &strings.Builder{}
+	addSymbolName(buf, frame)
 	return buf.String()
 }
 
@@ -196,44 +200,36 @@ func symbol(frame *govulncheck.Frame, short bool) string {
 // If the vulnerable symbol is in the users code, it will show the entry point
 // and the vulnerable symbol.
 func compactTrace(finding *govulncheck.Finding) string {
-	if len(finding.Trace) < 1 {
+	compact := traces.Compact(finding)
+	if len(compact) == 0 {
 		return ""
 	}
-	iTop := len(finding.Trace) - 1
-	topModule := finding.Trace[iTop].Module
-	// search for the exit point of the top module
-	for i, frame := range finding.Trace {
-		if frame.Module == topModule {
-			iTop = i
-			break
-		}
-	}
 
-	if iTop == 0 {
-		// all in one module, reset to the end
-		iTop = len(finding.Trace) - 1
-	}
-
+	l := len(compact)
+	iTop := l - 1
 	buf := &strings.Builder{}
-	topPos := posToString(finding.Trace[iTop].Position)
+	topPos := posToString(compact[iTop].Position)
 	if topPos != "" {
 		buf.WriteString(topPos)
 		buf.WriteString(": ")
 	}
 
-	if iTop > 0 {
-		addSymbolName(buf, finding.Trace[iTop], true)
+	if l > 1 {
+		// print the root of the compact trace
+		addSymbol(buf, compact[iTop], true)
 		buf.WriteString(" calls ")
 	}
-	if iTop > 1 {
-		addSymbolName(buf, finding.Trace[iTop-1], true)
+	if l > 2 {
+		// print next element of the trace, if any
+		addSymbol(buf, compact[iTop-1], true)
 		buf.WriteString(", which")
-		if iTop > 2 {
+		if l > 3 {
+			// don't print the third element, just acknowledge it
 			buf.WriteString(" eventually")
 		}
 		buf.WriteString(" calls ")
 	}
-	addSymbolName(buf, finding.Trace[0], true)
+	addSymbol(buf, compact[0], true) // print the vulnerable symbol
 	return buf.String()
 }
 
@@ -265,7 +261,7 @@ func importPathToAssumedName(importPath string) string {
 	return base
 }
 
-func addSymbolName(w io.Writer, frame *govulncheck.Frame, short bool) {
+func addSymbol(w io.Writer, frame *govulncheck.Frame, short bool) {
 	if frame.Function == "" {
 		return
 	}
@@ -277,6 +273,10 @@ func addSymbolName(w io.Writer, frame *govulncheck.Frame, short bool) {
 		io.WriteString(w, pkg)
 		io.WriteString(w, ".")
 	}
+	addSymbolName(w, frame)
+}
+
+func addSymbolName(w io.Writer, frame *govulncheck.Frame) {
 	if frame.Receiver != "" {
 		if frame.Receiver[0] == '*' {
 			io.WriteString(w, frame.Receiver[1:])

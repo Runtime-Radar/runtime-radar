@@ -17,7 +17,7 @@ services:
       - POSTGRES_DB=cs_test
 
   test:
-    image: golang:1.24
+    image: golang:1.25
     working_dir: /go/src/repo
     volumes:
       - .:/go/src/repo

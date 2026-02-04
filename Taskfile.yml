@@ -55,6 +55,7 @@ tasks:
           - event-processor
           - runtime-monitor
           - cs-manager
+          - public-api
         task: "{{.ITEM}}:proto"
 
   proto-clean:

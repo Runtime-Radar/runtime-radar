@@ -1,8 +1,6 @@
 module github.com/runtime-radar/runtime-radar/cs-manager
 
-go 1.24.0
-
-toolchain go1.24.4
+go 1.25
 
 require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect

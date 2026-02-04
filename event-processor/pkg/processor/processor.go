@@ -187,6 +187,13 @@ func (wp *WorkersPool) SetBins(bins [][]byte) {
 	wp.bins = bins
 }
 
+func (wp *WorkersPool) registerUpdate(upd chan bool) {
+	wp.binsMu.Lock()
+	defer wp.binsMu.Unlock()
+
+	wp.updates = append(wp.updates, upd)
+}
+
 func BinsRootHashAsHex(bins [][]byte) string {
 	hashes := make([][]byte, 0, len(bins))
 	for _, b := range bins {
