@@ -244,6 +244,26 @@ func (x *Image) GetName() string {
 	return ""
 }
 
+type SecurityContext struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// True if this container is priviledged.
+	Privileged bool `protobuf:"varint,1,opt,name=privileged,proto3" json:"privileged,omitempty"`
+}
+
+func (x *SecurityContext) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *SecurityContext) GetPrivileged() bool {
+	if x != nil {
+		return x.Privileged
+	}
+	return false
+}
+
 type Container struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -266,6 +286,8 @@ type Container struct {
 	//     and "ls" are considered a match.
 	//  2. The arguments field exactly matches the rest of the exec command list.
 	MaybeExecProbe bool `protobuf:"varint,13,opt,name=maybe_exec_probe,json=maybeExecProbe,proto3" json:"maybe_exec_probe,omitempty"`
+	// The security context of the container
+	SecurityContext *SecurityContext `protobuf:"bytes,14,opt,name=security_context,json=securityContext,proto3" json:"security_context,omitempty"`
 }
 
 func (x *Container) ProtoReflect() protoreflect.Message {
@@ -314,6 +336,13 @@ func (x *Container) GetMaybeExecProbe() bool {
 	return false
 }
 
+func (x *Container) GetSecurityContext() *SecurityContext {
+	if x != nil {
+		return x.SecurityContext
+	}
+	return nil
+}
+
 type Pod struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -332,6 +361,8 @@ type Pod struct {
 	Workload string `protobuf:"bytes,6,opt,name=workload,proto3" json:"workload,omitempty"`
 	// Kubernetes workload kind (e.g. "Deployment", "DaemonSet") of the Pod.
 	WorkloadKind string `protobuf:"bytes,7,opt,name=workload_kind,json=workloadKind,proto3" json:"workload_kind,omitempty"`
+	// Contains all the annotations of the pod.
+	PodAnnotations map[string]string `protobuf:"bytes,8,rep,name=pod_annotations,json=podAnnotations,proto3" json:"pod_annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *Pod) ProtoReflect() protoreflect.Message {
@@ -378,6 +409,13 @@ func (x *Pod) GetWorkloadKind() string {
 		return x.WorkloadKind
 	}
 	return ""
+}
+
+func (x *Pod) GetPodAnnotations() map[string]string {
+	if x != nil {
+		return x.PodAnnotations
+	}
+	return nil
 }
 
 type Capabilities struct {
@@ -917,6 +955,8 @@ type Process struct {
 	// current process with a new process by doing an exec* without a clone. In
 	// this case the flag will be omitted and the same PID will be used by the
 	// kernel for both the old process and the newly exec'd process.
+	// - `unknown` Indicates the process was not found in the process cache
+	// and contains just pid and start time.
 	Flags string `protobuf:"bytes,7,opt,name=flags,proto3" json:"flags,omitempty"`
 	// Start time of the execution.
 	StartTime *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
@@ -1160,6 +1200,8 @@ type ProcessExit struct {
 	Status uint32 `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`
 	// Date and time of the event.
 	Time *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=time,proto3" json:"time,omitempty"`
+	// Ancestors of the process beyond the immediate parent.
+	Ancestors []*Process `protobuf:"bytes,6,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
 }
 
 func (x *ProcessExit) ProtoReflect() protoreflect.Message {
@@ -1197,6 +1239,13 @@ func (x *ProcessExit) GetStatus() uint32 {
 func (x *ProcessExit) GetTime() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Time
+	}
+	return nil
+}
+
+func (x *ProcessExit) GetAncestors() []*Process {
+	if x != nil {
+		return x.Ancestors
 	}
 	return nil
 }
@@ -1413,6 +1462,41 @@ func (x *KprobeSkb) GetFamily() string {
 		return x.Family
 	}
 	return ""
+}
+
+type KprobeSockaddr struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Family string `protobuf:"bytes,1,opt,name=family,proto3" json:"family,omitempty"`
+	Addr   string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	Port   uint32 `protobuf:"varint,3,opt,name=port,proto3" json:"port,omitempty"`
+}
+
+func (x *KprobeSockaddr) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *KprobeSockaddr) GetFamily() string {
+	if x != nil {
+		return x.Family
+	}
+	return ""
+}
+
+func (x *KprobeSockaddr) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+func (x *KprobeSockaddr) GetPort() uint32 {
+	if x != nil {
+		return x.Port
+	}
+	return 0
 }
 
 type KprobeNetDev struct {
@@ -1878,6 +1962,7 @@ type KprobeArgument struct {
 	//	*KprobeArgument_NetDevArg
 	//	*KprobeArgument_BpfCmdArg
 	//	*KprobeArgument_SyscallId
+	//	*KprobeArgument_SockaddrArg
 	Arg   isKprobeArgument_Arg `protobuf_oneof:"arg"`
 	Label string               `protobuf:"bytes,18,opt,name=label,proto3" json:"label,omitempty"`
 }
@@ -2090,6 +2175,13 @@ func (x *KprobeArgument) GetSyscallId() *SyscallId {
 	return nil
 }
 
+func (x *KprobeArgument) GetSockaddrArg() *KprobeSockaddr {
+	if x, ok := x.GetArg().(*KprobeArgument_SockaddrArg); ok {
+		return x.SockaddrArg
+	}
+	return nil
+}
+
 func (x *KprobeArgument) GetLabel() string {
 	if x != nil {
 		return x.Label
@@ -2214,6 +2306,10 @@ type KprobeArgument_SyscallId struct {
 	SyscallId *SyscallId `protobuf:"bytes,29,opt,name=syscall_id,json=syscallId,proto3,oneof"`
 }
 
+type KprobeArgument_SockaddrArg struct {
+	SockaddrArg *KprobeSockaddr `protobuf:"bytes,30,opt,name=sockaddr_arg,json=sockaddrArg,proto3,oneof"`
+}
+
 func (*KprobeArgument_StringArg) isKprobeArgument_Arg() {}
 
 func (*KprobeArgument_IntArg) isKprobeArgument_Arg() {}
@@ -2270,6 +2366,8 @@ func (*KprobeArgument_BpfCmdArg) isKprobeArgument_Arg() {}
 
 func (*KprobeArgument_SyscallId) isKprobeArgument_Arg() {}
 
+func (*KprobeArgument_SockaddrArg) isKprobeArgument_Arg() {}
+
 type ProcessKprobe struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2299,6 +2397,8 @@ type ProcessKprobe struct {
 	Tags []string `protobuf:"bytes,11,rep,name=tags,proto3" json:"tags,omitempty"`
 	// User-mode stack trace to the call.
 	UserStackTrace []*StackTraceEntry `protobuf:"bytes,12,rep,name=user_stack_trace,json=userStackTrace,proto3" json:"user_stack_trace,omitempty"`
+	// Ancestors of the process beyond the immediate parent.
+	Ancestors []*Process `protobuf:"bytes,13,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
 }
 
 func (x *ProcessKprobe) ProtoReflect() protoreflect.Message {
@@ -2389,6 +2489,13 @@ func (x *ProcessKprobe) GetUserStackTrace() []*StackTraceEntry {
 	return nil
 }
 
+func (x *ProcessKprobe) GetAncestors() []*Process {
+	if x != nil {
+		return x.Ancestors
+	}
+	return nil
+}
+
 type ProcessTracepoint struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2413,6 +2520,8 @@ type ProcessTracepoint struct {
 	Message string `protobuf:"bytes,9,opt,name=message,proto3" json:"message,omitempty"`
 	// Tags of the Tracing Policy to categorize the event.
 	Tags []string `protobuf:"bytes,10,rep,name=tags,proto3" json:"tags,omitempty"`
+	// Ancestors of the process beyond the immediate parent.
+	Ancestors []*Process `protobuf:"bytes,11,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
 }
 
 func (x *ProcessTracepoint) ProtoReflect() protoreflect.Message {
@@ -2482,6 +2591,13 @@ func (x *ProcessTracepoint) GetTags() []string {
 	return nil
 }
 
+func (x *ProcessTracepoint) GetAncestors() []*Process {
+	if x != nil {
+		return x.Ancestors
+	}
+	return nil
+}
+
 type ProcessUprobe struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2499,6 +2615,12 @@ type ProcessUprobe struct {
 	Args []*KprobeArgument `protobuf:"bytes,7,rep,name=args,proto3" json:"args,omitempty"`
 	// Tags of the Tracing Policy to categorize the event.
 	Tags []string `protobuf:"bytes,8,rep,name=tags,proto3" json:"tags,omitempty"`
+	// Ancestors of the process beyond the immediate parent.
+	Ancestors []*Process `protobuf:"bytes,9,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
+	// uprobe offset (mutualy exclusive with symbol)
+	Offset uint64 `protobuf:"varint,10,opt,name=offset,proto3" json:"offset,omitempty"`
+	// uprobe ref_ctr_offset
+	RefCtrOffset uint64 `protobuf:"varint,11,opt,name=ref_ctr_offset,json=refCtrOffset,proto3" json:"ref_ctr_offset,omitempty"`
 }
 
 func (x *ProcessUprobe) ProtoReflect() protoreflect.Message {
@@ -2561,6 +2683,27 @@ func (x *ProcessUprobe) GetTags() []string {
 	return nil
 }
 
+func (x *ProcessUprobe) GetAncestors() []*Process {
+	if x != nil {
+		return x.Ancestors
+	}
+	return nil
+}
+
+func (x *ProcessUprobe) GetOffset() uint64 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *ProcessUprobe) GetRefCtrOffset() uint64 {
+	if x != nil {
+		return x.RefCtrOffset
+	}
+	return 0
+}
+
 type ProcessLsm struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2580,6 +2723,8 @@ type ProcessLsm struct {
 	Action KprobeAction `protobuf:"varint,8,opt,name=action,proto3,enum=tetragon.KprobeAction" json:"action,omitempty"`
 	// Tags of the Tracing Policy to categorize the event.
 	Tags []string `protobuf:"bytes,9,rep,name=tags,proto3" json:"tags,omitempty"`
+	// Ancestors of the process beyond the immediate parent.
+	Ancestors []*Process `protobuf:"bytes,10,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
 	// IMA file hash. Format algorithm:value.
 	ImaHash string `protobuf:"bytes,11,opt,name=ima_hash,json=imaHash,proto3" json:"ima_hash,omitempty"`
 }
@@ -2640,6 +2785,13 @@ func (x *ProcessLsm) GetAction() KprobeAction {
 func (x *ProcessLsm) GetTags() []string {
 	if x != nil {
 		return x.Tags
+	}
+	return nil
+}
+
+func (x *ProcessLsm) GetAncestors() []*Process {
+	if x != nil {
+		return x.Ancestors
 	}
 	return nil
 }
@@ -2924,6 +3076,8 @@ type CreateContainer struct {
 	PodUID string `protobuf:"bytes,7,opt,name=podUID,proto3" json:"podUID,omitempty"`
 	// podNamespace is the namespace of the pod
 	PodNamespace string `protobuf:"bytes,8,opt,name=podNamespace,proto3" json:"podNamespace,omitempty"`
+	// containerImage is the full image location (repo + image)
+	ContainerImage string `protobuf:"bytes,9,opt,name=containerImage,proto3" json:"containerImage,omitempty"`
 }
 
 func (x *CreateContainer) ProtoReflect() protoreflect.Message {
@@ -2982,6 +3136,13 @@ func (x *CreateContainer) GetPodUID() string {
 func (x *CreateContainer) GetPodNamespace() string {
 	if x != nil {
 		return x.PodNamespace
+	}
+	return ""
+}
+
+func (x *CreateContainer) GetContainerImage() string {
+	if x != nil {
+		return x.ContainerImage
 	}
 	return ""
 }

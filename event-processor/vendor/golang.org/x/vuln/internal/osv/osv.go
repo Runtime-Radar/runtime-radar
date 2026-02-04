@@ -97,7 +97,7 @@ type Range struct {
 	Events []RangeEvent `json:"events"`
 }
 
-// Reference type is a reference (link) type.
+// ReferenceType is a reference (link) type.
 type ReferenceType string
 
 const (
@@ -235,4 +235,6 @@ type DatabaseSpecific struct {
 	// The URL of the Go advisory for this vulnerability, of the form
 	// "https://pkg.go.dev/GO-YYYY-XXXX".
 	URL string `json:"url,omitempty"`
+	// The review status of this report (UNREVIEWED or REVIEWED).
+	ReviewStatus ReviewStatus `json:"review_status,omitempty"`
 }

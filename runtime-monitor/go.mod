@@ -1,6 +1,6 @@
 module github.com/runtime-radar/runtime-radar/runtime-monitor
 
-go 1.23.0
+go 1.25
 
 require (
 	github.com/cilium/tetragon v1.3.0

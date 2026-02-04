@@ -8,7 +8,6 @@ package api
 
 import (
 	context "context"
-
 	api "github.com/runtime-radar/runtime-radar/event-processor/api"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
