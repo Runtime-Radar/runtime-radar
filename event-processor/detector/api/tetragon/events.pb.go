@@ -180,6 +180,8 @@ type Filter struct {
 	// for processes injected into a container via docker exec, kubectl exec, or
 	// similar mechanisms.
 	InInitTree *wrapperspb.BoolValue `protobuf:"bytes,16,opt,name=in_init_tree,json=inInitTree,proto3" json:"in_init_tree,omitempty"`
+	// Filter ancestor processes' binaries using RE2 regular expression syntax.
+	AncestorBinaryRegex []string `protobuf:"bytes,17,rep,name=ancestor_binary_regex,json=ancestorBinaryRegex,proto3" json:"ancestor_binary_regex,omitempty"`
 }
 
 func (x *Filter) ProtoReflect() protoreflect.Message {
@@ -294,6 +296,13 @@ func (x *Filter) GetContainerId() []string {
 func (x *Filter) GetInInitTree() *wrapperspb.BoolValue {
 	if x != nil {
 		return x.InInitTree
+	}
+	return nil
+}
+
+func (x *Filter) GetAncestorBinaryRegex() []string {
+	if x != nil {
+		return x.AncestorBinaryRegex
 	}
 	return nil
 }
@@ -563,6 +572,8 @@ type GetEventsResponse struct {
 	AggregationInfo *AggregationInfo `protobuf:"bytes,1002,opt,name=aggregation_info,json=aggregationInfo,proto3" json:"aggregation_info,omitempty"`
 	// Name of the cluster where this event was observed.
 	ClusterName string `protobuf:"bytes,1003,opt,name=cluster_name,json=clusterName,proto3" json:"cluster_name,omitempty"`
+	// Labels associated with the node where this event was observed.
+	NodeLabels map[string]string `protobuf:"bytes,1004,rep,name=node_labels,json=nodeLabels,proto3" json:"node_labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *GetEventsResponse) ProtoReflect() protoreflect.Message {
@@ -672,6 +683,13 @@ func (x *GetEventsResponse) GetClusterName() string {
 		return x.ClusterName
 	}
 	return ""
+}
+
+func (x *GetEventsResponse) GetNodeLabels() map[string]string {
+	if x != nil {
+		return x.NodeLabels
+	}
+	return nil
 }
 
 type isGetEventsResponse_Event interface {

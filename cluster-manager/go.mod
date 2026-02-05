@@ -1,6 +1,6 @@
 module github.com/runtime-radar/runtime-radar/cluster-manager
 
-go 1.24.0
+go 1.25
 
 require (
 	github.com/golangci/golangci-lint v1.64.8

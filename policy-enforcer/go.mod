@@ -1,6 +1,6 @@
 module github.com/runtime-radar/runtime-radar/policy-enforcer
 
-go 1.23.0
+go 1.25
 
 require (
 	github.com/gobwas/glob v0.2.3

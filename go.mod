@@ -1,6 +1,6 @@
 module github.com/runtime-radar/runtime-radar
 
-go 1.24
+go 1.25
 
 require (
 	github.com/golangci/golangci-lint v1.64.8

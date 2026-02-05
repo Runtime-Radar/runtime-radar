@@ -43,6 +43,10 @@ func (jt *JSONTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func (jt JSONTime) String() string {
+	return time.Time(jt).String()
+}
+
 type Token struct {
 	Username              string    `json:"username"`
 	UserID                string    `json:"user_id"`
@@ -189,7 +193,7 @@ func TokenFromContext(ctx context.Context, key []byte) (*Token, error) {
 		return nil, errors.New("unknown authorization format")
 	}
 
-	token, err := jwt.ParseWithClaims(tokenStr, &Token{}, func(t *jwt.Token) (any, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &Token{}, func(*jwt.Token) (any, error) {
 		return key, nil
 	})
 	if err != nil {

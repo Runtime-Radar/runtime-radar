@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/event-processor/api"
+	detector_api "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor/detector"
 	enforcer_api "github.com/runtime-radar/runtime-radar/policy-enforcer/api"
 	enforcer_model "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
@@ -34,32 +35,33 @@ func (wp *WorkersPool) worker(id int) {
 
 	bins, rootHash := wp.Bins()
 	t0 := time.Now()
-	chain, err := detector.NewChain(ctx, wp.plugin, bins)
+
+	matcher, err := getMatcher(ctx, wp.plugin, bins)
 	if err != nil {
 		// If very first initialization failed, there are not too many options
-		panic(fmt.Errorf("can't init detector chain when starting worker[%d]: %w", id, err))
+		panic(fmt.Errorf("can't init matcher when starting worker[%d]: %w", id, err))
 	}
-	log.Info().Str("delay", time.Since(t0).String()).Int("len", len(chain)).Str("root_hash", rootHash).Msgf("Detector chain initialized for worker[%d]", id)
+	log.Info().Str("delay", time.Since(t0).String()).Str("root_hash", rootHash).Msgf("Matcher initialized for worker[%d]", id)
 
 	upd := make(chan bool, 1)
-	wp.updates = append(wp.updates, upd)
+	wp.registerUpdate(upd)
 
 	for {
 		select {
 		case <-upd:
 			bins, rootHash := wp.Bins()
 			t0 := time.Now()
-			chain, err = detector.NewChain(ctx, wp.plugin, bins)
+			matcher, err = getMatcher(ctx, wp.plugin, bins)
 			if err != nil {
-				log.Error().Err(err).Msgf("Can't init detector chain for worker[%d]", id)
+				log.Error().Err(err).Msgf("Can't init matcher chain for worker[%d]", id)
 			} else {
-				log.Info().Str("delay", time.Since(t0).String()).Int("len", len(chain)).Str("root_hash", rootHash).Msgf("Detector chain initialized for worker[%d]", id)
+				log.Info().Str("delay", time.Since(t0).String()).Str("root_hash", rootHash).Msgf("Matcher initialized for worker[%d]", id)
 			}
 		case j := <-wp.jobs:
 			log.Debug().Interface("job", j).Int("id", id).Msgf("Worker[%d] got job", id)
 
 			t0 := time.Now()
-			result, err := wp.doJob(ctx, j, chain) // <-- do the job
+			result, err := wp.doJob(ctx, j, matcher) // <-- do the job
 			delta := time.Since(t0)
 
 			if wp.withReports {
@@ -88,15 +90,20 @@ func (wp *WorkersPool) worker(id int) {
 	}
 }
 
-func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsResponse, chain detector.Chain) (*detector.ChainResult, error) {
-	t0 := time.Now()
+func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsResponse, matcher detector.Matcher) (*detector.ChainResult, error) {
+	eventType, funcName := getEventAndFunc(event)
+	chain := matcher.MatchChain(eventType, funcName)
 
+	log.Debug().Str("event_type", eventType).Str("func_name", funcName).Str("chain", chain.String()).Msgf("Got detectors chain")
+
+	t0 := time.Now()
 	result, err := chain.Detect(ctx, event)
 	if err != nil {
 		return nil, fmt.Errorf("can't detect event: %w", err)
 	}
 	delta := time.Since(t0)
-	log.Debug().Str("delay", delta.String()).Interface("event", event).Interface("result", result).Msgf("Detector chain is done")
+
+	log.Debug().Str("delay", delta.String()).Interface("event", event).Interface("result", result).Msgf("Detectors chain is done")
 
 	eventData, err := getEventData(event)
 	if err != nil {
@@ -106,12 +113,20 @@ func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsRespo
 	blockRules, notifyRules := []*enforcer_api.Rule{}, []*enforcer_api.Rule{}
 	incidentSeverity := enforcer_model.NoneSeverity // incident's severity to be passed to history API. Depends on policy enforce's response
 
-	if len(result.Threats) > 0 {
+	var threats []*api.Threat
+	var detectErrors []*api.DetectError
+
+	if result != nil {
+		threats = result.Threats
+		detectErrors = result.Errors
+	}
+
+	if len(threats) > 0 {
 		// TODO: temporarily enabled logging of threats to INFO level, need to take a look if it adds any valuable overhead in production, and in case it does,
 		// it will be a subject for removal (there is already a lot of DEBUG messages at the moment, no need to add another one)
-		log.Info().Str("delay", delta.String()).Interface("event_data", eventData).Interface("result", result).Msg("Threats detected")
+		log.Info().Str("delay", delta.String()).Interface("event_data", eventData).Int("chain_length", len(chain)).Interface("result", result).Msg("Threats detected")
 
-		enforcerResp, err := wp.evaluatePolicy(ctx, eventData, result.Threats)
+		enforcerResp, err := wp.evaluatePolicy(ctx, eventData, threats)
 		if err != nil {
 			return nil, fmt.Errorf("can't evaluate policy: %w", err)
 		}
@@ -137,19 +152,19 @@ func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsRespo
 				notifyRules = append(notifyRules, r)
 			}
 		}
-	} else if len(result.Errors) > 0 {
+	} else if len(detectErrors) > 0 {
 		log.Info().Str("delay", delta.String()).Interface("event_data", eventData).Interface("result", result).Msg("Detect errors found")
 	}
 
 	var eventID string
-	if cfg := wp.Config(); shouldSaveEvent(cfg.Config.HistoryControl, result.Threats) {
+	if cfg := wp.Config(); shouldSaveEvent(cfg.Config.HistoryControl, threats) {
 		eventID = uuid.NewString()
 		re := &api.RuntimeEvent{
 			Id:               eventID,
 			TetragonVersion:  tetragonVersion,
 			Event:            event,
-			Threats:          result.Threats,
-			DetectErrors:     result.Errors,
+			Threats:          threats,
+			DetectErrors:     detectErrors,
 			IsIncident:       len(blockRules) > 0 || len(notifyRules) > 0,
 			IncidentSeverity: incidentSeverity.String(),
 			BlockBy:          uniqueRuleIDs(blockRules),
@@ -174,6 +189,20 @@ func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsRespo
 	}
 
 	return result, nil
+}
+
+func getMatcher(ctx context.Context, plugin *detector_api.DetectorPlugin, bins [][]byte) (detector.Matcher, error) {
+	ds, err := detector.BinsToDetectors(ctx, plugin, bins)
+	if err != nil {
+		return nil, fmt.Errorf("can't get detectors from bins: %w", err)
+	}
+
+	m, err := detector.NewMatcher(ctx, ds...)
+	if err != nil {
+		return nil, fmt.Errorf("can't init matcher: %w", err)
+	}
+
+	return m, nil
 }
 
 func uniqueRules(rs []*enforcer_api.Rule) []*enforcer_api.Rule {

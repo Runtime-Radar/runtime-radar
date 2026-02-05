@@ -37,7 +37,7 @@ func (dg *DetectorGeneric) Create(ctx context.Context, req *api.CreateDetectorRe
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse base64 binary: %v", err)
 	}
 
-	d, err := detector.ModelFromBinary(ctx, dg.DetectorPlugin, wasmBinary)
+	d, err := detector.BinToModel(ctx, dg.DetectorPlugin, wasmBinary)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "can't get detector info from binary: %v", err)
 	}

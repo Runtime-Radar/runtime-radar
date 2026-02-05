@@ -5,3 +5,5 @@
 # macOS artifacts
 .DS_Store
 oss-values.yaml
+kubeconfig.yaml
+/values.yaml

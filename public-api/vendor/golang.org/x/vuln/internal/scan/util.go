@@ -6,11 +6,12 @@ package scan
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"strings"
 
 	"golang.org/x/vuln/internal"
 	"golang.org/x/vuln/internal/govulncheck"
-	"golang.org/x/vuln/internal/osv"
-	isem "golang.org/x/vuln/internal/semver"
 )
 
 // validateFindings checks that the supplied findings all obey the protocol
@@ -25,46 +26,17 @@ func validateFindings(findings ...*govulncheck.Finding) error {
 		}
 		for _, frame := range f.Trace {
 			if frame.Version != "" && frame.Module == "" {
-				return fmt.Errorf("invalid finding: if Frame.Version is set, Frame.Module must also be")
+				return fmt.Errorf("invalid finding: if Frame.Version (%s) is set, Frame.Module must also be", frame.Version)
 			}
 			if frame.Package != "" && frame.Module == "" {
-				return fmt.Errorf("invalid finding: if Frame.Package is set, Frame.Module must also be")
+				return fmt.Errorf("invalid finding: if Frame.Package (%s) is set, Frame.Module must also be", frame.Package)
 			}
 			if frame.Function != "" && frame.Package == "" {
-				return fmt.Errorf("invalid finding: if Frame.Function is set, Frame.Package must also be")
+				return fmt.Errorf("invalid finding: if Frame.Function (%s) is set, Frame.Package must also be", frame.Function)
 			}
 		}
 	}
 	return nil
-}
-
-// latestFixed returns the latest fixed version in the list of affected ranges,
-// or the empty string if there are no fixed versions.
-func latestFixed(modulePath string, as []osv.Affected) string {
-	v := ""
-	for _, a := range as {
-		if modulePath != a.Module.Path {
-			continue
-		}
-		fixed := isem.LatestFixedVersion(a.Ranges)
-		// Special case: if there is any affected block for this module
-		// with no fix, the module is considered unfixed.
-		if fixed == "" {
-			return ""
-		}
-		if isem.Less(v, fixed) {
-			v = fixed
-		}
-	}
-	return v
-}
-
-func fixedVersion(modulePath string, affected []osv.Affected) string {
-	fixed := latestFixed(modulePath, affected)
-	if fixed != "" {
-		fixed = "v" + fixed
-	}
-	return fixed
 }
 
 func moduleVersionString(modulePath, version string) string {
@@ -75,4 +47,14 @@ func moduleVersionString(modulePath, version string) string {
 		version = semverToGoTag(version)
 	}
 	return version
+}
+
+func gomodExists(dir string) bool {
+	cmd := exec.Command("go", "env", "GOMOD")
+	cmd.Dir = dir
+	out, err := cmd.Output()
+	output := strings.TrimSpace(string(out))
+	// If module-aware mode is enabled, but there is no go.mod, GOMOD will be os.DevNull
+	// If module-aware mode is disabled, GOMOD will be the empty string.
+	return err == nil && !(output == os.DevNull || output == "")
 }

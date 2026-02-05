@@ -69,6 +69,34 @@ func (x TracingPolicyState) Enum() *TracingPolicyState {
 	return p
 }
 
+type TracingPolicyMode int32
+
+const (
+	TracingPolicyMode_TP_MODE_UNKNOWN TracingPolicyMode = 0
+	TracingPolicyMode_TP_MODE_ENFORCE TracingPolicyMode = 1
+	TracingPolicyMode_TP_MODE_MONITOR TracingPolicyMode = 2
+)
+
+// Enum value maps for TracingPolicyMode.
+var (
+	TracingPolicyMode_name = map[int32]string{
+		0: "TP_MODE_UNKNOWN",
+		1: "TP_MODE_ENFORCE",
+		2: "TP_MODE_MONITOR",
+	}
+	TracingPolicyMode_value = map[string]int32{
+		"TP_MODE_UNKNOWN": 0,
+		"TP_MODE_ENFORCE": 1,
+		"TP_MODE_MONITOR": 2,
+	}
+)
+
+func (x TracingPolicyMode) Enum() *TracingPolicyMode {
+	p := new(TracingPolicyMode)
+	*p = x
+	return p
+}
+
 // For now, we only want to support debug-related config flags to be configurable.
 type ConfigFlag int32
 
@@ -239,6 +267,8 @@ type TracingPolicyStatus struct {
 	State TracingPolicyState `protobuf:"varint,9,opt,name=state,proto3,enum=tetragon.TracingPolicyState" json:"state,omitempty"`
 	// the amount of kernel memory in bytes used by policy's sensors non-shared BPF maps (memlock)
 	KernelMemoryBytes uint64 `protobuf:"varint,10,opt,name=kernel_memory_bytes,json=kernelMemoryBytes,proto3" json:"kernel_memory_bytes,omitempty"`
+	// current mode of the tracing policy
+	Mode TracingPolicyMode `protobuf:"varint,11,opt,name=mode,proto3,enum=tetragon.TracingPolicyMode" json:"mode,omitempty"`
 }
 
 func (x *TracingPolicyStatus) ProtoReflect() protoreflect.Message {
@@ -314,6 +344,13 @@ func (x *TracingPolicyStatus) GetKernelMemoryBytes() uint64 {
 		return x.KernelMemoryBytes
 	}
 	return 0
+}
+
+func (x *TracingPolicyStatus) GetMode() TracingPolicyMode {
+	if x != nil {
+		return x.Mode
+	}
+	return TracingPolicyMode_TP_MODE_UNKNOWN
 }
 
 type ListTracingPoliciesResponse struct {
@@ -472,6 +509,59 @@ type DisableTracingPolicyResponse struct {
 }
 
 func (x *DisableTracingPolicyResponse) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+type ConfigureTracingPolicyRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name      string             `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Namespace string             `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Enable    *bool              `protobuf:"varint,3,opt,name=enable,proto3,oneof" json:"enable,omitempty"`
+	Mode      *TracingPolicyMode `protobuf:"varint,4,opt,name=mode,proto3,enum=tetragon.TracingPolicyMode,oneof" json:"mode,omitempty"`
+}
+
+func (x *ConfigureTracingPolicyRequest) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *ConfigureTracingPolicyRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ConfigureTracingPolicyRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *ConfigureTracingPolicyRequest) GetEnable() bool {
+	if x != nil && x.Enable != nil {
+		return *x.Enable
+	}
+	return false
+}
+
+func (x *ConfigureTracingPolicyRequest) GetMode() TracingPolicyMode {
+	if x != nil && x.Mode != nil {
+		return *x.Mode
+	}
+	return TracingPolicyMode_TP_MODE_UNKNOWN
+}
+
+type ConfigureTracingPolicyResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ConfigureTracingPolicyResponse) ProtoReflect() protoreflect.Message {
 	panic(`not implemented`)
 }
 
@@ -670,6 +760,8 @@ type ProcessInternal struct {
 	// - "process--": process decreased refcnt (i.e. this process exits)
 	// - "parent++": parent increased refcnt (i.e. a process starts that has this process as a parent)
 	// - "parent--": parent decreased refcnt (i.e. a process exits that has this process as a parent)
+	// - "ancestor++": ancestor increased refcnt (i.e. a process starts that has this process as an ancestor)
+	// - "ancestor--": ancestor decreased refcnt (i.e. a process exits that has this process as an ancestor)
 	RefcntOps map[string]int32 `protobuf:"bytes,4,rep,name=refcnt_ops,json=refcntOps,proto3" json:"refcnt_ops,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
 }
 

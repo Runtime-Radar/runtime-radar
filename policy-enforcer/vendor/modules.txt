@@ -760,7 +760,7 @@ github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
 # github.com/runtime-radar/runtime-radar/lib v0.0.0-00010101000000-000000000000 => ../lib
-## explicit; go 1.23
+## explicit; go 1.25
 github.com/runtime-radar/runtime-radar/lib/config
 github.com/runtime-radar/runtime-radar/lib/errcommon
 github.com/runtime-radar/runtime-radar/lib/logger

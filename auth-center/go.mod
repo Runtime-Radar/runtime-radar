@@ -1,6 +1,6 @@
 module github.com/runtime-radar/runtime-radar/auth-center
 
-go 1.24.0
+go 1.25
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.0.0

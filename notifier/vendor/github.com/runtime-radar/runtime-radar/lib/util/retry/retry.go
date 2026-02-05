@@ -21,7 +21,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		1,
-		func(err error) bool { return true },
+		func(error) bool { return true },
 		time.Millisecond * 100,
 	}
 }
