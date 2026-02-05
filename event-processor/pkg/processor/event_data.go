@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cilium/tetragon/api/v1/tetragon"
+	"github.com/cilium/tetragon/pkg/arch"
 	history_model "github.com/runtime-radar/runtime-radar/history-api/pkg/model"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -111,6 +112,29 @@ func getEventData(e *tetragon.GetEventsResponse) (*eventData, error) {
 	return ed, nil
 }
 
+// getEventAndFunc parses event and returns corresponding event type and function.
+func getEventAndFunc(ev *tetragon.GetEventsResponse) (string, string) {
+	switch e := ev.GetEvent().(type) {
+	case *tetragon.GetEventsResponse_ProcessExec:
+		return history_model.RuntimeEventTypeProcessExec, ""
+	case *tetragon.GetEventsResponse_ProcessExit:
+		return history_model.RuntimeEventTypeProcessExit, ""
+	case *tetragon.GetEventsResponse_ProcessKprobe:
+		funcName := e.ProcessKprobe.GetFunctionName()
+		_, funcName = arch.CutSyscallPrefix(funcName)
+		return history_model.RuntimeEventTypeProcessKprobe, funcName
+	case *tetragon.GetEventsResponse_ProcessTracepoint:
+		return history_model.RuntimeEventTypeProcessTracepoint, ""
+	case *tetragon.GetEventsResponse_ProcessLoader:
+		return history_model.RuntimeEventTypeProcessLoader, ""
+	case *tetragon.GetEventsResponse_ProcessUprobe:
+		sym := e.ProcessUprobe.GetSymbol()
+		return history_model.RuntimeEventTypeProcessUprobe, sym
+	default:
+		return history_model.RuntimeEventTypeUndef, ""
+	}
+}
+
 // setCommonAttributes sets process' and parent's (if not nil) attributes,
 // that are common for different types of events.
 func setCommonAttributes(process, parent *tetragon.Process, ed *eventData) {
@@ -177,13 +201,13 @@ func uint32WrapperToPtr(v *wrapperspb.UInt32Value) *uint32 {
 }
 
 func capsToStrings(caps []tetragon.CapabilitiesType) []string {
-	strs := make([]string, 0, len(caps))
+	ss := make([]string, 0, len(caps))
 
 	for _, cap := range caps {
-		strs = append(strs, cap.String())
+		ss = append(ss, cap.String())
 	}
 
-	return strs
+	return ss
 }
 
 func marshalOptions() protojson.MarshalOptions {

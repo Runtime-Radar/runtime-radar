@@ -10,6 +10,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
@@ -24,218 +25,166 @@ import (
 )
 
 // Suppress "imported and not used" errors
-var _ codes.Code
-var _ io.Reader
-var _ status.Status
-var _ = runtime.String
-var _ = utilities.NewDoubleArray
-var _ = metadata.Join
+var (
+	_ codes.Code
+	_ io.Reader
+	_ status.Status
+	_ = errors.New
+	_ = runtime.String
+	_ = utilities.NewDoubleArray
+	_ = metadata.Join
+)
 
 func request_RuntimeHistory_Read_0(ctx context.Context, marshaler runtime.Marshaler, client RuntimeHistoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ReadRuntimeEventReq
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq ReadRuntimeEventReq
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["id"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-
 	protoReq.Id, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
-
 	msg, err := client.Read(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_RuntimeHistory_Read_0(ctx context.Context, marshaler runtime.Marshaler, server RuntimeHistoryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ReadRuntimeEventReq
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq ReadRuntimeEventReq
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["id"]
+	val, ok := pathParams["id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-
 	protoReq.Id, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
-
 	msg, err := server.Read(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
-var (
-	filter_RuntimeHistory_ListRuntimeEventSlice_0 = &utilities.DoubleArray{Encoding: map[string]int{"direction": 0}, Base: []int{1, 2, 0, 0}, Check: []int{0, 1, 2, 2}}
-)
+var filter_RuntimeHistory_ListRuntimeEventSlice_0 = &utilities.DoubleArray{Encoding: map[string]int{"direction": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 
 func request_RuntimeHistory_ListRuntimeEventSlice_0(ctx context.Context, marshaler runtime.Marshaler, client RuntimeHistoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListRuntimeEventSliceReq
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq ListRuntimeEventSliceReq
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["direction"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["direction"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "direction")
 	}
-
 	protoReq.Direction, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "direction", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RuntimeHistory_ListRuntimeEventSlice_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := client.ListRuntimeEventSlice(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_RuntimeHistory_ListRuntimeEventSlice_0(ctx context.Context, marshaler runtime.Marshaler, server RuntimeHistoryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListRuntimeEventSliceReq
-	var metadata runtime.ServerMetadata
-
 	var (
-		val string
-		ok  bool
-		err error
-		_   = err
+		protoReq ListRuntimeEventSliceReq
+		metadata runtime.ServerMetadata
+		err      error
 	)
-
-	val, ok = pathParams["direction"]
+	val, ok := pathParams["direction"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "direction")
 	}
-
 	protoReq.Direction, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "direction", err)
 	}
-
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_RuntimeHistory_ListRuntimeEventSlice_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
 	msg, err := server.ListRuntimeEventSlice(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 func request_RuntimeHistory_FilterRuntimeEventSlice_0(ctx context.Context, marshaler runtime.Marshaler, client RuntimeHistoryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FilterRuntimeEventSliceReq
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	var (
+		protoReq FilterRuntimeEventSliceReq
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["direction"]
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["direction"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "direction")
 	}
-
 	protoReq.Direction, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "direction", err)
 	}
-
 	msg, err := client.FilterRuntimeEventSlice(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
-
 }
 
 func local_request_RuntimeHistory_FilterRuntimeEventSlice_0(ctx context.Context, marshaler runtime.Marshaler, server RuntimeHistoryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FilterRuntimeEventSliceReq
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	var (
+		protoReq FilterRuntimeEventSliceReq
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["direction"]
+	val, ok := pathParams["direction"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "direction")
 	}
-
 	protoReq.Direction, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "direction", err)
 	}
-
 	msg, err := server.FilterRuntimeEventSlice(ctx, &protoReq)
 	return msg, metadata, err
-
 }
 
 // RegisterRuntimeHistoryHandlerServer registers the http handlers for service RuntimeHistory to "mux".
 // UnaryRPC     :call RuntimeHistoryServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterRuntimeHistoryHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterRuntimeHistoryHandlerServer(ctx context.Context, mux *runtime.ServeMux, server RuntimeHistoryServer) error {
-
-	mux.Handle("GET", pattern_RuntimeHistory_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_RuntimeHistory_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_history.RuntimeHistory/Read", runtime.WithHTTPPathPattern("/api/v1/runtime-event/{id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_history.RuntimeHistory/Read", runtime.WithHTTPPathPattern("/api/v1/runtime-event/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -247,20 +196,15 @@ func RegisterRuntimeHistoryHandlerServer(ctx context.Context, mux *runtime.Serve
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_RuntimeHistory_Read_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_RuntimeHistory_ListRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_RuntimeHistory_ListRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_history.RuntimeHistory/ListRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/slice/{direction}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_history.RuntimeHistory/ListRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/slice/{direction}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -272,20 +216,15 @@ func RegisterRuntimeHistoryHandlerServer(ctx context.Context, mux *runtime.Serve
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_RuntimeHistory_ListRuntimeEventSlice_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_RuntimeHistory_FilterRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_RuntimeHistory_FilterRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_history.RuntimeHistory/FilterRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/by-filter/slice/{direction}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/runtime_history.RuntimeHistory/FilterRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/by-filter/slice/{direction}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -297,9 +236,7 @@ func RegisterRuntimeHistoryHandlerServer(ctx context.Context, mux *runtime.Serve
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_RuntimeHistory_FilterRuntimeEventSlice_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
 
 	return nil
@@ -308,25 +245,24 @@ func RegisterRuntimeHistoryHandlerServer(ctx context.Context, mux *runtime.Serve
 // RegisterRuntimeHistoryHandlerFromEndpoint is same as RegisterRuntimeHistoryHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterRuntimeHistoryHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.Dial(endpoint, opts...)
+	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err != nil {
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 			return
 		}
 		go func() {
 			<-ctx.Done()
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 		}()
 	}()
-
 	return RegisterRuntimeHistoryHandler(ctx, mux, conn)
 }
 
@@ -340,16 +276,13 @@ func RegisterRuntimeHistoryHandler(ctx context.Context, mux *runtime.ServeMux, c
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "RuntimeHistoryClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "RuntimeHistoryClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "RuntimeHistoryClient" to call the correct interceptors.
+// "RuntimeHistoryClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterRuntimeHistoryHandlerClient(ctx context.Context, mux *runtime.ServeMux, client RuntimeHistoryClient) error {
-
-	mux.Handle("GET", pattern_RuntimeHistory_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_RuntimeHistory_Read_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/runtime_history.RuntimeHistory/Read", runtime.WithHTTPPathPattern("/api/v1/runtime-event/{id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/runtime_history.RuntimeHistory/Read", runtime.WithHTTPPathPattern("/api/v1/runtime-event/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -360,18 +293,13 @@ func RegisterRuntimeHistoryHandlerClient(ctx context.Context, mux *runtime.Serve
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_RuntimeHistory_Read_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("GET", pattern_RuntimeHistory_ListRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_RuntimeHistory_ListRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/runtime_history.RuntimeHistory/ListRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/slice/{direction}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/runtime_history.RuntimeHistory/ListRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/slice/{direction}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -382,18 +310,13 @@ func RegisterRuntimeHistoryHandlerClient(ctx context.Context, mux *runtime.Serve
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_RuntimeHistory_ListRuntimeEventSlice_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
-	mux.Handle("POST", pattern_RuntimeHistory_FilterRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_RuntimeHistory_FilterRuntimeEventSlice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/runtime_history.RuntimeHistory/FilterRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/by-filter/slice/{direction}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/runtime_history.RuntimeHistory/FilterRuntimeEventSlice", runtime.WithHTTPPathPattern("/api/v1/runtime-event/by-filter/slice/{direction}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -404,26 +327,19 @@ func RegisterRuntimeHistoryHandlerClient(ctx context.Context, mux *runtime.Serve
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-
 		forward_RuntimeHistory_FilterRuntimeEventSlice_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
 	})
-
 	return nil
 }
 
 var (
-	pattern_RuntimeHistory_Read_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "runtime-event", "id"}, ""))
-
-	pattern_RuntimeHistory_ListRuntimeEventSlice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "runtime-event", "slice", "direction"}, ""))
-
+	pattern_RuntimeHistory_Read_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "runtime-event", "id"}, ""))
+	pattern_RuntimeHistory_ListRuntimeEventSlice_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "runtime-event", "slice", "direction"}, ""))
 	pattern_RuntimeHistory_FilterRuntimeEventSlice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "runtime-event", "by-filter", "slice", "direction"}, ""))
 )
 
 var (
-	forward_RuntimeHistory_Read_0 = runtime.ForwardResponseMessage
-
-	forward_RuntimeHistory_ListRuntimeEventSlice_0 = runtime.ForwardResponseMessage
-
+	forward_RuntimeHistory_Read_0                    = runtime.ForwardResponseMessage
+	forward_RuntimeHistory_ListRuntimeEventSlice_0   = runtime.ForwardResponseMessage
 	forward_RuntimeHistory_FilterRuntimeEventSlice_0 = runtime.ForwardResponseMessage
 )

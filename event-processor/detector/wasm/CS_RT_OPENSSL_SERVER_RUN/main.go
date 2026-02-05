@@ -21,6 +21,24 @@ const (
 )
 
 var (
+	// triggerCriteria sets Trigger Criteria as map of events types to corresponding functions
+	// which will be used by Detector. If function names are not applicable for
+	// a particular event type, such as "PROCESS_EXEC", leave slice empty or use
+	// wildcard "*".
+	triggerCriteria = map[string][]string{
+		"PROCESS_EXEC": {},
+
+		// Examples:
+		//
+		// "PROCESS_KPROBE": {"security_file_permission", "security_mmap_file", "security_path_truncate"},
+		// In order to process all possible functions leave right-hand part empty or use wildcard "*":
+		// "PROCESS_EXEC": {},
+		// same as:
+		// "PROCESS_EXEC": {"*"},
+	}
+)
+
+var (
 	s_serverInArgs = glob.MustCompile("s_server*")
 )
 
@@ -38,22 +56,26 @@ func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, er
 		Description: Description,
 		Version:     Version,
 		Author:      Author,
-		Contact:     Contact,
 		License:     License,
 	}, nil
+}
+
+func (d Detector) TriggerCriteria(ctx context.Context, req *api.TriggerCriteriaReq) (*api.TriggerCriteriaResp, error) {
+	resp := &api.TriggerCriteriaResp{
+		Criteria: make(map[string]*api.TriggerCriteriaResp_FuncNames, len(triggerCriteria)),
+	}
+
+	for k, v := range triggerCriteria {
+		resp.Criteria[k] = &api.TriggerCriteriaResp_FuncNames{FuncNames: v}
+	}
+
+	return resp, nil
 }
 
 func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectResp, error) {
 	// Detector info added to DetectResp because detector info is always correlated to response, thus
 	// to avoid +1 Wasm call on detect.
 	resp := &api.DetectResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-		Contact:     Contact,
-
 		// Default response indicates that nothing detected (this is redundant and put here just for reference,
 		// as Severity == api.DetectResp_NONE == 0 when omitted (default zero value)).
 		Severity: api.DetectResp_NONE,

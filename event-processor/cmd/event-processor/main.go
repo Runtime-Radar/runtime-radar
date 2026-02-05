@@ -303,7 +303,7 @@ func ensureDetectors(db *gorm.DB, plugin *detector_api.DetectorPlugin, deployDir
 			return fmt.Errorf("can't read wasm file '%s': %w", file, err)
 		}
 
-		d, err := detector.ModelFromBinary(ctx, plugin, b)
+		d, err := detector.BinToModel(ctx, plugin, b)
 		if err != nil {
 			return fmt.Errorf("can't get detector info from wasm file '%s': %w", file, err)
 		}

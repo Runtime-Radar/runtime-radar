@@ -27,7 +27,7 @@ func SetReady() {
 }
 
 // ReadyHandler handles ready probes.
-func ReadyHandler(w http.ResponseWriter, r *http.Request) {
+func ReadyHandler(w http.ResponseWriter, _ *http.Request) {
 	if IsReady() {
 		// Make it simple: do nothing and have 200 OK
 		return
@@ -37,6 +37,6 @@ func ReadyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // LiveHandler handles live probes.
-func LiveHandler(w http.ResponseWriter, r *http.Request) {
+func LiveHandler(http.ResponseWriter, *http.Request) {
 	// Make it simple: do nothing and have 200 OK
 }

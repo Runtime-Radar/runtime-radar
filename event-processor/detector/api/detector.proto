@@ -11,33 +11,7 @@ option go_package = "./api";
 service Detector {
   rpc Info(InfoReq) returns (InfoResp) {}
   rpc Detect(DetectReq) returns (DetectResp) {}
-}
-
-message DetectReq {
-  tetragon.GetEventsResponse event = 1;
-}
-
-message DetectResp {
-  string id = 1;
-  string name = 2;
-  string description = 3;
-  uint32 version = 4;
-  string author = 5;
-  string contact = 6;
-  // license is not added to detector response because it's supposed that
-  // it can include the whole text of the License Agreement, which may add
-  // significant overhead to communication flow.
-  // string license = 7;
-  reserved 7;
-
-  enum Severity {
-    NONE = 0;
-    LOW = 1;
-    MEDIUM = 2;
-    HIGH = 3;
-    CRITICAL = 4;
-  }
-  Severity severity = 8;
+  rpc TriggerCriteria(TriggerCriteriaReq) returns (TriggerCriteriaResp) {}
 }
 
 message InfoReq {}
@@ -50,4 +24,29 @@ message InfoResp {
   string author = 5;
   string contact = 6;
   string license = 7;
+}
+
+message DetectReq {
+  tetragon.GetEventsResponse event = 1;
+}
+
+message DetectResp {  
+  enum Severity {
+    NONE = 0;
+    LOW = 1;
+    MEDIUM = 2;
+    HIGH = 3;
+    CRITICAL = 4;
+  }
+  Severity severity = 8;
+}
+
+message TriggerCriteriaReq {}
+
+message TriggerCriteriaResp {
+  message FuncNames {
+    repeated string func_names = 1;
+  }
+  // Criteria links event types with function names. Supported event types are defined in history-api/pkg/model/RuntimeEventType* constants.
+  map<string, FuncNames> criteria = 1;
 }

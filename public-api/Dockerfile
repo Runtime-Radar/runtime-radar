@@ -1,8 +1,8 @@
-FROM golang:1.24.1 AS tools
+FROM golang:1.25.0 AS tools
 
 RUN CGO_ENABLED=0 GOBIN=/usr/bin go install github.com/go-task/task/v3/cmd/task@v3.38.0
 
-FROM golang:1.24.1 AS builder
+FROM golang:1.25.0 AS builder
 
 ARG BUILD_RELEASE
 ARG BUILD_BRANCH
