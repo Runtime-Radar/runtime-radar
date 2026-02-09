@@ -8,8 +8,6 @@
 {{- $globalAuth := hasKey ((.Values.global).auth) "enabled" | ternary ((.Values.global).auth).enabled true -}}
 {{- if eq (default $globalAuth (.Values.auth).enabled | toString) "true" -}}
     {{- true -}}
-{{- else -}}
-    {{- false -}}
 {{- end -}}
 {{- end -}}
 
