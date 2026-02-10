@@ -386,7 +386,9 @@ clickhouse:
 | `global.imageRegistry`                 | Global Docker image registry                                                                        | `""`          |
 | `global.imageTag`                      | Global Docker image tag to use for RR components                                                    | `""`          |
 | `global.logLevel`                      | Logging level for components                                                                        | `INFO`        |
+| `global.tls.enabled`                   | Enable TLS for RR components                                                                        | `true`        |
 | `global.tls.existingSecret`            | Name of the existing secret with TLS certificates                                                   | `""`          |
+| `global.auth.enabled`                  | Enable authentication for RR components                                                             | `true`        |
 | `global.keys.existingSecret`           | Existing secret name with keys `encryption` and `token`                                             | `""`          |
 | `global.keys.encryption`               | Encryption key for secrets stored in database. Must be a 64-character hexadecimal string (32 bytes) | `""`          |
 | `global.keys.token`                    | Encryption key for authentication tokens. Must be a 64-character hexadecimal string (32 bytes)      | `""`          |
