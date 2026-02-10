@@ -8,8 +8,14 @@ global:
   logLevel: INFO
 
   tls:
+    # -- Enable TLS for RR components
+    enabled: true
     # -- Name of the existing secret with TLS certificates
     existingSecret: ""
+
+  auth:
+    # -- Enable authentication for RR components
+    enabled: true
 
   keys:
     # -- Existing secret name with keys `encryption` and `token`

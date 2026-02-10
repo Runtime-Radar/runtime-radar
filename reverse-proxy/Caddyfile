@@ -178,7 +178,7 @@
 # cs routes
 :8000 :9000 {
 	log
-	import TLS.{$TLS:true}
+	import TLS.{$TLS:false}
 }
 
 # health api

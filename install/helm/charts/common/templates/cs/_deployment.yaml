@@ -18,7 +18,9 @@ spec:
     metadata:
       annotations:
         {{- include "common.podAnnotations" . | indent 8 }}
+        {{- if eq (include "common.cs.auth.enabled" .) "true" }}
         checksum/keys: {{ default (randAlphaNum 32) ((.Values.global).keys).token | sha256sum | quote }}
+        {{- end }}
       labels:
         {{- include "common.podLabels" . | nindent 8 }}
     spec:
