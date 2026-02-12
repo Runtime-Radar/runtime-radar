@@ -580,7 +580,7 @@ clickhouse:
 
 | Name                                      | Description                                                                                          | Value             |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------- |
-| `rabbitmq.externalHost`                   | External host with RabbitMQ. Requires setting `rabbitmq.deploy` to `false`.                          | `""`              |
+| `rabbitmq.externalHost`                   | External host with RabbitMQ                                                                          | `""`              |
 | `rabbitmq.fullnameOverride`               | String to fully override rabbitmq.fullname template                                                  | `rabbitmq`        |
 | `rabbitmq.auth.username`                  | RabbitMQ application username                                                                        | `runtime-radar`   |
 | `rabbitmq.auth.password`                  | RabbitMQ application password                                                                        | `""`              |

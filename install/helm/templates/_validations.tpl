@@ -70,15 +70,15 @@ cs: clickhouse.externalHost is not supported with clickhouse.deploy
 
 {{/* Validate values of CS - TLS */}}
 {{- define "cs.validateValues.tls" -}}
-{{- if and .Values.global.postgresql.tls.verify .Values.postgresql.externalHost (not .Values.postgresql.tls.certCA) }}
+{{- if and .Values.global.postgresql.tls.enabled .Values.global.postgresql.tls.verify .Values.postgresql.externalHost (not .Values.postgresql.tls.certCA) }}
 cs: tls
     A valid .Values.postgresql.tls.certCA entry required to verify TLS with external host!
 {{- end}}
-{{- if and .Values.global.redis.tls.verify .Values.redis.externalHost (not .Values.redis.tls.certCA) }}
+{{- if and .Values.global.redis.tls.enabled .Values.global.redis.tls.verify .Values.redis.externalHost (not .Values.redis.tls.certCA) }}
 cs: tls
     A valid .Values.redis.tls.certCA entry required to verify TLS with external host!
 {{- end}}
-{{- if and .Values.global.clickhouse.tls.verify .Values.clickhouse.externalHost (not .Values.clickhouse.tls.certCA) }}
+{{- if and .Values.global.clickhouse.tls.enabled .Values.global.clickhouse.tls.verify .Values.clickhouse.externalHost (not .Values.clickhouse.tls.certCA) }}
 cs: tls
     A valid .Values.clickhouse.tls.certCA entry required to verify TLS with external host!
 {{- end}}

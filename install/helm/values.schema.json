@@ -23,10 +23,25 @@
                 "tls": {
                     "type": "object",
                     "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable TLS for RR components",
+                            "default": true
+                        },
                         "existingSecret": {
                             "type": "string",
                             "description": "Name of the existing secret with TLS certificates",
                             "default": ""
+                        }
+                    }
+                },
+                "auth": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable authentication for RR components",
+                            "default": true
                         }
                     }
                 },
