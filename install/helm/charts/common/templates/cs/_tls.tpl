@@ -22,8 +22,9 @@ Return true if TLS is enabled for CS
 {{- $values := get .context.Values .component | default dict -}}
 {{- $global := get (.context.Values.global | default dict) .component | default dict -}}
 {{- $enabled := $values.enabled | empty | not -}}
-{{- $tls := default ($global.tls).verify ($values.tls).verify | empty | not -}}
-{{- if and $enabled $tls -}}
+{{- $tls := default ($global.tls).enabled ($values.tls).enabled | empty | not -}}
+{{- $verify := default ($global.tls).verify ($values.tls).verify | empty | not -}}
+{{- if and $enabled $tls $verify -}}
   {{- true -}}
 {{- end -}}
 {{- end -}}
