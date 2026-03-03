@@ -34,6 +34,12 @@ You can find standard use cases on the [Use cases](https://github.com/Runtime-Ra
 
 For the instructions on how to use the product, visit the [Help](https://github.com/Runtime-Radar/Runtime-Radar/blob/main/docs/guides/help/help.md) page.
 
+## Community
+
+Join the Runtime Radar community channels:
+- Telegram group: [https://t.me/+coHBVdm0msc4NjIy](https://t.me/+coHBVdm0msc4NjIy)
+- Discord (backup channel): [https://discord.gg/6mSnJwgZHk](https://discord.gg/6mSnJwgZHk)
+
 ## Roadmap
 
 > **Disclaimer:** This is a living document that outlines the direction and plans for the project. It's not a commitment. Timelines are flexible, and priorities may shift based on feedback and available time. If you'd like to see something sooner, contributions are always welcome!
