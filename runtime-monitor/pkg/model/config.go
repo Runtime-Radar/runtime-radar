@@ -18,8 +18,8 @@ var (
 	//go:embed tracingpolicy/connect.yaml
 	connect string
 
-	//go:embed tracingpolicy/process-credentials.yaml
-	processCredentials string
+	//go:embed tracingpolicy/permissions.yaml
+	permissions string
 
 	//go:embed tracingpolicy/file-monitoring.yaml
 	fileMonitoring string
@@ -36,8 +36,8 @@ var (
 	//go:embed tracingpolicy/listen-socket.yaml
 	listenSocket string
 
-	//go:embed tracingpolicy/dup.yaml
-	dup string
+	//go:embed tracingpolicy/io-streams.yaml
+	ioStreams string
 
 	//go:embed tracingpolicy/io-uring.yml
 	ioUring string
@@ -55,10 +55,10 @@ var (
 					Yaml:        connect,
 					Enabled:     false,
 				},
-				"process-credentials": {
-					Name:        "Privilege escalation",
-					Description: "This source tracks the commit_creds function allowing detection of privilege escalation, including superuser (root) privileges.",
-					Yaml:        processCredentials,
+				"permissions": {
+					Name:        "Actions with access permissions for files and processes",
+					Description: "The source tracks calls of the Linux kernel function commit_creds(), which could indicate attempts to elevate process privileges, including obtaining superuser (root) permissions. In addition, the source tracks calls of the LSM function security_path_chmod() with a set of permissions that includes execution permissions",
+					Yaml:        permissions,
 					Enabled:     false,
 				},
 				"file-monitoring": {
@@ -91,10 +91,10 @@ var (
 					Yaml:        listenSocket,
 					Enabled:     false,
 				},
-				"dup": {
-					Name:        "Copying file descriptors",
-					Description: "This source monitors calls to functions that perform file descriptor copying. Currently, it tracks the copying of the standard input (Stdin) file descriptor, which may indicate an attempt to build a pipe required for the operation of various hacking tools.",
-					Yaml:        dup,
+				"io-streams": {
+					Name:        "Actions with standard I/O streams",
+					Description: "The source tracks calls of the Linux kernel function do_dup2(), which copies the standard input file descriptor (STDIN) as well as creation of a named pipe file (S_IFIFO) via the LSM function security_path_mknod(). Such actions often indicate that an attacker is attempting to start a reverse shell, a hidden communication channel, or another attack tool.",
+					Yaml:        ioStreams,
 					Enabled:     false,
 				},
 				"io-uring": {
