@@ -13,7 +13,7 @@ import (
 const (
 	ID          = "CS_RT_CVE_2026_31431"
 	Name        = "Copy Fail vulnerability"
-	Description = "The detector detects if the AF_ALG network socket was created, which may indicate an attempt to exploit CVE-2026-31431 vulnerability."
+	Description = "The detector detects if the AF_ALG network socket was created, which may indicate an attempt to exploit vulnerability CVE-2026-31431."
 	Version     = 1
 	Author      = "Runtime Radar Team"
 
@@ -77,12 +77,6 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	// Detector info added to DetectResp because detector info is always correlated to response, thus
 	// to avoid +1 Wasm call on detect.
 	resp := &api.DetectResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-
 		// Default response indicates that nothing detected (this is redundant and put here just for reference,
 		// as Severity == api.DetectResp_NONE == 0 when omitted (default zero value)).
 		Severity: api.DetectResp_NONE,
