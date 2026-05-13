@@ -1,4 +1,4 @@
-package main
+package logger
 
 import (
 	"io"
@@ -8,19 +8,18 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	cs_logger "github.com/runtime-radar/runtime-radar/lib/logger"
 )
 
+// Logging configuration
 const (
-	// Logging configuration
 	logMaxNum  = 3
 	logMaxSize = 10 * 1024 * 1024 // 10MB
 )
 
-func initLogger(file, level string) {
+func Init(file, level string) {
 	var out io.Writer = os.Stdout
 	if file != "" {
-		rl, err := cs_logger.NewRotateFileWriter(file, logMaxNum, logMaxSize)
+		rl, err := NewRotateFileWriter(file, logMaxNum, logMaxSize)
 		if err != nil {
 			log.Fatal().Msgf("### Failed to create log file: %v", err)
 		}

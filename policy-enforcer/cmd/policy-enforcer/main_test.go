@@ -16,6 +16,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/interceptor"
@@ -58,9 +59,9 @@ func TestMain(m *testing.M) {
 	cfg = config.New()
 
 	if testing.Verbose() {
-		initLogger("", "DEBUG")
+		logger.Init("", "DEBUG")
 	} else {
-		initLogger("", "INFO")
+		logger.Init("", "INFO")
 	}
 
 	lis, err := net.Listen("tcp", listenGRPCAddr)
