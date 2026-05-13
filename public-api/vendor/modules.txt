@@ -727,6 +727,7 @@ github.com/runtime-radar/runtime-radar/history-api/api
 ## explicit; go 1.25
 github.com/runtime-radar/runtime-radar/lib/config
 github.com/runtime-radar/runtime-radar/lib/errcommon
+github.com/runtime-radar/runtime-radar/lib/logger
 github.com/runtime-radar/runtime-radar/lib/security
 github.com/runtime-radar/runtime-radar/lib/security/cipher
 github.com/runtime-radar/runtime-radar/lib/security/jwt

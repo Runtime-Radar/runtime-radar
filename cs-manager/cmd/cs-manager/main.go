@@ -27,6 +27,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/server"
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/service"
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/state"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
@@ -57,7 +58,7 @@ var (
 
 func main() {
 	cfg := config.New()
-	initLogger(cfg.LogFile, cfg.LogLevel)
+	logger.Init(cfg.LogFile, cfg.LogLevel)
 
 	log.Info().Str("build_release", build.Release).Str("build_branch", build.Branch).Str("build_commit", build.Commit).Str("build_date", build.Date).Msgf("-> %s started", build.AppName)
 	defer log.Info().Msgf("<- %s exited", build.AppName)
