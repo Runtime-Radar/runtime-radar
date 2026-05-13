@@ -14,6 +14,7 @@ import (
 	"github.com/google/gops/agent"
 	"github.com/rs/zerolog/log"
 	history_api "github.com/runtime-radar/runtime-radar/history-api/api"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
@@ -48,7 +49,7 @@ var (
 
 func main() {
 	cfg := config.New()
-	initLogger(cfg.LogLevel)
+	logger.Init("", cfg.LogLevel)
 
 	log.Info().Str("build_release", build.Release).Str("build_branch", build.Branch).Str("build_commit", build.Commit).Str("build_date", build.Date).Msgf("-> %s started", build.AppName)
 	defer log.Info().Msgf("<- %s exited", build.AppName)

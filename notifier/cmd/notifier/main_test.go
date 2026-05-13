@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 	history "github.com/runtime-radar/runtime-radar/history-api/pkg/model"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/cipher"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
@@ -71,9 +72,9 @@ func TestMain(m *testing.M) {
 	template.Init(cfg.TemplatesHTMLFolder, cfg.TemplatesTextFolder)
 
 	if testing.Verbose() {
-		initLogger("", "DEBUG")
+		logger.Init("", "DEBUG")
 	} else {
-		initLogger("", "INFO")
+		logger.Init("", "INFO")
 	}
 
 	mailpitClient = mailpit.NewClient(cfg.TestMailpitHTTPAddr)

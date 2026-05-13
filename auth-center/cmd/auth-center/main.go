@@ -21,6 +21,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/database"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/server"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/service"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
@@ -67,7 +68,7 @@ func readPasswordDictionary(path string) ([]string, error) {
 
 func main() {
 	cfg := config.New()
-	initLogger(cfg.LogLevel)
+	logger.Init("", cfg.LogLevel)
 
 	log.Info().
 		Str("build_release", build.Release).
