@@ -12,13 +12,6 @@ import (
 func TestBuildHelmArgs(t *testing.T) {
 	t.Parallel()
 
-	// BadType contains cyclic reference to make `json.Marshal` return error
-	type BadType struct {
-		CyclicRef *BadType
-	}
-	badArg := BadType{}
-	badArg.CyclicRef = &badArg
-
 	tests := []struct {
 		name        string
 		input       any
@@ -68,11 +61,11 @@ func TestBuildHelmArgs(t *testing.T) {
 				Nested     struct {
 					Field1 string `json:"field1"`
 					Field2 int    `json:"field2"`
-				} `json:"nested,omitempty"`
+				} `json:"nested"`
 				NestedEmpty struct {
 					Field1 string `json:"field1"`
 					Field2 int    `json:"field2"`
-				} `json:"nestedEmpty,omitempty"`
+				} `json:"nestedEmpty,omitzero"`
 				NestedZero struct {
 					Field1 string `json:"field1"`
 					Field2 int    `json:"field2"`
@@ -166,7 +159,9 @@ func TestBuildHelmArgs(t *testing.T) {
 			},
 			prefix: "",
 			expected: []string{
-				"--set 'names=[\"alice\",\"bob\",\"charlie\"]'",
+				"--set-string 'names[0]=alice'",
+				"--set-string 'names[1]=bob'",
+				"--set-string 'names[2]=charlie'",
 			},
 			expectedErr: nil,
 		},
@@ -188,29 +183,12 @@ func TestBuildHelmArgs(t *testing.T) {
 			},
 			prefix: "",
 			expected: []string{
-				"--set 'env=[{\"name\":\"ENV1\",\"value\":\"value1\"},{\"name\":\"ENV2\",\"value\":\"value2\"}]'",
+				"--set-string 'env[0].name=ENV1'",
+				"--set-string 'env[0].value=value1'",
+				"--set-string 'env[1].name=ENV2'",
+				"--set-string 'env[1].value=value2'",
 			},
 			expectedErr: nil,
-		},
-		{
-			name:        "incorrect type",
-			input:       []string{"one", "two", "three"},
-			prefix:      "",
-			expected:    nil,
-			expectedErr: errInputNotStruct,
-		},
-		{
-			name: "unmarshalable slice content",
-			input: struct {
-				BadSlice []BadType `json:"bad_slice"`
-			}{
-				BadSlice: []BadType{
-					badArg,
-				},
-			},
-			prefix:      "",
-			expected:    nil,
-			expectedErr: errMarshal,
 		},
 	}
 
@@ -218,7 +196,7 @@ func TestBuildHelmArgs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			args, err := buildHelmArgs(tt.input, tt.prefix)
+			args, err := buildHelmArgs(tt.input, tt.prefix, false)
 
 			if !errors.Is(err, tt.expectedErr) {
 				t.Fatalf("expected error '%v', got '%v'", tt.expectedErr, err)
@@ -357,7 +335,10 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set-string 'reverse-proxy.ingress.hostname=cs.example.com'",
 		"--set-string 'reverse-proxy.ingress.secretName=cs-tls'",
 		"--set-string 'reverse-proxy.service.type=ClusterIP'",
-		"--set 'notifier.overwriteEnv=[{\"name\":\"HTTP_PROXY\",\"value\":\"http://proxy.local\"},{\"name\":\"HTTPS_PROXY\",\"value\":\"https://proxy.local\"}]'",
+		"--set-string 'notifier.overwriteEnv[0].name=HTTP_PROXY'",
+		"--set-string 'notifier.overwriteEnv[0].value=http://proxy.local'",
+		"--set-string 'notifier.overwriteEnv[1].name=HTTPS_PROXY'",
+		"--set-string 'notifier.overwriteEnv[1].value=https://proxy.local'",
 		"--set-string 'cs-manager.registrationToken=registration-token'",
 		"--set-string 'auth-center.administrator.username=user'",
 		"--set-string 'auth-center.administrator.password=pass'",
