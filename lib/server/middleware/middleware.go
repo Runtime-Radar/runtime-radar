@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 	"runtime/debug"
+	"strings"
 
 	"github.com/felixge/httpsnoop"
 	"github.com/rs/zerolog/log"
@@ -20,7 +21,7 @@ func Log(next http.Handler) http.Handler {
 				Int64("length", m.Written).
 				Int("code", m.Code).
 				Str("schema", schema).
-				Interface("headers", r.Header).
+				Interface("headers", sanitizeHeaders(r.Header)).
 				Msgf("%s %s request", r.Method, r.URL.RequestURI())
 
 			return
@@ -46,4 +47,22 @@ func Recovery(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func sanitizeHeaders(header http.Header) http.Header {
+	if header == nil {
+		return nil
+	}
+
+	h := header.Clone()
+
+	if auth := h.Get("Authorization"); auth != "" {
+		if scheme, _, ok := strings.Cut(auth, " "); ok {
+			h.Set("Authorization", scheme+" ******")
+		} else {
+			h.Set("Authorization", "******")
+		}
+	}
+
+	return h
 }
