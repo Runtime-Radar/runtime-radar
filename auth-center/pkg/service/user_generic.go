@@ -21,11 +21,11 @@ import (
 type UserGeneric struct {
 	api.UnimplementedUserControllerServer
 
-	UserRepository     database.UserRepository
-	TokenKey           []byte
-	PasswordCheckArray []string
-	AccessTokenTTL     time.Duration
-	RefreshTokenTTL    time.Duration
+	UserRepository   database.UserRepository
+	TokenKey         []byte
+	PasswordCheckMap map[string]struct{}
+	AccessTokenTTL   time.Duration
+	RefreshTokenTTL  time.Duration
 }
 
 func (ug *UserGeneric) Read(ctx context.Context, userReq *api.ReadUserReq) (resp *api.UserResp, err error) {
@@ -106,7 +106,7 @@ func (ug *UserGeneric) Create(ctx context.Context, req *api.CreateUserReq) (resp
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse email: %v", err)
 	}
 
-	reason := newPasswordCheck(req.Password, ug.PasswordCheckArray)
+	reason := newPasswordCheck(req.Password, ug.PasswordCheckMap)
 	if reason != "" {
 		return nil, errcommon.StatusWithReason(codes.Aborted, reason, "invalid password").Err()
 	}
@@ -294,7 +294,7 @@ func (ug *UserGeneric) ChangePassword(ctx context.Context, req *api.ChangePasswo
 		return nil, status.Error(codes.Internal, "can't hash password")
 	}
 
-	reason := newPasswordCheck(req.Password, ug.PasswordCheckArray)
+	reason := newPasswordCheck(req.Password, ug.PasswordCheckMap)
 	if reason != "" {
 		return nil, errcommon.StatusWithReason(codes.Aborted, reason, "invalid password").Err()
 	}

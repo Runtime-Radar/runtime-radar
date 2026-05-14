@@ -94,7 +94,8 @@
             "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           }
         ],
         "tags": [
@@ -124,7 +125,8 @@
             "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           }
         ],
         "tags": [
@@ -154,29 +156,15 @@
             "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string"
-                },
-                "roleId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-                },
-                "mappingRoleId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-                }
-              }
+              "$ref": "#/definitions/UserControllerUpdateBody"
             }
           }
         ],
@@ -209,19 +197,15 @@
             "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "password": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/UserControllerChangePasswordBody"
             }
           }
         ],
@@ -290,6 +274,32 @@
         }
       }
     },
+    "UserControllerChangePasswordBody": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "UserControllerUpdateBody": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "roleId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        },
+        "mappingRoleId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "example: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        }
+      }
+    },
     "authSignInResp": {
       "type": "object",
       "properties": {
@@ -343,6 +353,7 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }
@@ -392,6 +403,7 @@
         "users": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/userUserResp"
           }
         }

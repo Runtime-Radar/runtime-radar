@@ -1,7 +1,6 @@
 package service
 
 import (
-	"slices"
 	"unicode"
 	"unicode/utf8"
 
@@ -43,12 +42,12 @@ func haveDigit(s string) bool {
 	return false
 }
 
-func newPasswordCheck(pass string, passwordCheckArray []string) string {
+func newPasswordCheck(pass string, passwordCheck map[string]struct{}) string {
 	if pass == "" {
 		return "PASSWORD_IS_EMPTY"
 	}
 
-	if slices.Contains(passwordCheckArray, pass) {
+	if _, ok := passwordCheck[pass]; ok {
 		return "PASSWORD_FOUND_IN_PASS_LIST"
 	}
 

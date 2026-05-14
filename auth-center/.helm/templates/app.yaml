@@ -2,5 +2,10 @@
 {{- if ne (include "common.cs.isChildCluster" .) "true" }}
 {{ include "common.cs.deployment" . }}
 ---
-{{ include "common.cs.service" . }}
 {{- end }}
+{{- $isChild := eq (include "common.cs.isChildCluster" .) "true" }}
+{{- $ctx := . }}
+{{- if $isChild }}
+{{- $ctx = dict "Chart" .Chart "Release" .Release "Values" (.Values | merge (dict "selectorLabels"  (dict "app.kubernetes.io/name" "reverse-proxy"))) }}
+{{- end }}
+{{ include "common.cs.service" $ctx }}
