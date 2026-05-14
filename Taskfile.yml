@@ -11,33 +11,43 @@ includes:
   radar-ui:
     taskfile: ./radar-ui/Taskfile.yml
     dir: ./radar-ui
+    optional: true
   reverse-proxy:
     taskfile: ./reverse-proxy/Taskfile.yml
     dir: ./reverse-proxy
+    optional: true
   cluster-manager:
     taskfile: ./cluster-manager/Taskfile.yml
     dir: ./cluster-manager
+    optional: true
   history-api:
     taskfile: ./history-api/Taskfile.yml
     dir: ./history-api
+    optional: true
   policy-enforcer:
     taskfile: ./policy-enforcer/Taskfile.yml
     dir: ./policy-enforcer
+    optional: true
   notifier:
     taskfile: ./notifier/Taskfile.yml
     dir: ./notifier
+    optional: true
   event-processor:
     taskfile: ./event-processor/Taskfile.yml
     dir: ./event-processor
+    optional: true
   runtime-monitor:
     taskfile: ./runtime-monitor/Taskfile.yml
     dir: ./runtime-monitor
+    optional: true
   auth-center:
     taskfile: ./auth-center/Taskfile.yml
     dir: ./auth-center
+    optional: true
   public-api:
     taskfile: ./public-api/Taskfile.yml
     dir: ./public-api
+    optional: true
   cs-manager:
     taskfile: ./cs-manager/Taskfile.yml
     dir: ./cs-manager

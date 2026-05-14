@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -52,19 +53,20 @@ func TestUnMarshalJSON(t *testing.T) {
 		{
 			name:          "happy path",
 			time:          "1752753600",
-			want:          JSONTime(time.Date(2025, time.July, 17, 12, 0, 0, 0, time.UTC)),
+			want:          JSONTime(time.Date(2025, time.July, 17, 15, 0, 0, 0, time.Local)),
 			expectedError: false,
 		},
 		{
 			name:          "JSONTime is float",
 			time:          "1652824443.7082417",
-			want:          JSONTime(time.Date(2022, time.May, 17, 21, 54, 03, 0, time.UTC)),
+			want:          JSONTime(time.Date(2022, time.May, 18, 00, 54, 03, 0, time.Local)),
 			expectedError: false,
 		},
 		{
-			name:          "JSONTime is zero",
-			time:          "0",
-			want:          JSONTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+			name: "JSONTime is zero",
+			time: "0",
+			want: JSONTime(time.Date(1970, time.January, 1, 3, 0, 0, 0, time.Local)),
+
 			expectedError: false,
 		},
 		{
@@ -92,9 +94,8 @@ func TestUnMarshalJSON(t *testing.T) {
 				return
 			}
 
-			t0, t1 := time.Time(tt.want), time.Time(got)
-			if !t0.Equal(t1) {
-				t.Fatalf("Expected %s, got %s", tt.want, got)
+			if !reflect.DeepEqual(tt.want, got) {
+				t.Fatalf("Expected %v, got %v", tt.want, got)
 			}
 		})
 	}

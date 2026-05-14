@@ -43,10 +43,6 @@ func (jt *JSONTime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (jt JSONTime) String() string {
-	return time.Time(jt).String()
-}
-
 type Token struct {
 	Username              string    `json:"username"`
 	UserID                string    `json:"user_id"`
@@ -87,6 +83,8 @@ type RolePermissions struct {
 	Clusters                     *Permission `json:"clusters,omitempty"`
 	InvalidatePublicAccessTokens *Permission `json:"invalidate_public_access_tokens,omitempty"`
 	PublicAccessTokens           *Permission `json:"public_access_tokens,omitempty"`
+	KillPods                     *Permission `json:"kill_pods,omitempty"`
+	Admission                    *Permission `json:"admission,omitempty"`
 }
 
 type PermissionType uint8
@@ -105,6 +103,8 @@ const (
 	PermissionClusters
 	PermissionInvalidatePublicAccessTokens
 	PermissionPublicAccessTokens
+	PermissionKillPods
+	PermissionAdmission
 )
 
 func (rp *RolePermissions) GetPermission(pt PermissionType) *Permission {
@@ -138,6 +138,10 @@ func (rp *RolePermissions) GetPermission(pt PermissionType) *Permission {
 		return rp.InvalidatePublicAccessTokens
 	case PermissionPublicAccessTokens:
 		return rp.PublicAccessTokens
+	case PermissionKillPods:
+		return rp.KillPods
+	case PermissionAdmission:
+		return rp.Admission
 	}
 
 	return nil
@@ -193,7 +197,7 @@ func TokenFromContext(ctx context.Context, key []byte) (*Token, error) {
 		return nil, errors.New("unknown authorization format")
 	}
 
-	token, err := jwt.ParseWithClaims(tokenStr, &Token{}, func(*jwt.Token) (any, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &Token{}, func(t *jwt.Token) (any, error) {
 		return key, nil
 	})
 	if err != nil {
