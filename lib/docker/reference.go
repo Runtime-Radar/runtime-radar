@@ -96,3 +96,35 @@ func parseTagDigest(ref string) (tag string, digest string) {
 
 	return tag, ""
 }
+
+// ImagePath returns the image reference with tag and digest stripped.
+func (r Reference) ImagePath() string {
+	path := r.Image
+	if idx := strings.Index(path, "@"); idx != -1 {
+		path = path[:idx]
+	}
+	if idx := strings.LastIndex(path, ":"); idx != -1 {
+		if !strings.Contains(path[idx+1:], "/") {
+			path = path[:idx]
+		}
+	}
+	return path
+}
+
+// ImageWithTag returns the image reference with tag but strips digest.
+func (r Reference) ImageWithTag() string {
+	path := r.Image
+	if idx := strings.Index(path, "@"); idx != -1 {
+		path = path[:idx]
+	}
+	return path
+}
+
+// FullImageRef reconstructs the full OCI reference including registry.
+// For Docker Hub images (empty registry), the image is returned as-is.
+func (r Reference) FullImageRef() string {
+	if r.Registry == "" {
+		return r.Image
+	}
+	return r.Registry + "/" + r.Image
+}
