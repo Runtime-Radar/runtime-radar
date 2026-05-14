@@ -263,11 +263,11 @@ func generateValues() Values {
 	values.ReverseProxy.Ingress.Enabled = true
 	values.ReverseProxy.Ingress.Class = "nginx"
 	values.ReverseProxy.Ingress.Hostname = "cs.example.com"
-	values.ReverseProxy.Ingress.SecretName = "cs-tls"
+	values.ReverseProxy.Ingress.TLS.ExistingSecret = "cs-tls"
 	values.ReverseProxy.Service.Type = "ClusterIP"
 
 	// Notifier
-	values.Notifier.OverwriteEnv = []Env{
+	values.Notifier.Env = []Env{
 		{Name: "HTTP_PROXY", Value: "http://proxy.local"},
 		{Name: "HTTPS_PROXY", Value: "https://proxy.local"},
 	}
@@ -320,6 +320,7 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set 'redis.persistence.enabled=false'",
 		"--set 'global.redis.tls.enabled=false'",
 		"--set 'global.redis.tls.verify=false'",
+		"--set 'metrics.enabled=false'",
 		"--set 'rabbitmq.deploy=true'",
 		"--set-string 'rabbitmq.auth.username=rabbitmq'",
 		"--set-string 'rabbitmq.auth.password=rabbitmq-password'",
@@ -333,12 +334,12 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set 'reverse-proxy.ingress.enabled=true'",
 		"--set-string 'reverse-proxy.ingress.class=nginx'",
 		"--set-string 'reverse-proxy.ingress.hostname=cs.example.com'",
-		"--set-string 'reverse-proxy.ingress.secretName=cs-tls'",
+		"--set-string 'reverse-proxy.ingress.tls.existingSecret=cs-tls'",
 		"--set-string 'reverse-proxy.service.type=ClusterIP'",
-		"--set-string 'notifier.overwriteEnv[0].name=HTTP_PROXY'",
-		"--set-string 'notifier.overwriteEnv[0].value=http://proxy.local'",
-		"--set-string 'notifier.overwriteEnv[1].name=HTTPS_PROXY'",
-		"--set-string 'notifier.overwriteEnv[1].value=https://proxy.local'",
+		"--set-string 'notifier.env[0].name=HTTP_PROXY'",
+		"--set-string 'notifier.env[0].value=http://proxy.local'",
+		"--set-string 'notifier.env[1].name=HTTPS_PROXY'",
+		"--set-string 'notifier.env[1].value=https://proxy.local'",
 		"--set-string 'cs-manager.registrationToken=registration-token'",
 		"--set-string 'auth-center.administrator.username=user'",
 		"--set-string 'auth-center.administrator.password=pass'",
@@ -401,8 +402,10 @@ func TestValuesToYaml(t *testing.T) {
 		"imagePullSecret:",
 		"  password: registry-password",
 		"  username: registry-user",
+		"metrics:",
+		"  enabled: false",
 		"notifier:",
-		"  overwriteEnv:",
+		"  env:",
 		"  - name: HTTP_PROXY",
 		"    value: http://proxy.local",
 		"  - name: HTTPS_PROXY",
@@ -435,7 +438,8 @@ func TestValuesToYaml(t *testing.T) {
 		"    class: nginx",
 		"    enabled: true",
 		"    hostname: cs.example.com",
-		"    secretName: cs-tls",
+		"    tls:",
+		"      existingSecret: cs-tls",
 		"  service:",
 		"    type: ClusterIP",
 		"tls:",

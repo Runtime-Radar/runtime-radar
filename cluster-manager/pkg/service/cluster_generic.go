@@ -351,7 +351,7 @@ func (cg *ClusterGeneric) buildValues(cfg *model.ClusterConfig, token string) *h
 
 	// Proxy
 	if cfg.ProxyUrl != "" {
-		v.Notifier.OverwriteEnv = []helm.Env{
+		v.Notifier.Env = []helm.Env{
 			{
 				Name:  "HTTP_PROXY",
 				Value: cfg.ProxyUrl,
@@ -377,7 +377,15 @@ func (cg *ClusterGeneric) buildValues(cfg *model.ClusterConfig, token string) *h
 		v.Global.Keys.Encryption = cg.EncryptionKey
 		v.Global.Keys.Token = cg.TokenKey
 		v.Global.Keys.PublicAccessTokenSalt = cg.PublicAccessTokenSaltKey
+
 	}
+
+	// History API
+	interval := cfg.HistoryRetentionInterval
+	if interval == "" {
+		interval = helm.DefaultRetentionInterval.String()
+	}
+	v.HistoryAPI.RetentionInterval = interval
 
 	// Postgres
 	postgres := cfg.Postgres
@@ -459,6 +467,34 @@ func (cg *ClusterGeneric) buildValues(cfg *model.ClusterConfig, token string) *h
 		v.Clickhouse.TLS.CertCA = clickhouse.Ca
 	} else if clickhouse.Persistence {
 		v.Clickhouse.Persistence.StorageClass = clickhouse.StorageClass
+	}
+
+	if cfg.EnableMetrics {
+		// Grafana
+		grafana := cfg.Grafana
+		grafanaUser := grafana.User
+		if grafanaUser == "" {
+			grafanaUser = helm.DefaultUser
+		}
+
+		v.Grafana.Auth.Username = grafanaUser
+		v.Grafana.Auth.Password = grafana.Password
+		v.Grafana.Deploy = true
+		if grafana.Address != "" {
+			v.Grafana.Deploy = false
+			v.Grafana.ExternalHost = grafana.Address
+		}
+
+		// Prometheus
+		prometheus := cfg.Prometheus
+		if prometheus.Deploy {
+			v.Prometheus.Deploy = true
+			v.Prometheus.Persistence.Enabled = prometheus.Persistence
+			v.Prometheus.Persistence.StorageClass = prometheus.StorageClass
+		}
+
+		// Metrics
+		v.Metrics.Enabled = true
 	}
 
 	// Ingress
@@ -566,15 +602,12 @@ func (cg *ClusterGeneric) validateCluster(c *api.Cluster) (reason string, ok boo
 		return "rabbit: empty or missing password", false
 	}
 
-	if rc := cfg.GetRegistry(); rc != nil {
-		if addr := rc.GetAddress(); addr != "" {
-			if _, err := helm.ConvertRegistryToOCI(addr); err != nil {
-				return "registry: incorrect address", false
-			}
-		}
-		if u := rc.GetUser(); u != "" && rc.GetPassword() == "" {
-			return fmt.Sprintf("registry: missing password for user %s", u), false
-		}
+	if rc := cfg.GetRegistry(); rc == nil {
+		return "empty or missing registry config", false
+	} else if _, err := helm.ConvertRegistryToOCI(rc.GetAddress()); err != nil {
+		return "registry: incorrect address", false
+	} else if u := rc.GetUser(); u != "" && rc.GetPassword() == "" {
+		return fmt.Sprintf("registry: missing password for user %s", u), false
 	}
 
 	if ic := cfg.GetIngress(); ic != nil {
@@ -590,6 +623,19 @@ func (cg *ClusterGeneric) validateCluster(c *api.Cluster) (reason string, ok boo
 
 	if npc := cfg.GetNodePort(); npc != nil && npc.GetPort() == "" {
 		return "nodeport: port should be presented", false
+	}
+
+	if hri := cfg.GetHistoryRetentionInterval(); hri != "" {
+		if _, err := time.ParseDuration(hri); err != nil {
+			return fmt.Sprintf("invalid history retention interval: %v", err), false
+		}
+	}
+
+	if cfg.GetGrafana() != nil {
+		// external grafana or grafana password required
+		if cfg.GetGrafana().GetAddress() == "" && cfg.GetGrafana().GetPassword() == "" {
+			return "grafana: empty or missing grafana password", false
+		}
 	}
 
 	return "", true

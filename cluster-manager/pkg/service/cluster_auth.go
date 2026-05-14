@@ -6,6 +6,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/cluster-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -31,6 +32,7 @@ func (ca *ClusterAuth) Create(ctx context.Context, req *api.Cluster) (resp *api.
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionCreate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.Create(ctx, req)
 	return
 }
@@ -39,6 +41,7 @@ func (ca *ClusterAuth) Read(ctx context.Context, req *api.ReadClusterReq) (resp 
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.Read(ctx, req)
 	return
 }
@@ -47,6 +50,7 @@ func (ca *ClusterAuth) Update(ctx context.Context, req *api.Cluster) (resp *empt
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionUpdate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.Update(ctx, req)
 	return
 }
@@ -55,6 +59,7 @@ func (ca *ClusterAuth) Delete(ctx context.Context, req *api.DeleteClusterReq) (r
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionDelete); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.Delete(ctx, req)
 	return
 }
@@ -63,6 +68,7 @@ func (ca *ClusterAuth) ListPage(ctx context.Context, req *api.ListClusterPageReq
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.ListPage(ctx, req)
 	return
 }
@@ -71,6 +77,7 @@ func (ca *ClusterAuth) Register(ctx context.Context, req *api.RegisterClusterReq
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionUpdate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.Register(ctx, req)
 	return
 }
@@ -79,6 +86,7 @@ func (ca *ClusterAuth) Unregister(ctx context.Context, req *api.UnregisterCluste
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionDelete); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.Unregister(ctx, req)
 	return
 }
@@ -87,6 +95,7 @@ func (ca *ClusterAuth) GenerateUninstallCmd(ctx context.Context, req *api.Genera
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionExecute); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.GenerateUninstallCmd(ctx, req)
 	return
 }
@@ -95,6 +104,7 @@ func (ca *ClusterAuth) GenerateInstallCmd(ctx context.Context, req *api.Generate
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionExecute); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.GenerateInstallCmd(ctx, req)
 	return
 }
@@ -103,6 +113,7 @@ func (ca *ClusterAuth) GenerateValuesYAML(ctx context.Context, req *api.Generate
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionExecute); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.GenerateValuesYAML(ctx, req)
 	return
 }
@@ -111,6 +122,7 @@ func (ca *ClusterAuth) ListRegistered(ctx context.Context, req *emptypb.Empty) (
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionClusters, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 	resp, err = ca.ClusterControllerServer.ListRegistered(ctx, req)
 	return
 }
