@@ -136,6 +136,18 @@ message Cluster {
             string storage_class = 5;
         }
 
+        message Grafana {
+            string address = 1;
+            string user = 2;
+            string password = 3;
+        }
+
+        message Prometheus {
+            bool deploy = 1;
+            bool persistence = 2;
+            string storage_class = 3;
+        }
+
         message Registry {
             string address = 1;
             string user = 2;
@@ -166,6 +178,10 @@ message Cluster {
         NodePort node_port = 10;
         string namespace = 12;
         string proxy_url = 13;
+        string history_retention_interval = 14;
+        Grafana grafana = 15;
+        Prometheus prometheus = 16;
+        bool enable_metrics = 17;
     }
 
     string id = 1;

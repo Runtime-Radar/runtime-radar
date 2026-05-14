@@ -69,6 +69,10 @@ type Values struct {
 		Password string `json:"password,omitempty"`
 	} `json:"imagePullSecret,omitzero"`
 
+	HistoryAPI struct {
+		RetentionInterval string `json:"retentionInterval,omitempty"`
+	} `json:"history-api,omitzero"`
+
 	Postgresql struct {
 		Deploy       bool   `json:"deploy"`
 		ExternalHost string `json:"externalHost,omitempty"`
@@ -149,14 +153,24 @@ type Values struct {
 		} `json:"tls,omitzero"`
 	} `json:"clickhouse"`
 
+	Prometheus struct {
+		Deploy       bool   `json:"deploy"`
+		ExternalHost string `json:"externalHost,omitempty"`
+
+		Persistence struct {
+			Enabled      bool   `json:"enabled"`
+			StorageClass string `json:"storageClass,omitempty"`
+		} `json:"persistence"`
+	} `json:"prometheus,omitzero"`
+
 	Grafana struct {
 		Deploy       bool   `json:"deploy"`
 		ExternalHost string `json:"externalHost,omitempty"`
 
-		Admin struct {
-			User     string `json:"user,omitempty"`
+		Auth struct {
+			UserName string `json:"user,omitempty"`
 			Password string `json:"password,omitempty"`
-		} `json:"admin,omitzero"`
+		} `json:"auth,omitzero"`
 
 		Persistence struct {
 			Enabled      bool   `json:"enabled"`
@@ -170,18 +184,20 @@ type Values struct {
 		} `json:"tls,omitzero"`
 	} `json:"grafana,omitzero"`
 
+	Metrics struct {
+		Enabled bool `json:"enabled"`
+	} `json:"metrics"`
+
 	Loki struct {
 		Deploy       bool   `json:"deploy"`
 		ExternalHost string `json:"externalHost,omitempty"`
 
 		TenantID string `json:"tenant_id,omitempty"`
 
-		SingleBinary struct {
-			Persistence struct {
-				Enabled      bool   `json:"enabled"`
-				StorageClass string `json:"storageClass,omitempty"`
-			} `json:"persistence"`
-		}
+		Persistence struct {
+			Enabled      bool   `json:"enabled"`
+			StorageClass string `json:"storageClass,omitempty"`
+		} `json:"persistence"`
 
 		TLS struct {
 			CertCA  string `json:"certCA,omitempty"`
@@ -192,14 +208,14 @@ type Values struct {
 
 	ReverseProxy struct {
 		Ingress struct {
-			Enabled    bool   `json:"enabled,omitempty"`
-			Class      string `json:"class,omitempty"`
-			Hostname   string `json:"hostname,omitempty"`
-			SecretName string `json:"secretName,omitempty"`
-			TLS        struct {
-				CertCA  string `json:"certCA,omitempty"`
-				Cert    string `json:"cert,omitempty"`
-				CertKey string `json:"certKey,omitempty"`
+			Enabled  bool   `json:"enabled,omitempty"`
+			Class    string `json:"class,omitempty"`
+			Hostname string `json:"hostname,omitempty"`
+			TLS      struct {
+				CertCA         string `json:"certCA,omitempty"`
+				Cert           string `json:"cert,omitempty"`
+				CertKey        string `json:"certKey,omitempty"`
+				ExistingSecret string `json:"existingSecret,omitempty"`
 			} `json:"tls,omitzero"`
 		} `json:"ingress,omitzero"`
 
@@ -212,7 +228,7 @@ type Values struct {
 	} `json:"reverse-proxy,omitzero"`
 
 	Notifier struct {
-		OverwriteEnv []Env `json:"overwriteEnv,omitempty"`
+		Env []Env `json:"env,omitempty"`
 	} `json:"notifier,omitzero"`
 
 	CSManager struct {
@@ -247,7 +263,7 @@ type TLSGlobal struct {
 // contain zero values; this is communicated through the `hasOmit` argument when
 // recursing.
 //
-// Returns errUnsupported if the value's kind is not handled.
+// Returns an error if JSON marshaling fails for array/slice fields.
 func buildHelmArgs(v any, prefix string, hasOmit bool) ([]string, error) {
 	var res []string
 
