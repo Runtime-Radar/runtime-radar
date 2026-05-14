@@ -19,11 +19,11 @@ import (
 
 type AuthGeneric struct {
 	api.UnimplementedAuthControllerServer
-	UserRepository     database.UserRepository
-	TokenKey           []byte
-	PasswordCheckArray []string
-	AccessTokenTTL     time.Duration
-	RefreshTokenTTL    time.Duration
+	UserRepository   database.UserRepository
+	TokenKey         []byte
+	PasswordCheckMap map[string]struct{}
+	AccessTokenTTL   time.Duration
+	RefreshTokenTTL  time.Duration
 }
 
 func (ag *AuthGeneric) SignIn(ctx context.Context, req *api.SignInReq) (resp *api.SignInResp, err error) {
