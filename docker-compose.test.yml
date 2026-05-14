@@ -1,0 +1,55 @@
+services:
+  clickhouse:
+    extends:
+      file: docker-compose.yml
+      service: clickhouse
+    environment:
+      - CLICKHOUSE_USER=clickhouse
+      - CLICKHOUSE_PASSWORD=clickhouse
+      - CLICKHOUSE_DB=cs_test
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    healthcheck:
+      test: clickhouse-client --user clickhouse --password clickhouse --query "SELECT 1"
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+    environment:
+      - POSTGRES_USER=cs
+      - POSTGRES_PASSWORD=cs
+      - POSTGRES_DB=cs_test
+
+  rabbitmq:
+    extends:
+      file: docker-compose.yml
+      service: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
+
+  test:
+    image: golang:1.26
+    working_dir: /go/src/repo
+    volumes:
+      - .:/go/src/repo
+    networks:
+      - local
+    environment:
+      - COMPONENT=none
+      - CLICKHOUSE_ADDR=clickhouse:9000
+      - POSTGRES_ADDR=postgres:5432
+      - RABBIT_ADDR=rabbitmq:5672
+      - REDIS_ADDR=redis:6379
+    command: bash -c "go test -race -count=1 -vet=off ./$$COMPONENT/..."
+
+networks:
+  local:
