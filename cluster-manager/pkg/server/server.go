@@ -8,6 +8,8 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/justinas/alice"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/runtime-radar/runtime-radar/cluster-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
@@ -45,11 +47,12 @@ func New(httpAddr, grpcAddr string, tlsConfig *tls.Config) (*http.Server, error)
 	return s, nil
 }
 
-func NewInstrumentation(listenAddress string) *http.Server {
+func NewInstrumentation(listenAddress string, gatherer prometheus.Gatherer) *http.Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/ready", healthcheck.ReadyHandler)
 	mux.HandleFunc("/live", healthcheck.LiveHandler)
+	mux.Handle("/metrics", promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{}))
 
 	h := alice.New(
 		middleware.Log,
