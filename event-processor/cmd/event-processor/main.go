@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/google/gops/agent"
+	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/event-processor/api"
 	detector_api "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
@@ -24,6 +25,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/config"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/consumer"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/database"
+	"github.com/runtime-radar/runtime-radar/event-processor/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/model"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor/detector"
@@ -110,8 +112,14 @@ func main() {
 		log.Fatal().Msgf("### Failed to migrate DB: %v", err)
 	}
 
+	grpcMetrics := prometheus.NewServerMetrics(prometheus.WithServerHandlingTimeHistogram())
+
 	opts := []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(interceptor.Recovery, interceptor.Correlation),
+		grpc.ChainUnaryInterceptor(
+			interceptor.Recovery,
+			interceptor.Correlation,
+			grpcMetrics.UnaryServerInterceptor(),
+		),
 		grpc.MaxRecvMsgSize(server.MaxRecvMsgSize),
 	}
 
@@ -137,13 +145,26 @@ func main() {
 	}
 	defer closeNotifier()
 
-	runtimeMB, err := rabbit.NewMessageBroker(cfg.RabbitAddr, cfg.RabbitUser, cfg.RabbitPassword, cfg.RabbitRuntimeEventsQueue, rabbit.WithConsumer(build.AppName, cfg.RabbitRuntimeEventsQueuePrefetchCount))
+	runtimeMB, err := rabbit.NewMessageBroker(
+		cfg.RabbitAddr,
+		cfg.RabbitUser,
+		cfg.RabbitPassword,
+		cfg.RabbitRuntimeEventsQueue,
+		rabbit.WithConsumer(build.AppName, cfg.RabbitRuntimeEventsQueuePrefetchCount),
+		rabbit.WithStateReporter(metrics.RabbitStateReporter(cfg.RabbitRuntimeEventsQueue, true)),
+	)
 	if err != nil {
 		log.Fatal().Msgf("### Failed to initialize Message Broker: %v", err)
 	}
 	defer runtimeMB.Close()
 
-	historyMB, err := rabbit.NewMessageBroker(cfg.RabbitAddr, cfg.RabbitUser, cfg.RabbitPassword, cfg.RabbitHistoryEventsQueue)
+	historyMB, err := rabbit.NewMessageBroker(
+		cfg.RabbitAddr,
+		cfg.RabbitUser,
+		cfg.RabbitPassword,
+		cfg.RabbitHistoryEventsQueue,
+		rabbit.WithStateReporter(metrics.RabbitStateReporter(cfg.RabbitHistoryEventsQueue, false)),
+	)
 	if err != nil {
 		log.Fatal().Msgf("### Failed to initialize Message Broker: %v", err)
 	}
@@ -173,8 +194,15 @@ func main() {
 	// Register reflection service on gRPC server
 	reflection.Register(grpcSrv)
 
-	// Create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	// Initialize metrics
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL, grpcMetrics)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
+
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
+
+	// Run the instrumentation HTTP server for metrics, probes, etc.
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)
@@ -262,7 +290,7 @@ func composeServices(
 		}
 	}
 
-	configSvc = &service.ConfigLogging{configSvc}
+	configSvc = &service.ConfigLogging{&service.ConfigAudit{configSvc}}
 	detectorSvc = &service.DetectorLogging{detectorSvc}
 
 	return
