@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/rs/zerolog/log"
+	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/metrics"
 )
 
 type State int
@@ -32,6 +33,7 @@ func Set(v State) {
 
 	instance.state = v
 
+	metrics.ClusterStateGauge.Set(float64(v))
 	log.Debug().Stringer("state", v).Msg("State changed")
 }
 

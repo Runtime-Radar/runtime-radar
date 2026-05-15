@@ -41,3 +41,17 @@ func (il *InfoLogging) GetCentralCSURL(ctx context.Context, req *emptypb.Empty) 
 	resp, err = il.InfoControllerServer.GetCentralCSURL(ctx, req)
 	return
 }
+
+func (il *InfoLogging) GetGrafanaURL(ctx context.Context, req *emptypb.Empty) (resp *api.URL, err error) {
+	defer func(t0 time.Time) {
+		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
+
+		log.Err(err).Str("delay", time.Since(t0).String()).
+			Interface("result", resp).
+			Stringer("correlation_id", corrID).
+			Msg("Called InfoControllerServer.GetGrafanaURL")
+	}(time.Now())
+
+	resp, err = il.InfoControllerServer.GetGrafanaURL(ctx, req)
+	return
+}
