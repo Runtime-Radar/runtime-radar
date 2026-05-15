@@ -39,6 +39,28 @@
         ]
       }
     },
+    "/api/v1/info/grafana-url": {
+      "get": {
+        "operationId": "InfoController_GetGrafanaURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/infoURL"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "InfoController"
+        ]
+      }
+    },
     "/api/v1/info/version": {
       "get": {
         "operationId": "InfoController_GetVersion",
