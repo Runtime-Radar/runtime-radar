@@ -63,7 +63,6 @@ func (c Chain) Detect(ctx context.Context, event *tetragon_api.GetEventsResponse
 				Detector: d.Info,
 				Error:    err.Error(),
 			})
-			metrics.DetectorErrorsCounter.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Inc()
 
 			metrics.DetectorErrorsCounter.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Inc()
 
@@ -88,6 +87,7 @@ func (c Chain) Detect(ctx context.Context, event *tetragon_api.GetEventsResponse
 				},
 				Severity: s.String(),
 			})
+
 			metrics.DetectorThreatsCounter.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Inc()
 		}
 	}
