@@ -30,7 +30,7 @@ message DetectReq {
   tetragon.GetEventsResponse event = 1;
 }
 
-message DetectResp {  
+message DetectResp {
   enum Severity {
     NONE = 0;
     LOW = 1;
