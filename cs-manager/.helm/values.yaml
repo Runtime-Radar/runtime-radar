@@ -15,7 +15,6 @@ service:
 isChildCluster: false
 ownCsUrl: ""
 centralCsUrl: ""
-checksumFields: [flusUrl]
 registrationToken: ""
 containerSecurityContext:
   enabled: true
