@@ -1,7 +1,6 @@
 package helm
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -20,8 +19,7 @@ const (
 )
 
 var (
-	errInputNotStruct = errors.New("input must be a struct")
-	errMarshal        = errors.New("failed to marshal field")
+	errUnsupported = errors.New("unsupported field type")
 )
 
 // Values represents helm values returned as a complete install command or yaml.
@@ -234,21 +232,23 @@ type TLSGlobal struct {
 	} `json:"tls"`
 }
 
-// buildHelmArgs recursively converts a struct's fields to Helm command-line arguments.
-// It traverses the struct and generates the appropriate --set or --set-string arguments
-// based on field types.
+// buildHelmArgs recursively converts a value to Helm command-line arguments.
+// It traverses the value and generates the appropriate --set or --set-string arguments
+// based on the value's kind.
 //
-// Each field is processed according to its kind:
+// Each value is processed according to its kind:
 //   - Strings use --set-string
 //   - Bool, numeric types use --set
-//   - Arrays/Slices are JSON marshaled and use --set
-//   - Structs are processed recursively
+//   - Arrays/Slices are expanded into per-element args using the `name[i]` form
+//   - Structs are processed recursively over their fields
 //
-// Fields with `json:"-"` are skipped.
-// Fields with `json:",omitempty"` or `json:",omitzero"` are skipped if they contain zero values.
+// Struct fields with `json:"-"` are skipped.
+// Struct fields with `json:",omitempty"` or `json:",omitzero"` are skipped if they
+// contain zero values; this is communicated through the `hasOmit` argument when
+// recursing.
 //
-// Returns an error if JSON marshaling fails for array/slice fields.
-func buildHelmArgs(v any, prefix string) ([]string, error) {
+// Returns errUnsupported if the value's kind is not handled.
+func buildHelmArgs(v any, prefix string, hasOmit bool) ([]string, error) {
 	var res []string
 
 	val := reflect.ValueOf(v)
@@ -257,66 +257,72 @@ func buildHelmArgs(v any, prefix string) ([]string, error) {
 		val = val.Elem()
 	}
 
-	if val.Kind() != reflect.Struct {
-		return nil, errInputNotStruct
+	// skip field on `omitempty` and `omitzero`
+	// theoretically `field.IsZero()` can possibly panic
+	// but currently it should never happen
+	if hasOmit && val.IsZero() {
+		return nil, nil
 	}
 
-	t := val.Type()
+	switch val.Kind() {
+	case reflect.String:
+		res = append(res, fmt.Sprintf("--set-string '%s=%s'", prefix, val.String()))
 
-	for i := range val.NumField() {
-		field := val.Field(i)
-		fieldType := t.Field(i)
+	case reflect.Bool:
+		res = append(res, fmt.Sprintf("--set '%s=%t'", prefix, val.Bool()))
 
-		tag := fieldType.Tag.Get("json")
-		if tag == "-" {
-			continue
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		res = append(res, fmt.Sprintf("--set '%s=%d'", prefix, val.Int()))
+
+	case reflect.Float32, reflect.Float64:
+		res = append(res, fmt.Sprintf("--set '%s=%f'", prefix, val.Float()))
+
+	case reflect.Array, reflect.Slice:
+		if hasOmit && val.Len() == 0 {
+			return nil, nil
 		}
-
-		parts := strings.Split(tag, ",")
-		fieldName := parts[0]
-		if fieldName == "" {
-			fieldName = fieldType.Name
-		}
-		hasOmit := (slices.Index(parts, "omitempty") != -1) || (slices.Index(parts, "omitzero") != -1)
-
-		// skip field on `omitempty` and `omitzero`
-		// theoretically `field.IsZero()` can possibly panic
-		// but currently it should never happen
-		if hasOmit && field.IsZero() {
-			continue
-		}
-
-		currentPrefix := fieldName
-		if prefix != "" {
-			currentPrefix = prefix + "." + fieldName
-		}
-
-		switch field.Kind() {
-		case reflect.String:
-			res = append(res, fmt.Sprintf("--set-string '%s=%s'", currentPrefix, field.String()))
-		case reflect.Bool:
-			res = append(res, fmt.Sprintf("--set '%s=%t'", currentPrefix, field.Bool()))
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			res = append(res, fmt.Sprintf("--set '%s=%d'", currentPrefix, field.Int()))
-		case reflect.Float32, reflect.Float64:
-			res = append(res, fmt.Sprintf("--set '%s=%f'", currentPrefix, field.Float()))
-		case reflect.Array, reflect.Slice:
-			if hasOmit && field.Len() == 0 {
-				continue
-			}
-			b, err := json.Marshal(field.Interface())
-			if err != nil {
-				return nil, fmt.Errorf("%w: %w", errMarshal, err)
-			}
-			res = append(res, fmt.Sprintf("--set '%s=%s'", currentPrefix, string(b)))
-		case reflect.Struct:
-			nestedRes, err := buildHelmArgs(field.Interface(), currentPrefix)
+		for i := range val.Len() {
+			nestedRes, err := buildHelmArgs(val.Index(i).Interface(), fmt.Sprintf("%s[%d]", prefix, i), false)
 			if err != nil {
 				return nil, err
 			}
 			res = append(res, nestedRes...)
 		}
+	case reflect.Struct:
+		t := val.Type()
+
+		for i := range val.NumField() {
+			field := val.Field(i)
+			fieldType := t.Field(i)
+
+			tag := fieldType.Tag.Get("json")
+			if tag == "-" {
+				continue
+			}
+
+			parts := strings.Split(tag, ",")
+			fieldName := parts[0]
+			if fieldName == "" {
+				fieldName = fieldType.Name
+			}
+
+			hasOmit := (slices.Index(parts, "omitempty") != -1) || (slices.Index(parts, "omitzero") != -1)
+
+			currentPrefix := fieldName
+			if prefix != "" {
+				currentPrefix = prefix + "." + fieldName
+			}
+
+			nestedRes, err := buildHelmArgs(field.Interface(), currentPrefix, hasOmit)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, nestedRes...)
+		}
+	default:
+		return nil, errUnsupported
 	}
+
 	return res, nil
 }
 
@@ -330,5 +336,5 @@ func (v *Values) ToYAML() (string, error) {
 }
 
 func (v *Values) ToHelmArgs() ([]string, error) {
-	return buildHelmArgs(v, "")
+	return buildHelmArgs(v, "", false)
 }
