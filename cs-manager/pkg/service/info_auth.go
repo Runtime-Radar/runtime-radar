@@ -6,6 +6,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/cs-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -31,11 +32,19 @@ func (ia *InfoAuth) GetVersion(ctx context.Context, req *emptypb.Empty) (resp *a
 	if err := ia.Verifier.VerifyPermission(ctx, jwt.PermissionSystemSettings, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ia.InfoControllerServer.GetVersion(ctx, req)
 	return
 }
 
 func (ia *InfoAuth) GetCentralCSURL(ctx context.Context, req *emptypb.Empty) (resp *api.URL, err error) {
 	resp, err = ia.InfoControllerServer.GetCentralCSURL(ctx, req)
+	return
+}
+
+func (ia *InfoAuth) GetGrafanaURL(ctx context.Context, req *emptypb.Empty) (resp *api.URL, err error) {
+	resp, err = ia.InfoControllerServer.GetGrafanaURL(ctx, req)
 	return
 }

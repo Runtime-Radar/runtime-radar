@@ -27,6 +27,12 @@ service InfoController {
             get: "/api/v1/info/central-cs-url"
         };
     }
+
+    rpc GetGrafanaURL(google.protobuf.Empty) returns (URL) {
+      option (google.api.http) = {
+        get: "/api/v1/info/grafana-url"
+      };
+    }
 }
 
 message Version {

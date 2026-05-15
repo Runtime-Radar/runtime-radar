@@ -29,6 +29,7 @@ type Config struct {
 	IsChildCluster        bool          // is CS in child cluster
 	OwnCSURL              string        // URL of current CS
 	CentralCSURL          string        // URL of central CS
+	GrafanaURL            string        // URL to Grafana with CS metrics
 	CentralCSTLSCheckCert bool          // Check central CS TLS certificate
 	RegistrationToken     string        // token of current cluster to register in central CS
 	RegistrationInterval  time.Duration // interval for registration in central CS
@@ -57,6 +58,7 @@ func New() *Config {
 	flag.BoolVar(&c.IsChildCluster, "isChildCluster", config.LookupEnvBool("IS_CHILD_CLUSTER", false), "Is CS in child cluster.")
 	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.CentralCSURL, "centralCSURL", config.LookupEnvString("CENTRAL_CS_URL", ""), "URL of central CS (http(s)://host[:port]).")
+	flag.StringVar(&c.GrafanaURL, "grafanaURL", config.LookupEnvString("GRAFANA_URL", ""), "URL to Grafana with CS metrics (http(s)://host[:port]).")
 	flag.BoolVar(&c.CentralCSTLSCheckCert, "centralCSTLSCheckCert", config.LookupEnvBool("CENTRAL_CS_TLS_CHECK_CERT", true), "Set to check central CS TLS certificate.")
 	flag.StringVar(&c.RegistrationToken, "registrationToken", config.LookupEnvString("REGISTRATION_TOKEN", ""), `Token of current cluster for use in management procedures with central cluster. Token consists of 16 hex-encoded bytes. Different formats supported, such as "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", "urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" or "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx". For full list and details please refer to uuid.Parse documentation.`)
 	flag.DurationVar(&c.RegistrationInterval, "registrationInterval", config.LookupEnvDuration("REGISTRATION_INTERVAL", time.Minute*5), "Interval for registration in central CS.")

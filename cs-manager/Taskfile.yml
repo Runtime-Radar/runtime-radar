@@ -2,7 +2,6 @@ version: '3'
 
 vars:
   APP_NAME: cs-manager
-  UNREGISTER_NAME: unregister
   DOCKER_IMAGE: cs-manager
   PWD:
     sh: "echo `pwd`"
@@ -13,27 +12,26 @@ env:
 tasks:
   proto:
     deps: [protoc-plugins]
-    vars:
-      PROTO_DIR: api
     cmds:
       - |
         PATH="{{.TOOLS_BIN}}{{if eq OS "windows"}};{{else}}:{{end}}$PATH"
         protoc -I api \
         --go_opt=paths=source_relative \
-        --go_out={{.PROTO_DIR}} \
+        --go_out=api \
         --go-grpc_opt=paths=source_relative \
-        --go-grpc_out={{.PROTO_DIR}} \
+        --go-grpc_out=api \
         --grpc-gateway_opt=paths=source_relative \
         --grpc-gateway_opt=logtostderr=true \
-        --grpc-gateway_out={{.PROTO_DIR}} \
+        --grpc-gateway_out=api \
         --openapiv2_opt=logtostderr=true \
-        --openapiv2_out={{.PROTO_DIR}}/openapiv2 \
-        {{.PROTO_DIR}}/*.proto
+        --openapiv2_out=api/openapiv2 \
+        api/*.proto
     sources:
-      - "{{.PROTO_DIR}}/**/*.proto"
+      - "api/**/*.proto"
       - "go.mod"
     generates:
-      - "{{.PROTO_DIR}}/**/*pb*.go"
+      - "api/**/*pb*.go"
+
   build:
     vars:
       BUILD_RELEASE:
@@ -44,12 +42,13 @@ tasks:
         sh: echo "${BUILD_COMMIT:-$(git rev-parse --short HEAD)}"
       BUILD_DATE: '{{now.Format "2006-01-02_15:04:05"}}'
       MODULE_NAME:
-        sh: go list -m
+        sh: 'echo "$(go list -m)/{{.APP_NAME}}"'
     cmds:
-     - |
+      - |
         CGO_ENABLED=0 go build -ldflags "-X {{.MODULE_NAME}}/pkg/build.Release={{.BUILD_RELEASE}} -X {{.MODULE_NAME}}/pkg/build.Branch={{.BUILD_BRANCH}} -X {{.MODULE_NAME}}/pkg/build.Commit={{.BUILD_COMMIT}} -X {{.MODULE_NAME}}/pkg/build.Date={{.BUILD_DATE}}" \
         -o cmd/{{.APP_NAME}}/ ./cmd/{{.APP_NAME}}
-        CGO_ENABLED=0 go build -o cmd/{{.UNREGISTER_NAME}}/ ./cmd/{{.UNREGISTER_NAME}}
+      - |
+        CGO_ENABLED=0 go build -o cmd/unregister/ ./cmd/unregister
 
   test:
     cmds:
@@ -57,10 +56,14 @@ tasks:
       - go test -race -count=1 -vet=off ./cmd/{{.APP_NAME}}
       - go test -race -count=1 ./pkg/...
 
+  test-docker-cleanup:
+    cmds:
+      - docker compose -f docker-compose.test.yml down -v
+
   test-docker:
     cmds:
+      - defer: {task: test-docker-cleanup}
       - docker compose -f docker-compose.test.yml up --build --abort-on-container-exit test
-      - defer: docker compose -f docker-compose.test.yml down
 
   lint:
     deps: [tools]
@@ -83,11 +86,11 @@ tasks:
 
   tidy:
     cmds:
-      - go mod tidy
+      - cd .. && go mod tidy
 
   vendor:
       cmds:
-      - go mod vendor
+      - cd .. && go mod vendor
 
   generate:
     cmds:
@@ -95,10 +98,12 @@ tasks:
 
   certs:
     cmds:
-      - go run "$(go env GOROOT)/src/crypto/tls/generate_cert.go" -host=localhost
+      - go run "$(go env GOROOT)/src/crypto/tls/generate_cert.go" -host=127.0.0.1
       - mv cert.pem key.pem cmd/{{.APP_NAME}}
+      - cp cmd/{{.APP_NAME}}/cert.pem cmd/{{.APP_NAME}}/ca.pem
 
   docker-build:
+    dir: ..
     vars:
       BUILD_RELEASE:
         sh: git describe --tags 2> /dev/null || echo "v0.0.0"
@@ -106,8 +111,16 @@ tasks:
         sh: git rev-parse --abbrev-ref HEAD
       BUILD_COMMIT:
         sh: git rev-parse --short HEAD
+    sources:
+      - go.mod
+      - go.sum
+      - lib/**
+      - "{{.APP_NAME}}/**"
+      - cluster-manager/api/**
+    generates:
+      - "{{.APP_NAME}}/.build"
     cmds:
-      - docker build --build-arg BUILD_RELEASE={{.BUILD_RELEASE}} --build-arg BUILD_BRANCH={{.BUILD_BRANCH}} --build-arg BUILD_COMMIT={{.BUILD_COMMIT}} --tag {{.DOCKER_IMAGE}} .
+      - docker build --iidfile {{.APP_NAME}}/.build -f {{.APP_NAME}}/Dockerfile --build-arg BUILD_RELEASE={{.BUILD_RELEASE}} --build-arg BUILD_BRANCH={{.BUILD_BRANCH}} --build-arg BUILD_COMMIT={{.BUILD_COMMIT}} --tag {{.DOCKER_IMAGE}} .
 
   docker-push:
     vars:
@@ -125,8 +138,8 @@ tasks:
       - test -e {{.TOOLS_BIN}}/golangci-lint{{exeExt}}
       - test -e {{.TOOLS_BIN}}/govulncheck{{exeExt}}
     cmds:
-        - GOBIN={{.TOOLS_BIN}} go install github.com/golangci/golangci-lint/cmd/golangci-lint
-        - GOBIN={{.TOOLS_BIN}} go install golang.org/x/vuln/cmd/govulncheck
+      - GOBIN={{.TOOLS_BIN}} go install github.com/golangci/golangci-lint/cmd/golangci-lint
+      - GOBIN={{.TOOLS_BIN}} go install golang.org/x/vuln/cmd/govulncheck
 
   protoc-plugins:
     generates:
@@ -145,9 +158,11 @@ tasks:
       - vendor/modules.txt
       - go.mod
       - go.sum
+      - "*.go"
       - cmd/**/*.go
       - pkg/**/*.go
       - internal/**/*.go
+      - api/**/*.go
       - Dockerfile
     vars:
       DEPLOY_TAG: |-

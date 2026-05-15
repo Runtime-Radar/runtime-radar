@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/gops/agent"
 	"github.com/google/uuid"
+	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
 	cluster_api "github.com/runtime-radar/runtime-radar/cluster-manager/api"
 	"github.com/runtime-radar/runtime-radar/cs-manager/api"
@@ -23,6 +24,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/client"
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/config"
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/database"
+	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/registrar"
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/server"
 	"github.com/runtime-radar/runtime-radar/cs-manager/pkg/service"
@@ -103,10 +105,13 @@ func main() {
 		log.Fatal().Msgf("### Failed to migrate DB: %v", err)
 	}
 
+	grpcMetrics := prometheus.NewServerMetrics(prometheus.WithServerHandlingTimeHistogram())
+
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			interceptor.Recovery,
 			interceptor.Correlation,
+			grpcMetrics.UnaryServerInterceptor(),
 		),
 		grpc.MaxRecvMsgSize(server.MaxRecvMsgSize),
 	}
@@ -127,21 +132,30 @@ func main() {
 		log.Fatal().Msgf("### Failed to parse central CS URL: %v", err)
 	}
 
-	s, err := getClusterState(cfg.IsChildCluster, db)
+	grafanaURL, err := parseURL(cfg.GrafanaURL)
 	if err != nil {
-		log.Fatal().Msgf("### Failed to get cluster state: %v", err)
+		log.Fatal().Msgf("### Failed to parse grafana URL: %v", err)
 	}
-	state.Set(s)
 
-	if s != state.Central {
+	if !cfg.IsChildCluster {
+		state.Set(state.Central)
+	} else {
+		token, err := uuid.Parse(cfg.RegistrationToken)
+		if err != nil {
+			log.Fatal().Msgf("### Failed to parse registration token of current CS: %v", err)
+		}
+		tokenHash := security.HashSHA512AsHex(token[:])
+
+		s, err := getChildClusterState(tokenHash, db)
+		if err != nil {
+			log.Fatal().Msgf("### Failed to get cluster state: %v", err)
+		}
+		state.Set(s)
+
 		childTLSConfig := tlsConfig.Clone()
 		childTLSConfig.InsecureSkipVerify = !cfg.CentralCSTLSCheckCert
-		if s == state.ChildUnregistered {
-			token, err := uuid.Parse(cfg.RegistrationToken)
-			if err != nil {
-				log.Fatal().Msgf("### Failed to parse registration token of current CS: %v", err)
-			}
 
+		if s == state.ChildUnregistered {
 			clusterController, closeCC, err := client.NewClusterController(centralCSURL.Host, childTLSConfig, tokenKey)
 			if err != nil {
 				log.Fatal().Msgf("### Failed to connect to central Cluster Manager: %v", err)
@@ -149,19 +163,26 @@ func main() {
 			defer closeCC()
 
 			// Make internal services without authentication to be used by registrar
-			go csRegistrar(db, cfg.RegistrationInterval, token, clusterController)
+			go csRegistrar(db, cfg.RegistrationInterval, token, tokenHash, clusterController)
 		}
 	}
 
 	grpcSrv := grpc.NewServer(opts...)
-	infoSvc := composeServices(cfg.CSVersion, centralCSURL, verifier, cfg.Auth)
+	infoSvc := composeServices(cfg.CSVersion, centralCSURL, grafanaURL, verifier, cfg.Auth)
 
 	api.RegisterInfoControllerServer(grpcSrv, infoSvc)
 	// Register reflection service on gRPC server
 	reflection.Register(grpcSrv)
 
-	// Create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	// Initialize metrics
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL, grpcMetrics)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
+
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
+
+	// Run the instrumentation HTTP server for metrics, probes, etc.
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)
@@ -216,12 +237,14 @@ func main() {
 func composeServices(
 	csVersion string,
 	centralCSURL *url.URL,
+	grafanaURL *url.URL,
 	verifier jwt.Verifier,
 	isAuth bool,
 ) (infoSvc api.InfoControllerServer) {
 	infoSvc = &service.InfoGeneric{
 		Version:      csVersion,
 		CentralCSURL: centralCSURL,
+		GrafanaURL:   grafanaURL,
 	}
 
 	if isAuth {
@@ -236,10 +259,11 @@ func composeServices(
 	return
 }
 
-func csRegistrar(db *gorm.DB, interval time.Duration, token uuid.UUID, clusterController cluster_api.ClusterControllerClient) {
+func csRegistrar(db *gorm.DB, interval time.Duration, token uuid.UUID, tokenHash string, clusterController cluster_api.ClusterControllerClient) {
 	r := &registrar.Registrar{
 		interval,
 		token,
+		tokenHash,
 		clusterController,
 		&database.RegistrationDatabase{db},
 	}
@@ -269,13 +293,9 @@ func signalListener() {
 	}
 }
 
-func getClusterState(isChildCluster bool, db *gorm.DB) (state.State, error) {
-	if !isChildCluster {
-		return state.Central, nil
-	}
-
+func getChildClusterState(tokenHash string, db *gorm.DB) (state.State, error) {
 	repo := database.RegistrationDatabase{db}
-	_, err := repo.GetLastSuccessful(context.Background(), false)
+	_, err := repo.GetLastSuccessful(context.Background(), tokenHash, false)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return state.ChildUnregistered, nil
 	} else if err != nil {
@@ -286,17 +306,9 @@ func getClusterState(isChildCluster bool, db *gorm.DB) (state.State, error) {
 }
 
 func parseCSURL(rawURL string) (*url.URL, error) {
-	if rawURL == "" {
-		return &url.URL{}, nil
-	}
-
-	if !strings.Contains(rawURL, "://") {
-		return nil, fmt.Errorf("wrong format, url should contain scheme: %s", rawURL)
-	}
-
-	parsedURL, err := url.ParseRequestURI(rawURL)
+	parsedURL, err := parseURL(rawURL)
 	if err != nil {
-		return nil, fmt.Errorf("can't parse url: %w", err)
+		return nil, err
 	}
 
 	// Explicitly set default port to avoid gRPC connection error when dialing with
@@ -311,6 +323,23 @@ func parseCSURL(rawURL string) (*url.URL, error) {
 		default:
 			return nil, fmt.Errorf("unsupported scheme: %s", rawURL)
 		}
+	}
+
+	return parsedURL, nil
+}
+
+func parseURL(rawURL string) (*url.URL, error) {
+	if rawURL == "" {
+		return &url.URL{}, nil
+	}
+
+	if !strings.Contains(rawURL, "://") {
+		return nil, fmt.Errorf("wrong format, url should contain scheme: %s", rawURL)
+	}
+
+	parsedURL, err := url.ParseRequestURI(rawURL)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse url: %w", err)
 	}
 
 	return parsedURL, nil
