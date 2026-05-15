@@ -21,7 +21,7 @@ require (
 	google.golang.org/protobuf v1.36.10
 	gorm.io/driver/clickhouse v0.6.1
 	gorm.io/driver/postgres v1.6.0
-	gorm.io/gorm v1.31.0
+	gorm.io/gorm v1.31.1
 )
 
 require (

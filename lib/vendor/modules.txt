@@ -191,7 +191,7 @@ google.golang.org/protobuf/types/gofeaturespb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
-# gorm.io/gorm v1.30.0
+# gorm.io/gorm v1.31.1
 ## explicit; go 1.18
 gorm.io/gorm
 gorm.io/gorm/clause

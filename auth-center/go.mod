@@ -22,7 +22,7 @@ require (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1
 	google.golang.org/protobuf v1.36.6
 	gorm.io/driver/postgres v1.6.0
-	gorm.io/gorm v1.30.0
+	gorm.io/gorm v1.31.1
 )
 
 require (
