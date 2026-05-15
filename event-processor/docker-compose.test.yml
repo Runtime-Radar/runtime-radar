@@ -1,8 +1,11 @@
 services:
   test:
-      image: golang:1.25
-      working_dir: /go/src/repo
-      volumes:
-        - .:/go/src/repo
+    extends:
+      file: ../docker-compose.test.yml
+      service: test
+    depends_on: {}
+    environment:
+      - COMPONENT=event-processor
 
-      command: "go test -race -count=1 -vet=off ./..."
+networks:
+  local:

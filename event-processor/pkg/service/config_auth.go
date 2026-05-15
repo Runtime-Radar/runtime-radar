@@ -6,6 +6,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/event-processor/api"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -26,6 +27,8 @@ func (ca *ConfigAuth) Add(ctx context.Context, req *api.Config) (resp *emptypb.E
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
 
+	lib_context.SetUserID(ctx)
+
 	resp, err = ca.ConfigControllerServer.Add(ctx, req)
 	return
 }
@@ -34,6 +37,8 @@ func (ca *ConfigAuth) Read(ctx context.Context, req *emptypb.Empty) (resp *api.C
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionSystemSettings, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
 
 	resp, err = ca.ConfigControllerServer.Read(ctx, req)
 	return

@@ -19,7 +19,7 @@ type Config struct {
 	LogLevel                              string        // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
 	LogFile                               string        // path to log file
 	ListenGRPCAddr                        string        // address "[host]:port" that server should be listening on
-	ListenHTTPAddr                        string        // address "[host]:port" that server should be listening for health checks
+	ListenHTTPAddr                        string        // address "[host]:port" that server should be listening on
 	InstrumentationAddr                   string        // address "[host]:port" that instrumentation server should be listening for health checks and metrics
 	TLS                                   bool          // is TLS enabled?
 	TokenKey                              string        // key for jwt token
@@ -37,6 +37,7 @@ type Config struct {
 	DeployDir                             string        // directory to load detectors from
 	PolicyEnforcerGRPCAddr                string        // Policy Enforcer address in host[:port] format
 	NotifierGRPCAddr                      string        // Notifier address in host[:port] format
+	OwnCSURL                              string        // URL of current CS (http(s)://host[:port]).
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -70,6 +71,7 @@ func New() *Config {
 	flag.StringVar(&c.DeployDir, "deployDir", config.LookupEnvString("DEPLOY_DIR", "deploy"), "Set directory to load detectors from (doesn't apply if DB is not empty).")
 	flag.StringVar(&c.PolicyEnforcerGRPCAddr, "policyEnforcerGRPCAddr", config.LookupEnvString("POLICY_ENFORCER_GRPC_ADDR", "127.0.0.1:10000"), "Policy Enforcer gRPC address in host[:port] format.")
 	flag.StringVar(&c.NotifierGRPCAddr, "notifierGRPCAddr", config.LookupEnvString("NOTIFIER_GRPC_ADDR", "127.0.0.1:11000"), "Notifier gRPC address in host[:port] format.")
+	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
 
 	flag.Parse()

@@ -9,6 +9,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/model"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gorm_logger "gorm.io/gorm/logger"
@@ -39,7 +40,7 @@ func New(address, database, user, password string, sslMode, sslCheckCert bool) (
 		ll = gorm_logger.Info
 	}
 	gormLogger := gorm_logger.New(
-		&GORMLogger{&log.Logger},
+		&logger.GORM{&log.Logger},
 		gorm_logger.Config{
 			SlowThreshold: 100 * time.Millisecond, // Slow SQL threshold
 			Colorful:      false,                  // Disable color
