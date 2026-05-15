@@ -41,6 +41,7 @@ const (
 	CircleOID              = 718
 	CircleArrayOID         = 719
 	UnknownOID             = 705
+	Macaddr8OID            = 774
 	MacaddrOID             = 829
 	InetOID                = 869
 	BoolArrayOID           = 1000
@@ -81,6 +82,8 @@ const (
 	IntervalOID            = 1186
 	IntervalArrayOID       = 1187
 	NumericArrayOID        = 1231
+	TimetzOID              = 1266
+	TimetzArrayOID         = 1270
 	BitOID                 = 1560
 	BitArrayOID            = 1561
 	VarbitOID              = 1562
@@ -559,7 +562,7 @@ func TryFindUnderlyingTypeScanPlan(dst any) (plan WrappedScanPlanNextSetter, nex
 			}
 		}
 
-		if nextDstType != nil && dstValue.Type() != nextDstType {
+		if nextDstType != nil && dstValue.Type() != nextDstType && dstValue.CanConvert(nextDstType) {
 			return &underlyingTypeScanPlan{dstType: dstValue.Type(), nextDstType: nextDstType}, dstValue.Convert(nextDstType).Interface(), true
 		}
 
@@ -1328,7 +1331,7 @@ func (plan *derefPointerEncodePlan) Encode(value any, buf []byte) (newBuf []byte
 }
 
 // TryWrapDerefPointerEncodePlan tries to dereference a pointer. e.g. If value was of type *string then a wrapper plan
-// would be returned that derefences the value.
+// would be returned that dereferences the value.
 func TryWrapDerefPointerEncodePlan(value any) (plan WrappedEncodePlanNextSetter, nextValue any, ok bool) {
 	if _, ok := value.(driver.Valuer); ok {
 		return nil, nil, false
@@ -1358,6 +1361,8 @@ var kindToTypes map[reflect.Kind]reflect.Type = map[reflect.Kind]reflect.Type{
 	reflect.Bool:    reflect.TypeOf(false),
 }
 
+var byteSliceType = reflect.TypeOf([]byte{})
+
 type underlyingTypeEncodePlan struct {
 	nextValueType reflect.Type
 	next          EncodePlan
@@ -1372,6 +1377,10 @@ func (plan *underlyingTypeEncodePlan) Encode(value any, buf []byte) (newBuf []by
 // TryWrapFindUnderlyingTypeEncodePlan tries to convert to a Go builtin type. e.g. If value was of type MyString and
 // MyString was defined as a string then a wrapper plan would be returned that converts MyString to string.
 func TryWrapFindUnderlyingTypeEncodePlan(value any) (plan WrappedEncodePlanNextSetter, nextValue any, ok bool) {
+	if value == nil {
+		return nil, nil, false
+	}
+
 	if _, ok := value.(driver.Valuer); ok {
 		return nil, nil, false
 	}
@@ -1385,6 +1394,15 @@ func TryWrapFindUnderlyingTypeEncodePlan(value any) (plan WrappedEncodePlanNextS
 	nextValueType := kindToTypes[refValue.Kind()]
 	if nextValueType != nil && refValue.Type() != nextValueType {
 		return &underlyingTypeEncodePlan{nextValueType: nextValueType}, refValue.Convert(nextValueType).Interface(), true
+	}
+
+	// []byte is a special case. It is a slice but we treat it as a scalar type. In the case of a named type like
+	// json.RawMessage which is defined as []byte the underlying type should be considered as []byte. But any other slice
+	// does not have a special underlying type.
+	//
+	// https://github.com/jackc/pgx/issues/1763
+	if refValue.Type() != byteSliceType && refValue.Type().AssignableTo(byteSliceType) {
+		return &underlyingTypeEncodePlan{nextValueType: byteSliceType}, refValue.Convert(byteSliceType).Interface(), true
 	}
 
 	return nil, nil, false
@@ -1894,8 +1912,17 @@ func newEncodeError(value any, m *Map, oid uint32, formatCode int16, err error) 
 // (nil, nil). The caller of Encode is responsible for writing the correct NULL value or the length of the data
 // written.
 func (m *Map) Encode(oid uint32, formatCode int16, value any, buf []byte) (newBuf []byte, err error) {
-	if value == nil {
-		return nil, nil
+	if isNil, callNilDriverValuer := isNilDriverValuer(value); isNil {
+		if callNilDriverValuer {
+			newBuf, err = (&encodePlanDriverValuer{m: m, oid: oid, formatCode: formatCode}).Encode(value, buf)
+			if err != nil {
+				return nil, newEncodeError(value, m, oid, formatCode, err)
+			}
+
+			return newBuf, nil
+		} else {
+			return nil, nil
+		}
 	}
 
 	plan := m.PlanEncode(oid, formatCode, value)
@@ -1949,4 +1976,56 @@ func (w *sqlScannerWrapper) Scan(src any) error {
 	}
 
 	return w.m.Scan(t.OID, TextFormatCode, bufSrc, w.v)
+}
+
+// canBeNil returns true if value can be nil.
+func canBeNil(value any) bool {
+	refVal := reflect.ValueOf(value)
+	kind := refVal.Kind()
+	switch kind {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		return true
+	default:
+		return false
+	}
+}
+
+// valuerReflectType is a reflect.Type for driver.Valuer. It has confusing syntax because reflect.TypeOf returns nil
+// when it's argument is a nil interface value. So we use a pointer to the interface and call Elem to get the actual
+// type. Yuck.
+//
+// This can be simplified in Go 1.22 with reflect.TypeFor.
+//
+// var valuerReflectType = reflect.TypeFor[driver.Valuer]()
+var valuerReflectType = reflect.TypeOf((*driver.Valuer)(nil)).Elem()
+
+// isNilDriverValuer returns true if value is any type of nil unless it implements driver.Valuer. *T is not considered to implement
+// driver.Valuer if it is only implemented by T.
+func isNilDriverValuer(value any) (isNil bool, callNilDriverValuer bool) {
+	if value == nil {
+		return true, false
+	}
+
+	refVal := reflect.ValueOf(value)
+	kind := refVal.Kind()
+	switch kind {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		if !refVal.IsNil() {
+			return false, false
+		}
+
+		if _, ok := value.(driver.Valuer); ok {
+			if kind == reflect.Ptr {
+				// The type assertion will succeed if driver.Valuer is implemented on T or *T. Check if it is implemented on *T
+				// by checking if it is not implemented on *T.
+				return true, !refVal.Type().Elem().Implements(valuerReflectType)
+			} else {
+				return true, true
+			}
+		}
+
+		return true, false
+	default:
+		return false, false
+	}
 }
