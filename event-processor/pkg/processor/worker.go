@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/event-processor/api"
 	detector_api "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
+	"github.com/runtime-radar/runtime-radar/event-processor/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor/detector"
 	enforcer_api "github.com/runtime-radar/runtime-radar/policy-enforcer/api"
 	enforcer_model "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
@@ -21,7 +22,7 @@ import (
 
 const (
 	// TODO: pass Tetragon version from runtime_monitor when corresponding field is added to incoming message
-	tetragonVersion = "v1.3.0"
+	tetragonVersion = "v1.5.0"
 	actionType      = "runtime-threat-detection"
 )
 
@@ -95,6 +96,7 @@ func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsRespo
 	chain := matcher.MatchChain(eventType, funcName)
 
 	log.Debug().Str("event_type", eventType).Str("func_name", funcName).Str("chain", chain.String()).Msgf("Got detectors chain")
+	metrics.DetectorsChainLength.Observe(float64(len(chain)))
 
 	t0 := time.Now()
 	result, err := chain.Detect(ctx, event)
@@ -104,6 +106,7 @@ func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsRespo
 	delta := time.Since(t0)
 
 	log.Debug().Str("delay", delta.String()).Interface("event", event).Interface("result", result).Msgf("Detectors chain is done")
+	metrics.OperationTimeAllDetectorsHistogram.Observe(delta.Seconds())
 
 	eventData, err := getEventData(event)
 	if err != nil {
@@ -172,8 +175,12 @@ func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsRespo
 		}
 
 		if err := wp.history.Publish(ctx, re); err != nil {
+			metrics.RabbitAddHistoryFailureCounter.Inc()
+
 			return nil, fmt.Errorf("can't publish runtime event '%+v'", re)
 		}
+
+		metrics.RabbitAddHistorySuccessCounter.Inc()
 	}
 
 	block := false
