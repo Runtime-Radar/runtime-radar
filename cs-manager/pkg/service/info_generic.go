@@ -12,6 +12,7 @@ type InfoGeneric struct {
 	api.UnimplementedInfoControllerServer
 	Version      string
 	CentralCSURL *url.URL
+	GrafanaURL   *url.URL
 }
 
 func (ig *InfoGeneric) GetVersion(_ context.Context, _ *emptypb.Empty) (*api.Version, error) {
@@ -23,5 +24,11 @@ func (ig *InfoGeneric) GetVersion(_ context.Context, _ *emptypb.Empty) (*api.Ver
 func (ig *InfoGeneric) GetCentralCSURL(_ context.Context, _ *emptypb.Empty) (*api.URL, error) {
 	return &api.URL{
 		Url: ig.CentralCSURL.String(),
+	}, nil
+}
+
+func (ig *InfoGeneric) GetGrafanaURL(_ context.Context, _ *emptypb.Empty) (*api.URL, error) {
+	return &api.URL{
+		Url: ig.GrafanaURL.String(),
 	}, nil
 }
