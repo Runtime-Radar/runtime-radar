@@ -1,5 +1,4 @@
 image:
-  registry: ghcr.io/runtime-radar
   repository: history-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -25,6 +24,7 @@ podSecurityContext:
   fsGroupChangePolicy: Always
   sysctls: []
   supplementalGroups: []
+retentionInterval: ""
 env:
   - name: RABBIT_QUEUE_PREFETCH_COUNT
     value: "100"
@@ -32,6 +32,10 @@ env:
     value: "10000"
   - name: RUNTIME_EVENTS_SAVE_INTERVAL
     value: "5s"
+  - name: RETENTION_INTERVAL
+    value: "{{ .Values.retentionInterval }}"
+postgresql:
+  enabled: true
 rabbitmq:
   enabled: true
 clickhouse:

@@ -7,9 +7,24 @@ import (
 	"github.com/cilium/tetragon/api/v1/tetragon"
 	"github.com/google/uuid"
 	processor_api "github.com/runtime-radar/runtime-radar/event-processor/api"
+	"github.com/runtime-radar/runtime-radar/history-api/api"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/model"
 	enf_model "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
 )
+
+func DetectorCountersToProto(cs []*model.DetectorCounter) *api.DetectorRatingResp {
+	proto := api.DetectorRatingResp{Counters: make([]*api.DetectorRatingResp_Counter, 0, len(cs))}
+
+	for _, c := range cs {
+		proto.Counters = append(proto.Counters, &api.DetectorRatingResp_Counter{
+			DetectorId: c.DetectorID,
+			Severity:   c.Severity.String(),
+			Count:      int32(c.Count),
+		})
+	}
+
+	return &proto
+}
 
 func RuntimeEventFromProto(proto *processor_api.RuntimeEvent) (model.RuntimeEvent, error) {
 	id, err := uuid.Parse(proto.GetId())
@@ -36,13 +51,18 @@ func RuntimeEventFromProto(proto *processor_api.RuntimeEvent) (model.RuntimeEven
 	}
 
 	if ts := proto.GetThreats(); len(ts) > 0 {
-		event.Threats = model.RuntimeEventThreats(ts)
+		event.Threats = ts
 
-		tds := make([]string, 0, len(ts))
+		event.ThreatsSeverities = make([]enf_model.Severity, 0, len(ts))
+		event.ThreatsDetectors = make([]string, 0, len(ts))
+
 		for _, t := range ts {
-			tds = append(tds, t.GetDetector().GetId())
+			var sev enf_model.Severity
+			sev.Set(t.GetSeverity())
+
+			event.ThreatsSeverities = append(event.ThreatsSeverities, sev)
+			event.ThreatsDetectors = append(event.ThreatsDetectors, t.GetDetector().GetId())
 		}
-		event.ThreatsDetectors = tds
 	}
 
 	switch e := protoEvent.GetEvent().(type) {
