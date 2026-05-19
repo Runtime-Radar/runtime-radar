@@ -83,15 +83,20 @@ func (v *Verifier) VerifyPermission(ctx context.Context, pt jwt.PermissionType, 
 // that exist in both.
 func maxCommonPermissions(first, second *model.Permissions) *jwt.RolePermissions {
 	return &jwt.RolePermissions{
-		Users:          maxCommonPermission(first.Users, second.Users),
-		Roles:          maxCommonPermission(first.Roles, second.Roles),
-		Rules:          maxCommonPermission(first.Rules, second.Rules),
-		Scanning:       maxCommonPermission(first.Scanning, second.Scanning),
-		Events:         maxCommonPermission(first.Events, second.Events),
-		Images:         maxCommonPermission(first.Images, second.Images),
-		Integrations:   maxCommonPermission(first.Integrations, second.Integrations),
-		Notifications:  maxCommonPermission(first.Notifications, second.Notifications),
-		SystemSettings: maxCommonPermission(first.SystemSettings, second.SystemSettings),
+		Users:                        maxCommonPermission(first.Users, second.Users),
+		Roles:                        maxCommonPermission(first.Roles, second.Roles),
+		Rules:                        maxCommonPermission(first.Rules, second.Rules),
+		Scopes:                       maxCommonPermission(first.Scopes, second.Scopes),
+		Scanning:                     maxCommonPermission(first.Scanning, second.Scanning),
+		Events:                       maxCommonPermission(first.Events, second.Events),
+		Registries:                   maxCommonPermission(first.Registries, second.Registries),
+		Images:                       maxCommonPermission(first.Images, second.Images),
+		Integrations:                 maxCommonPermission(first.Integrations, second.Integrations),
+		Notifications:                maxCommonPermission(first.Notifications, second.Notifications),
+		SystemSettings:               maxCommonPermission(first.SystemSettings, second.SystemSettings),
+		Clusters:                     maxCommonPermission(first.Clusters, second.Clusters),
+		InvalidatePublicAccessTokens: maxCommonPermission(first.InvalidatePublicAccessTokens, second.InvalidatePublicAccessTokens),
+		PublicAccessTokens:           maxCommonPermission(first.PublicAccessTokens, second.PublicAccessTokens),
 	}
 }
 

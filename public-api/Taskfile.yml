@@ -20,9 +20,9 @@ tasks:
         sh: echo "${BUILD_COMMIT:-$(git rev-parse --short HEAD)}"
       BUILD_DATE: '{{now.Format "2006-01-02_15:04:05"}}'
       MODULE_NAME:
-        sh: go list -m
+        sh: 'echo "$(go list -m)/{{.APP_NAME}}"'
     cmds:
-     - |
+      - |
         CGO_ENABLED=0 go build -ldflags "-X {{.MODULE_NAME}}/pkg/build.Release={{.BUILD_RELEASE}} -X {{.MODULE_NAME}}/pkg/build.Branch={{.BUILD_BRANCH}} -X {{.MODULE_NAME}}/pkg/build.Commit={{.BUILD_COMMIT}} -X {{.MODULE_NAME}}/pkg/build.Date={{.BUILD_DATE}}" \
         -o cmd/{{.APP_NAME}}/ ./cmd/{{.APP_NAME}}
 
@@ -32,10 +32,14 @@ tasks:
       - go test -race -count=1 -vet=off ./cmd/{{.APP_NAME}}
       - go test -race -count=1 ./pkg/...
 
+  test-docker-cleanup:
+    cmds:
+      - docker compose -f docker-compose.test.yml down -v
+
   test-docker:
     cmds:
+      - defer: {task: test-docker-cleanup}
       - docker compose -f docker-compose.test.yml up --build --abort-on-container-exit test
-      - defer: docker compose -f docker-compose.test.yml down
 
   lint:
     deps: [tools]
@@ -53,17 +57,16 @@ tasks:
 
   clean:
     cmds:
-      # - rm -f api/*.pb.go
       - rm -f bin/*
       - rm -f cmd/{{.APP_NAME}}/{{.APP_NAME}}{{exeExt}}
 
   tidy:
     cmds:
-      - go mod tidy
+      - cd .. && go mod tidy
 
   vendor:
       cmds:
-      - go mod vendor
+      - cd .. && go mod vendor
 
   generate:
     cmds:
@@ -76,6 +79,7 @@ tasks:
       - cp cmd/{{.APP_NAME}}/cert.pem cmd/{{.APP_NAME}}/ca.pem
 
   docker-build:
+    dir: ..
     vars:
       BUILD_RELEASE:
         sh: git describe --tags 2> /dev/null || echo "v0.0.0"
@@ -83,8 +87,18 @@ tasks:
         sh: git rev-parse --abbrev-ref HEAD
       BUILD_COMMIT:
         sh: git rev-parse --short HEAD
+    sources:
+      - go.mod
+      - go.sum
+      - lib/**
+      - "{{.APP_NAME}}/**"
+      - history-api/api/**
+      - policy-enforcer/api/**
+      - event-processor/**
+    generates:
+      - "{{.APP_NAME}}/.build"
     cmds:
-      - docker build --build-arg BUILD_RELEASE={{.BUILD_RELEASE}} --build-arg BUILD_BRANCH={{.BUILD_BRANCH}} --build-arg BUILD_COMMIT={{.BUILD_COMMIT}} --tag {{.DOCKER_IMAGE}} .
+      - docker build --iidfile {{.APP_NAME}}/.build -f {{.APP_NAME}}/Dockerfile --build-arg BUILD_RELEASE={{.BUILD_RELEASE}} --build-arg BUILD_BRANCH={{.BUILD_BRANCH}} --build-arg BUILD_COMMIT={{.BUILD_COMMIT}} --tag {{.DOCKER_IMAGE}} .
 
   docker-push:
     vars:
@@ -102,17 +116,19 @@ tasks:
       - test -e {{.TOOLS_BIN}}/golangci-lint{{exeExt}}
       - test -e {{.TOOLS_BIN}}/govulncheck{{exeExt}}
     cmds:
-        - GOBIN={{.TOOLS_BIN}} go install github.com/golangci/golangci-lint/cmd/golangci-lint
-        - GOBIN={{.TOOLS_BIN}} go install golang.org/x/vuln/cmd/govulncheck
+      - GOBIN={{.TOOLS_BIN}} go install github.com/golangci/golangci-lint/cmd/golangci-lint
+      - GOBIN={{.TOOLS_BIN}} go install golang.org/x/vuln/cmd/govulncheck
 
   deploy:
     sources:
       - vendor/modules.txt
       - go.mod
       - go.sum
+      - "*.go"
       - cmd/**/*.go
       - pkg/**/*.go
       - internal/**/*.go
+      - api/**/*.go
       - Dockerfile
     vars:
       DEPLOY_TAG: |-

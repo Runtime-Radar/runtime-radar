@@ -41,14 +41,14 @@ type AuthAPI struct {
 }
 
 type AuthAPIUser struct {
-	Email                 *string     `json:"email"`
-	RoleID                string      `json:"role_id"`
-	MappingRoleID         *string     `json:"mapping_role_id"`
-	ID                    string      `json:"id"`
-	Username              string      `json:"username"`
-	Role                  AuthAPIRole `json:"role"`
-	AuthType              string      `json:"auth_type"`
-	LastPasswordChangedAt string      `json:"last_password_changed_at"`
+	Email                 *string      `json:"email"`
+	RoleID                string       `json:"role_id"`
+	MappingRoleID         *string      `json:"mapping_role_id"`
+	ID                    string       `json:"id"`
+	Username              string       `json:"username"`
+	Role                  AuthAPIRole  `json:"role"`
+	AuthType              string       `json:"auth_type"`
+	LastPasswordChangedAt jwt.JSONTime `json:"last_password_changed_at"`
 }
 
 type AuthAPIRole struct {

@@ -1,8 +1,18 @@
 services:
-  test:
-      image: golang:1.25
-      working_dir: /go/src/repo
-      volumes:
-        - .:/go/src/repo
+  postgres:
+    extends:
+      file: ../docker-compose.test.yml
+      service: postgres
 
-      command: "go test -race -count=1 -vet=off ./..."
+  test:
+    extends:
+      file: ../docker-compose.test.yml
+      service: test
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - COMPONENT=public-api
+
+networks:
+  local:
