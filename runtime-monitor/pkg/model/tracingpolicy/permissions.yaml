@@ -1,0 +1,71 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: "permissions"
+spec:
+  kprobes:
+  # SYNOPSIS
+  # int commit_creds(struct cred *new)
+  #     @new: The credentials to be assigned
+  #
+  # DESCRIPTION
+  # Install a new set of credentials to the current task, using RCU to replace
+  # the old set.  Both the objective and the subjective credentials pointers are
+  # updated.  This function may not be called if the subjective credentials are
+  # in an overridden state.
+  #
+  # This function eats the caller's reference to the new credentials.
+  #
+  # RETURN VALUE
+  # Always returns 0 thus allowing this function to be tail-called at the end of, say, sys_setgid().
+  #
+  - call: "commit_creds"
+    syscall: false
+    return: false
+    args:
+    - index: 0  # The new credentials to apply
+      type: "cred"
+      label: "the new credentials to apply"
+    selectors:
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchActions:
+      - action: Post
+        rateLimit: "1m"
+  # SYNOPSIS
+  # int security_path_chmod(const struct path *path, umode_t mode) - Check if changing the file's mode is allowed
+  #     @path: file path
+  #     @mode: file mode
+  #
+  # DESCRIPTION
+  # Check for permission to change a mode of the file @path. The new mode is
+  # specified in @mode which is a bitmask of constants from
+  # <include/uapi/linux/stat.h>.
+  #
+  # RETURN VALUE
+  # Returns 0 if permission is granted.
+  #
+  - call: "security_path_chmod"
+    syscall: false
+    return: false
+    args:
+    - index: 0
+      type: "path"
+      label: "file path"
+    - index: 1
+      type: "uint32" # WA for broken uint16 in Tetragon
+      label: "new file mode"
+    selectors:
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 1
+        operator: "Mask"
+        values:
+        - "0111" # equivalent of symbolic --x--x--x
