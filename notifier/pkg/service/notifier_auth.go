@@ -5,6 +5,7 @@ import (
 
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"github.com/runtime-radar/runtime-radar/notifier/api"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -25,6 +26,9 @@ func (na *NotifierAuth) Notify(ctx context.Context, req *api.NotifyReq) (resp *e
 	if err := na.Verifier.VerifyPermission(ctx, jwt.PermissionNotifications, jwt.ActionExecute); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = na.NotifierServer.Notify(ctx, req)
 	return
 }

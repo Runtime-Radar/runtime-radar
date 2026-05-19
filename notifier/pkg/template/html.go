@@ -12,7 +12,8 @@ var (
 	DefaultHTMLs  map[string]*template.Template
 )
 
-func initHTMLs(templatesHTMLFolder string) {
+func initHTMLs(templatesFolder string) {
+	templatesHTMLFolder := filepath.Join(templatesFolder, "html")
 	HTMLFilePaths = map[string]string{
 		history.EventTypeRuntimeEvent: filepath.Join(templatesHTMLFolder, "runtime_event.html"),
 	}

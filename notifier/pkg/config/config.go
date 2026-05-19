@@ -26,8 +26,7 @@ type Config struct {
 	TokenKey               string // key for jwt token
 	Auth                   bool   // is auth enabled?
 	CSVersion              string // CS version
-	TemplatesTextFolder    string // Relative path to the text templates folder
-	TemplatesHTMLFolder    string // Relative path to the HTML templates folder
+	TemplatesFolder        string // Relative path to the templates root folder
 	GopsAddr               string // gops listen address
 	OwnCSURL               string // URL of current CS (http(s)://host[:port]).
 
@@ -62,8 +61,7 @@ func New() *Config {
 	flag.StringVar(&c.GopsAddr, "listenGopsAddr", config.LookupEnvString("LISTEN_GOPS_ADDR", "127.0.0.1:7000"), `Address in form of "[host]:port" that gops agent should be listening on. It's not safe to listen to interfaces other than loopback in production.`)
 	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
-	flag.StringVar(&c.TemplatesTextFolder, "templatesTextFolder", config.LookupEnvString("TEMPLATES_TEXT_FOLDER", "templates/text"), `Relative path to the text templates folder.`)
-	flag.StringVar(&c.TemplatesHTMLFolder, "templatesHTMLFolder", config.LookupEnvString("TEMPLATES_HTML_FOLDER", "templates/html"), `Relative path to the HTML templates folder.`)
+	flag.StringVar(&c.TemplatesFolder, "templatesFolder", config.LookupEnvString("TEMPLATES_FOLDER", "templates"), `Relative path to the templates root folder.`)
 
 	// For tests only
 	flag.StringVar(&c.TestMailpitHTTPAddr, "testMailpitHTTPAddr", config.LookupEnvString("TEST_MAILPIT_HTTP_ADDR", "http://127.0.0.1:8025"), `Address in form of "scheme://host:port" of Mailpit HTTP API`)

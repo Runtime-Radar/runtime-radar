@@ -7,7 +7,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/lib/server/interceptor"
 	"github.com/runtime-radar/runtime-radar/notifier/api"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -20,7 +19,6 @@ func (il *IntegrationLogging) Create(ctx context.Context, req *api.Integration) 
 		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
 
 		log.Err(err).Str("delay", time.Since(t0).String()).
-			Bool("audit", true).
 			Interface("args", hidePassword(req)).
 			Interface("result", resp).
 			Stringer("correlation_id", corrID).
@@ -51,7 +49,6 @@ func (il *IntegrationLogging) Update(ctx context.Context, req *api.Integration) 
 		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
 
 		log.Err(err).Str("delay", time.Since(t0).String()).
-			Bool("audit", true).
 			Interface("args", hidePassword(req)).
 			Interface("result", resp).
 			Stringer("correlation_id", corrID).
@@ -67,7 +64,6 @@ func (il *IntegrationLogging) Delete(ctx context.Context, req *api.DeleteIntegra
 		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
 
 		log.Err(err).Str("delay", time.Since(t0).String()).
-			Bool("audit", true).
 			Interface("args", req).
 			Interface("result", resp).
 			Stringer("correlation_id", corrID).
@@ -91,26 +87,4 @@ func (il *IntegrationLogging) List(ctx context.Context, req *api.ListIntegration
 
 	resp, err = il.IntegrationControllerServer.List(ctx, req)
 	return
-}
-
-func hidePassword(req *api.Integration) *api.Integration {
-	if req == nil {
-		return nil
-	}
-
-	clone, ok := proto.Clone(req).(*api.Integration)
-	if !ok {
-		return req
-	}
-
-	const mask = "********"
-	if email := clone.GetEmail(); email != nil {
-		email.Password = mask
-	}
-
-	if webhook := clone.GetWebhook(); webhook != nil {
-		webhook.Password = mask
-	}
-
-	return clone
 }

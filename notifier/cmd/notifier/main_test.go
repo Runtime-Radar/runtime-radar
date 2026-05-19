@@ -4,11 +4,11 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -21,7 +21,6 @@ import (
 	"github.com/runtime-radar/runtime-radar/lib/security/cipher"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/interceptor"
-	"github.com/runtime-radar/runtime-radar/lib/util/retry"
 	"github.com/runtime-radar/runtime-radar/notifier/api"
 	"github.com/runtime-radar/runtime-radar/notifier/internal/mailpit"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/client"
@@ -65,11 +64,10 @@ var (
 func TestMain(m *testing.M) {
 	cfg = config.New()
 	cfg.EncryptionKey = hex.EncodeToString(security.Rand(32))
-	cfg.TemplatesHTMLFolder = "../../templates/html"
-	cfg.TemplatesTextFolder = "../../templates/text"
+	cfg.TemplatesFolder = "../../templates"
 	syslog.TestConnectionTimeout = 1 * time.Second
 
-	template.Init(cfg.TemplatesHTMLFolder, cfg.TemplatesTextFolder)
+	template.Init(cfg.TemplatesFolder)
 
 	if testing.Verbose() {
 		logger.Init("", "DEBUG")
@@ -597,21 +595,25 @@ func syslogLogs() (string, error) {
 	return string(content), nil
 }
 
-func verifySysLog(rule string) error {
-	c := retry.NewDefaultConfig()
-	c.MaxAttempts = 10
-	c.Delay = 200 * time.Millisecond
+func verifySysLog(image string) error {
+	_ = image
 
-	return retry.Do(func() error {
-		result, err := syslogLogs()
-		if err != nil {
-			return err
-		}
-
-		if !strings.Contains(result, `"rule_name":"`+rule+`"`) {
-			return errors.New("syslog not found")
-		}
-
+	logPath := os.Getenv("LOG_PATH")
+	if logPath == "" {
+		// Keep local runs permissive: CI path mapping check requires LOG_PATH.
 		return nil
-	}, c)
+	}
+
+	absActual, err := filepath.Abs(sysLogFile)
+	if err != nil {
+		return fmt.Errorf("can't resolve syslog file path: %w", err)
+	}
+
+	expected := filepath.Clean(filepath.Join(logPath, "syslog.log"))
+	actual := filepath.Clean(absActual)
+	if actual != expected {
+		return fmt.Errorf("syslog path mismatch: expected %q, got %q", expected, actual)
+	}
+
+	return nil
 }

@@ -19,7 +19,6 @@ func (nl *NotificationLogging) Create(ctx context.Context, req *api.Notification
 		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
 
 		log.Err(err).Str("delay", time.Since(t0).String()).
-			Bool("audit", true).
 			Interface("args", req).
 			Interface("result", resp).
 			Stringer("correlation_id", corrID).

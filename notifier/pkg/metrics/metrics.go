@@ -1,0 +1,41 @@
+package metrics
+
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/runtime-radar/runtime-radar/lib/metrics"
+)
+
+const (
+	IsSuccessful = "is_successful"
+	Type         = "type"
+)
+
+var (
+	commonMetrics []prometheus.Collector
+
+	MessagesSentCount = addToCommon(prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "messages_sent_total",
+		Help: "Total number of messages sent",
+	}, []string{IsSuccessful, Type}))
+
+	// Example addToCommon definition:
+	//
+	//	ProxySuccessCount = addToCommon(prometheus.NewCounterVec(prometheus.CounterOpts{
+	//		Name: "proxy_success_count",
+	//		Help: "The number of successfully processed messages on proxy service",
+	//	}, []string{myLabel}))
+)
+
+// PrepareRegistry creates and registers service global metrics
+func PrepareRegistry(service, cluster string, m ...prometheus.Collector) (*metrics.Registry, error) {
+	var mm []prometheus.Collector
+	mm = append(mm, commonMetrics...)
+	mm = append(mm, m...)
+
+	return metrics.NewRegistry(service, cluster, mm...)
+}
+
+func addToCommon[T prometheus.Collector](metric T) T {
+	commonMetrics = append(commonMetrics, metric)
+	return metric
+}

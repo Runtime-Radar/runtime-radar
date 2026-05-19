@@ -12,7 +12,8 @@ var (
 	DefaultTexts  map[string]*template.Template
 )
 
-func initTexts(templatesTextFolder string) {
+func initTexts(templatesFolder string) {
+	templatesTextFolder := filepath.Join(templatesFolder, "text")
 	TextFilePaths = map[string]string{
 		history.EventTypeRuntimeEvent: filepath.Join(templatesTextFolder, "runtime_event.tmpl"),
 	}
