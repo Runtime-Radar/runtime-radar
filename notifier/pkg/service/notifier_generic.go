@@ -3,12 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/cipher"
 	"github.com/runtime-radar/runtime-radar/notifier/api"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/database"
+	"github.com/runtime-radar/runtime-radar/notifier/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/model"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/notifier"
 	"google.golang.org/grpc/codes"
@@ -94,6 +97,11 @@ func (ng *NotifierGeneric) Notify(ctx context.Context, req *api.NotifyReq) (*emp
 		if err != nil {
 			errs = append(errs, fmt.Errorf("can't notify %s: %w", notification.ID, err))
 		}
+
+		metrics.MessagesSentCount.With(prometheus.Labels{
+			metrics.IsSuccessful: strconv.FormatBool(err == nil),
+			metrics.Type:         notification.IntegrationType,
+		}).Inc()
 	}
 
 	if len(errs) > 0 {
