@@ -9,6 +9,8 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - namespaces
+      - nodes
       - pods
       - services
     verbs:
@@ -35,4 +37,5 @@ rules:
       - get
       - list
       - watch
+  {{- include "clusterrole.extra" . | nindent 2 }}
 {{- end }}

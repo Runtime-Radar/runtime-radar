@@ -18,8 +18,8 @@ var (
 	//go:embed tracingpolicy/connect.yaml
 	connect string
 
-	//go:embed tracingpolicy/process-credentials.yaml
-	processCredentials string
+	//go:embed tracingpolicy/permissions.yaml
+	permissions string
 
 	//go:embed tracingpolicy/file-monitoring.yaml
 	fileMonitoring string
@@ -36,11 +36,17 @@ var (
 	//go:embed tracingpolicy/listen-socket.yaml
 	listenSocket string
 
-	//go:embed tracingpolicy/dup.yaml
-	dup string
+	//go:embed tracingpolicy/io-streams.yaml
+	ioStreams string
 
 	//go:embed tracingpolicy/io-uring.yml
 	ioUring string
+
+	//go:embed tracingpolicy/umh.yaml
+	umh string
+
+	//go:embed tracingpolicy/rootkit.yml
+	rootkit string
 )
 
 var (
@@ -55,10 +61,10 @@ var (
 					Yaml:        connect,
 					Enabled:     false,
 				},
-				"process-credentials": {
-					Name:        "Privilege escalation",
-					Description: "This source tracks the commit_creds function allowing detection of privilege escalation, including superuser (root) privileges.",
-					Yaml:        processCredentials,
+				"permissions": {
+					Name:        "File and process access rights actions",
+					Description: "The source monitors calls to the Linux kernel function `commit_creds()`, which may indicate an attacker's attempts to escalate process privileges, including gaining superuser (root) rights. Additionally, the source monitors calls to the LSM function `security_path_chmod()` with permission sets that include execute rights.",
+					Yaml:        permissions,
 					Enabled:     false,
 				},
 				"file-monitoring": {
@@ -91,16 +97,28 @@ var (
 					Yaml:        listenSocket,
 					Enabled:     false,
 				},
-				"dup": {
-					Name:        "Copying file descriptors",
-					Description: "This source monitors calls to functions that perform file descriptor copying. Currently, it tracks the copying of the standard input (Stdin) file descriptor, which may indicate an attempt to build a pipe required for the operation of various hacking tools.",
-					Yaml:        dup,
+				"io-streams": {
+					Name:        "Standard I/O stream actions",
+					Description: "The source monitors calls to the Linux kernel function `do_dup2()`, which duplicates the standard input (STDIN) file descriptor, as well as the creation of named pipe files (S_IFIFO) via the LSM function `security_path_mknod()`. Such actions often indicate that an attacker is attempting to launch a reverse shell, a covert communication channel, or another attack tool.",
+					Yaml:        ioStreams,
 					Enabled:     false,
 				},
 				"io-uring": {
 					Name:        "Monitoring of the io_uring interface",
 					Description: "This source tracks calls to io_uring_setup and io_uring_enter, providing monitoring of the creation and usage of an io_uring interface instance.",
 					Yaml:        ioUring,
+					Enabled:     false,
+				},
+				"umh": {
+					Name:        "Usermode helper API usage",
+					Description: "The source monitors calls to the Linux kernel functions call_usermodehelper_setup() and call_usermodehelper_exec(), which indicate the setup and launch of processes via the usermode helper API. This helps detect several different attacks that abuse this interface to launch processes at the host OS level.",
+					Yaml:        umh,
+					Enabled:     false,
+				},
+				"rootkit": {
+					Name:        "Rootkit loading monitoring",
+					Description: "The source monitors calls to the Linux kernel function kallsyms_lookup_name() used to obtain the address of the system call table, which may indicate rootkit activity on the target system. Additionally, to detect rootkits that use eBPF, the source monitors the loading of eBPF programs via the bpf_check() function.",
+					Yaml:        rootkit,
 					Enabled:     false,
 				},
 			},
