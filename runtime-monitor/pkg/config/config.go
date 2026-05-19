@@ -20,7 +20,7 @@ type Config struct {
 	LogFile              string        // path to log file
 	ListenGRPCAddr       string        // address "[host]:port" that server should be listening on
 	ListenHTTPAddr       string        // address "[host]:port" that server should be listening for health checks
-	InstrumentationAddr  string        // address "[host]:port" that instrumentation server should be listening for health checks and metrics
+	InstrumentationAddr  string        // address "[host]:port" that instrumentation server should be listening on
 	TLS                  bool          // is TLS enabled?
 	TokenKey             string        // key for jwt token
 	Auth                 bool          // is auth enabled?
@@ -31,7 +31,9 @@ type Config struct {
 	RabbitUser           string        // RabbitMQ user
 	RabbitPassword       string        // RabbitMQ password
 	RabbitQueue          string        // RabbitMQ queue name to publish events to
+	OwnCSURL             string        // URL of current CS (http(s)://host[:port]).
 	GopsAddr             string        // gops listen address
+	NodeName             string        // name of node the component is running on
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -60,7 +62,9 @@ func New() *Config {
 	flag.StringVar(&c.RabbitPassword, "rabbitPassword", config.LookupEnvString("RABBIT_PASSWORD", "guest"), "Set RabbitMQ password.")
 	flag.StringVar(&c.RabbitQueue, "rabbitQueue", config.LookupEnvString("RABBIT_QUEUE", "runtime_events"), "Set RabbitMQ queue name to publish events to.")
 	flag.StringVar(&c.GopsAddr, "listenGopsAddr", config.LookupEnvString("LISTEN_GOPS_ADDR", "127.0.0.1:7000"), `Address in form of "[host]:port" that gops agent should be listening on. It's not safe to listen to interfaces other than loopback in production.`)
-	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
+	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
+	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation (metrics, probes...) HTTP server should be listening on.`)
+	flag.StringVar(&c.NodeName, "nodeName", config.LookupEnvString("NODE_NAME", ""), `Name of node the component is running on.`)
 
 	flag.Parse()
 

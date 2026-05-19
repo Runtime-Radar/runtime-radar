@@ -23,7 +23,7 @@ func (cl *ConfigLogging) Add(ctx context.Context, req *api.Config) (resp *emptyp
 			Interface("args", req).
 			Interface("result", resp).
 			Stringer("correlation_id", corrID).
-			Msg("ConfigControllerServer.Add")
+			Msg("Called ConfigControllerServer.Add")
 	}(time.Now())
 
 	resp, err = cl.ConfigControllerServer.Add(ctx, req)
@@ -42,5 +42,35 @@ func (cl *ConfigLogging) Read(ctx context.Context, req *emptypb.Empty) (resp *ap
 	}(time.Now())
 
 	resp, err = cl.ConfigControllerServer.Read(ctx, req)
+	return
+}
+
+func (cl *ConfigLogging) ResetToDefault(ctx context.Context, req *emptypb.Empty) (resp *emptypb.Empty, err error) {
+	defer func(t0 time.Time) {
+		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
+
+		log.Err(err).Str("delay", time.Since(t0).String()).
+			Interface("args", req).
+			Interface("result", resp).
+			Stringer("correlation_id", corrID).
+			Msg("Called ConfigControllerServer.ResetToDefault")
+	}(time.Now())
+
+	resp, err = cl.ConfigControllerServer.ResetToDefault(ctx, req)
+	return
+}
+
+func (cl *ConfigLogging) Status(ctx context.Context, req *emptypb.Empty) (resp *api.ConfigStatus, err error) {
+	defer func(t0 time.Time) {
+		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
+
+		log.Err(err).Str("delay", time.Since(t0).String()).
+			Interface("args", req).
+			Interface("result", resp).
+			Stringer("correlation_id", corrID).
+			Msg("Called ConfigControllerServer.Status")
+	}(time.Now())
+
+	resp, err = cl.ConfigControllerServer.Status(ctx, req)
 	return
 }

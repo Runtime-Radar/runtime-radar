@@ -13,6 +13,7 @@ type ConfigRepository interface {
 	Add(ctx context.Context, ls ...*model.Config) error
 	GetLast(ctx context.Context, preloadData bool) (*model.Config, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateWithMap(ctx context.Context, id uuid.UUID, m map[string]any) error
 }
 
 type ConfigDatabase struct {
@@ -33,7 +34,7 @@ func (cd *ConfigDatabase) GetLast(ctx context.Context, preloadData bool) (*model
 	c := &model.Config{}
 
 	err := cd.preloadData(ctx, preloadData).
-		Order("created_at desc").
+		Order("updated_at desc").
 		Take(&c).
 		Error
 
@@ -43,6 +44,14 @@ func (cd *ConfigDatabase) GetLast(ctx context.Context, preloadData bool) (*model
 func (cd *ConfigDatabase) Delete(ctx context.Context, id uuid.UUID) error {
 	return cd.WithContext(ctx).
 		Delete(&model.Config{Base: model.Base{ID: id}}).
+		Error
+}
+
+// UpdateWithMap updates record in DB by setting of provided key-value (even zeroed) map entries, where key can either be DB column, or struct field name.
+func (cd *ConfigDatabase) UpdateWithMap(ctx context.Context, id uuid.UUID, m map[string]any) error {
+	return cd.WithContext(ctx).
+		Model(&model.Config{Base: model.Base{ID: id}}).
+		Updates(m).
 		Error
 }
 

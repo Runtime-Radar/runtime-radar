@@ -16,6 +16,9 @@ spec:
       labels:
         {{- include "common.podLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.priorityClassName }}
+      priorityClassName: "{{ . }}"
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -25,9 +28,11 @@ spec:
       securityContext:
         {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
+      initContainers:
+      {{- include "initcontainers.extra" . | nindent 6 }}
       containers:
-        {{- include "container.tetragon" . | nindent 8 -}}
         {{- include "common.cs.container.app" . | nindent 8 -}}
+        {{- include "container.tetragon" . | nindent 8 -}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -63,28 +68,25 @@ spec:
         hostPath:
           path: {{ .Values.tetragon.hostProcPath }}
           type: Directory
-{{- if .Values.tetragon.ociHookSetup.enabled }}
-      - name: oci-hooks-path
+      {{- if and (.Values.tetragon.cri.enabled) (.Values.tetragon.cri.socketHostPath) }}
+      - name: cri-socket
         hostPath:
-          path: /usr/share/containers/oci/hooks.d/
-          type: Directory
-      - name: oci-hooks-install-path
-        hostPath:
-          path: {{ quote .Values.tetragon.ociHookSetup.installDir }}
-          type: DirectoryOrCreate
-{{- end }}
-{{- if not .Values.tetragon.btf }}
+          path: {{ quote .Values.tetragon.cri.socketHostPath }}
+          type: Socket
+      {{- end }}
+      {{- if not .Values.tetragon.btf }}
       - emptyDir: {}
         name: metadata-files
-{{- end }}
-{{- range .Values.extraHostPathMounts }}
+      {{- end }}
+      {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- range .Values.extraHostPathMounts }}
       - name: {{ .name }}
         hostPath:
           path: {{ .mountPath }}
-{{- end }}
-{{- with (include "common.cs.volumes" . | fromYaml) }}
-      {{- toYaml .volumes | nindent 6 }}
-{{- end }}
+      {{- end }}
+      {{- include "common.cs.volumes" . | nindent 6 }}
 {{- with .Values.updateStrategy }}
   updateStrategy:
     {{- toYaml . | nindent 4 }}

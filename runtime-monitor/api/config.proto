@@ -31,6 +31,16 @@ service ConfigController {
             get: "/api/v1/config/runtime-monitor"
         };
     }
+    rpc ResetToDefault(google.protobuf.Empty) returns (google.protobuf.Empty)  {
+        option (google.api.http) = {
+            get: "/api/v1/config/runtime-monitor/reset-to-default"
+	};
+    }
+    rpc Status(google.protobuf.Empty) returns (ConfigStatus)  {
+        option (google.api.http) = {
+            get: "/api/v1/config/runtime-monitor/status"
+        };
+    }
 }
 
 message Config {
@@ -68,4 +78,11 @@ message TracingPolicy {
     string description = 2;
     string yaml = 3;
     bool enabled = 4;
+}
+
+message ConfigStatus {
+    bool default = 1;
+    bool default_tracing_policies = 2;
+    string last_init_error = 3;
+    string node_name = 4;
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/lib/rabbit"
+	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/monitor"
 )
 
@@ -25,7 +26,12 @@ func (p *Publisher) Run(stop <-chan struct{}) {
 		case ev := <-events:
 			if err := p.PublishConsumer.Publish(ctx, ev); err != nil {
 				log.Error().Err(err).Msgf("Can't publish event")
+				metrics.RabbitAddEventsFailureCount.Inc()
+
+				continue
 			}
+			metrics.RabbitAddEventsSuccessCount.Inc()
+
 		case <-stop:
 			return
 		}

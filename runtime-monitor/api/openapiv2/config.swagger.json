@@ -30,7 +30,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -51,7 +51,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -65,6 +65,51 @@
             }
           }
         ],
+        "tags": [
+          "ConfigController"
+        ]
+      }
+    },
+    "/api/v1/config/runtime-monitor/reset-to-default": {
+      "get": {
+        "operationId": "ConfigController_ResetToDefault",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ConfigController"
+        ]
+      }
+    },
+    "/api/v1/config/runtime-monitor/status": {
+      "get": {
+        "operationId": "ConfigController_Status",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/runtime_configConfigStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
         "tags": [
           "ConfigController"
         ]
@@ -106,16 +151,7 @@
         }
       }
     },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
-    },
-    "rpcStatus": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
         "code": {
@@ -134,6 +170,15 @@
         }
       }
     },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
     "runtime_configConfig": {
       "type": "object",
       "properties": {
@@ -142,6 +187,23 @@
         },
         "config": {
           "$ref": "#/definitions/ConfigConfigJSON"
+        }
+      }
+    },
+    "runtime_configConfigStatus": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "boolean"
+        },
+        "defaultTracingPolicies": {
+          "type": "boolean"
+        },
+        "lastInitError": {
+          "type": "string"
+        },
+        "nodeName": {
+          "type": "string"
         }
       }
     },
@@ -397,6 +459,13 @@
         "inInitTree": {
           "type": "boolean",
           "description": "Filter containerized processes based on whether they are descendants of\nthe container's init process. This can be used, for example, to watch\nfor processes injected into a container via docker exec, kubectl exec, or\nsimilar mechanisms."
+        },
+        "ancestorBinaryRegex": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Filter ancestor processes' binaries using RE2 regular expression syntax."
         }
       }
     }

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/gops/agent"
+	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/rabbit"
@@ -23,6 +24,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/build"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/config"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/database"
+	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/monitor"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/monitor/publisher"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/monitor/updater"
@@ -98,8 +100,14 @@ func main() {
 		log.Fatal().Msgf("### Failed to migrate DB: %v", err)
 	}
 
+	grpcMetrics := prometheus.NewServerMetrics(prometheus.WithServerHandlingTimeHistogram())
+
 	opts := []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(interceptor.Recovery, interceptor.Correlation),
+		grpc.ChainUnaryInterceptor(
+			interceptor.Recovery,
+			interceptor.Correlation,
+			grpcMetrics.UnaryServerInterceptor(),
+		),
 		grpc.MaxRecvMsgSize(server.MaxRecvMsgSize),
 	}
 
@@ -120,28 +128,51 @@ func main() {
 	defer closeTetra()
 	log.Info().Msgf("Connected to tetragon version %s at %s", tetra.Version, cfg.TetragonAddr)
 
-	mb, err := rabbit.NewMessageBroker(cfg.RabbitAddr, cfg.RabbitUser, cfg.RabbitPassword, cfg.RabbitQueue)
+	mb, err := rabbit.NewMessageBroker(
+		cfg.RabbitAddr,
+		cfg.RabbitUser,
+		cfg.RabbitPassword,
+		cfg.RabbitQueue,
+		rabbit.WithStateReporter(metrics.RabbitStateReporter(cfg.RabbitQueue, false)),
+	)
 	if err != nil {
 		log.Fatal().Msgf("### Failed to initialize Message Broker: %v", err)
 	}
 	defer mb.Close()
 
-	grpcSrv := grpc.NewServer(opts...)
-	configSvc := composeServices(db, tetra, verifier, cfg.Auth)
+	// Initialize metrics
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL, grpcMetrics)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
 
-	api.RegisterConfigControllerServer(grpcSrv, configSvc)
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
 
-	// Register reflection service on gRPC server
-	reflection.Register(grpcSrv)
-
-	// Create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	// Run the instrumentation HTTP server for metrics, probes, etc.
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)
 		}
 	}()
 	log.Info().Msgf("Instrumentation HTTP server listening at %v", cfg.InstrumentationAddr)
+
+	grpcSrv := grpc.NewServer(opts...)
+
+	nodeName := cfg.NodeName
+	if nodeName == "" {
+		h, err := os.Hostname()
+		if err != nil {
+			log.Fatal().Msgf("### Failed to get hostname: %v", err)
+		}
+		nodeName = h
+	}
+
+	configSvc := composeServices(db, tetra, verifier, cfg.Auth, nodeName)
+
+	api.RegisterConfigControllerServer(grpcSrv, configSvc)
+
+	// Register reflection service on gRPC server
+	reflection.Register(grpcSrv)
 
 	// Run gRPC server
 	go func() {
@@ -244,10 +275,11 @@ func eventsPublisher(tetra *monitor.Tetra, mb *rabbit.MessageBroker) {
 	p.Run(shutdown)
 }
 
-func composeServices(db *gorm.DB, monitor monitor.Monitor, verifier jwt.Verifier, isAuth bool) (configSvc api.ConfigControllerServer) {
+func composeServices(db *gorm.DB, monitor monitor.Monitor, verifier jwt.Verifier, isAuth bool, nodeName string) (configSvc api.ConfigControllerServer) {
 	configSvc = &service.ConfigGeneric{
 		ConfigRepository: &database.ConfigDatabase{db},
 		Monitor:          monitor,
+		NodeName:         nodeName,
 	}
 
 	if isAuth {
@@ -257,7 +289,7 @@ func composeServices(db *gorm.DB, monitor monitor.Monitor, verifier jwt.Verifier
 		}
 	}
 
-	configSvc = &service.ConfigLogging{configSvc}
+	configSvc = &service.ConfigLogging{&service.ConfigAudit{configSvc}}
 
 	return
 }

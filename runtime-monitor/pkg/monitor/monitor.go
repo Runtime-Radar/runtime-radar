@@ -10,6 +10,7 @@ import (
 	"github.com/cilium/tetragon/api/v1/tetragon"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/lib/security"
+	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/model"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/pkg/monitor/config"
 	"google.golang.org/grpc"
@@ -19,6 +20,7 @@ import (
 const (
 	connectTimeout  = time.Second
 	dispatchTimeout = time.Second
+	metricsInterval = 15 * time.Second
 )
 
 var (
@@ -27,10 +29,11 @@ var (
 
 // Monitor is interface of Tetra monitoring instance.
 type Monitor interface {
-	Config() *model.Config
-	SetConfig(cfg *model.Config)
+	Config() (sel config.Selector, cfg *model.Config)
+	SetConfig(sel config.Selector, cfg *model.Config)
 	Init(ctx context.Context, cfg *model.Config) error
-	Reinit(sel config.Selector, cfg *model.Config)
+	Update(sel config.Selector, cfg *model.Config)
+	LastInitErr() error
 	Run(stop <-chan struct{}) error
 	Events() <-chan *tetragon.GetEventsResponse
 }
@@ -46,11 +49,15 @@ type Tetra struct {
 	eventsCancelCause context.CancelCauseFunc
 
 	config   *model.Config
+	selector config.Selector
 	configMu sync.RWMutex
 
 	ready  chan struct{}
-	reinit chan config.InitTetra
+	update chan bool
 	events chan *tetragon.GetEventsResponse
+
+	lastInitErr error // err occurred during last config initialization
+	errMu       sync.RWMutex
 }
 
 // NewTetra creates new Tetra instance. It returns any possible error and closing function which is supposed to be put in defer statement in main.
@@ -75,7 +82,7 @@ func NewTetra(address string, bufferSize int) (*Tetra, func() error, error) {
 		sensorsClient: sensors,
 
 		ready:  make(chan struct{}),
-		reinit: make(chan config.InitTetra),
+		update: make(chan bool, 1),
 		events: make(chan *tetragon.GetEventsResponse, bufferSize),
 	}
 
@@ -83,18 +90,19 @@ func NewTetra(address string, bufferSize int) (*Tetra, func() error, error) {
 }
 
 // Config returns current Tetra config. It's safe for concurrent use.
-func (t *Tetra) Config() *model.Config {
+func (t *Tetra) Config() (sel config.Selector, cfg *model.Config) {
 	t.configMu.RLock()
 	defer t.configMu.RUnlock()
 
-	return t.config
+	return t.selector, t.config
 }
 
 // SetConfig sets new Tetra config (but does not apply it). It's safe for concurrent use.
-func (t *Tetra) SetConfig(cfg *model.Config) {
+func (t *Tetra) SetConfig(sel config.Selector, cfg *model.Config) {
 	t.configMu.Lock()
 	defer t.configMu.Unlock()
 
+	t.selector = sel
 	t.config = cfg
 }
 
@@ -103,11 +111,19 @@ func (t *Tetra) Events() <-chan *tetragon.GetEventsResponse {
 	return t.events
 }
 
-// Reinit reinitializes Tetra based on config.Selector and given config.
-func (t *Tetra) Reinit(sel config.Selector, cfg *model.Config) {
-	t.reinit <- config.InitTetra{
-		sel,
-		cfg,
+// Update reinitializes Tetra based on config.Selector and given config.
+func (t *Tetra) Update(sel config.Selector, cfg *model.Config) {
+	t.configMu.Lock()
+	defer t.configMu.Unlock()
+
+	// Or t.SetConfig
+	t.config = cfg
+	t.selector = sel
+
+	select {
+	case t.update <- true:
+	default:
+		// Do nothing. If sending blocked, there is already update pending.
 	}
 }
 
@@ -115,34 +131,54 @@ func (t *Tetra) Reinit(sel config.Selector, cfg *model.Config) {
 // an ctx argument, which can be configured for cancellation on init phase. Cancellation or expiration of ctx
 // does not affect further stream processing.
 func (t *Tetra) Init(ctx context.Context, cfg *model.Config) error {
-	defer close(t.ready)
+	if cfg == nil {
+		return errors.New("nil Tetra config")
+	}
 
-	return t.initBySelector(ctx, config.Selector{true, true, true}, cfg)
+	sel := config.Selector{true, true, true}
+
+	t.config = cfg
+	t.selector = sel
+
+	if err := t.initBySelector(ctx, sel, cfg); err != nil {
+		return fmt.Errorf("can't init Tetra config: %w", err)
+	}
+
+	close(t.ready)
+
+	return nil
 }
 
-func (t *Tetra) initBySelector(ctx context.Context, c config.Selector, cfg *model.Config) error {
-	t.configMu.Lock()
-	defer t.configMu.Unlock()
+func (t *Tetra) initBySelector(ctx context.Context, sel config.Selector, cfg *model.Config) (err error) {
+	defer func() {
+		t.errMu.Lock()
+		t.lastInitErr = err
+		t.errMu.Unlock()
+	}()
 
-	if c.EventsClient {
+	t.errMu.RLock()
+	if t.lastInitErr != nil {
+		sel = config.Selector{true, true, true}
+	}
+	t.errMu.RUnlock()
+
+	if sel.EventsClient {
 		if err := t.initEventsClient(ctx, cfg); err != nil {
 			return err
 		}
 	}
-	if c.TracingPolicies {
+	if sel.TracingPolicies {
 		if err := t.initTracingPolicies(ctx, cfg); err != nil {
 			return err
 		}
 		if err := t.initTracingPolicyStates(ctx, cfg); err != nil {
 			return err
 		}
-	} else if c.TracingPolicyStates {
+	} else if sel.TracingPolicyStates {
 		if err := t.initTracingPolicyStates(ctx, cfg); err != nil {
 			return err
 		}
 	}
-
-	t.config = cfg
 
 	return nil
 }
@@ -265,11 +301,14 @@ func (t *Tetra) Run(stop <-chan struct{}) error {
 	defer wg.Wait()
 	defer t.eventsCancelCause(errClientContextCanceled)
 
+	go t.runMetrics(metricsInterval, stop)
+
 	for {
 		select {
-		case it := <-t.reinit:
-			if err := t.initBySelector(context.Background(), it.Selector, it.Config); err != nil {
-				log.Error().Err(err).Interface("selector", it.Selector).Interface("config", it.Config).Msgf("Can't init tetra")
+		case <-t.update:
+			sel, cfg := t.Config()
+			if err := t.initBySelector(context.Background(), sel, cfg); err != nil {
+				log.Error().Err(err).Interface("selector", sel).Interface("config", cfg).Msgf("Can't init tetra")
 				// Just log, don't break the monitor loop
 			}
 		case <-worker:
@@ -296,6 +335,13 @@ func (t *Tetra) Run(stop <-chan struct{}) error {
 			return nil // <-- return
 		}
 	}
+}
+
+func (t *Tetra) LastInitErr() error {
+	t.errMu.RLock()
+	defer t.errMu.RUnlock()
+
+	return t.lastInitErr
 }
 
 // processStream processes the events stream, it intercepts any possible panic and converts it to error.
@@ -334,10 +380,26 @@ func (t *Tetra) processStream(eventsCtx context.Context) (err error) {
 		select {
 		case t.events <- resp:
 		case <-timer.C:
+			metrics.TetragonEventsDroppedCount.Inc()
 			log.Error().Interface("event", resp.GetEvent()).Msgf("Timeout dispatching event")
 		}
 
 		timer.Stop()
+	}
+}
+
+func (t *Tetra) runMetrics(interval time.Duration, stop <-chan struct{}) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-stop:
+			return
+
+		case <-ticker.C:
+			metrics.TetragonEventsBufferSizeGauge.Set(float64(len(t.events)))
+		}
 	}
 }
 

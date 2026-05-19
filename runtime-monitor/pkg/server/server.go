@@ -8,6 +8,8 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/justinas/alice"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
 	"github.com/runtime-radar/runtime-radar/lib/server/middleware"
@@ -19,8 +21,8 @@ import (
 )
 
 const (
-	readTimeout  = 2 * time.Minute
-	writeTimeout = 2 * time.Minute
+	readTimeout  = 30 * time.Second
+	writeTimeout = 30 * time.Second
 	// Maximum message size for grpc request
 	MaxRecvMsgSize = 10 * 1024 * 1024 // 10MB
 )
@@ -46,11 +48,14 @@ func New(httpAddr, grpcAddr string, tlsConfig *tls.Config) (*http.Server, error)
 	return s, nil
 }
 
-func NewInstrumentation(listenAddress string) *http.Server {
+func NewInstrumentation(listenAddress string, gatherer prometheus.Gatherer) *http.Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/ready", healthcheck.ReadyHandler)
 	mux.HandleFunc("/live", healthcheck.LiveHandler)
+
+	handler := promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{})
+	mux.Handle("/metrics", handler)
 
 	h := alice.New(
 		middleware.Log,

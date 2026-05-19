@@ -5,6 +5,7 @@ import (
 
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"github.com/runtime-radar/runtime-radar/runtime-monitor/api"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -26,6 +27,8 @@ func (ca *ConfigAuth) Add(ctx context.Context, req *api.Config) (resp *emptypb.E
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
 
+	lib_context.SetUserID(ctx)
+
 	resp, err = ca.ConfigControllerServer.Add(ctx, req)
 	return
 }
@@ -35,6 +38,30 @@ func (ca *ConfigAuth) Read(ctx context.Context, req *emptypb.Empty) (resp *api.C
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
 
+	lib_context.SetUserID(ctx)
+
 	resp, err = ca.ConfigControllerServer.Read(ctx, req)
+	return
+}
+
+func (ca *ConfigAuth) ResetToDefault(ctx context.Context, req *emptypb.Empty) (resp *emptypb.Empty, err error) {
+	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionSystemSettings, jwt.ActionUpdate); err != nil {
+		return nil, errcommon.PermissionErrorToStatus(err)
+	}
+
+	lib_context.SetUserID(ctx)
+
+	resp, err = ca.ConfigControllerServer.ResetToDefault(ctx, req)
+	return
+}
+
+func (ca *ConfigAuth) Status(ctx context.Context, req *emptypb.Empty) (resp *api.ConfigStatus, err error) {
+	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionSystemSettings, jwt.ActionRead); err != nil {
+		return nil, errcommon.PermissionErrorToStatus(err)
+	}
+
+	lib_context.SetUserID(ctx)
+
+	resp, err = ca.ConfigControllerServer.Status(ctx, req)
 	return
 }

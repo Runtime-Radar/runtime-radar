@@ -11,11 +11,6 @@ type Selector struct {
 	EventsClient, TracingPolicies, TracingPolicyStates bool
 }
 
-type InitTetra struct {
-	Selector Selector
-	Config   *model.Config
-}
-
 func Diff(oldCfg, newCfg *model.Config) (sel Selector, changed bool) {
 	// TODO: disabled for debugging purposes, anyways it's a small optimization
 	// if !newCfg.CreatedAt.After(oldCfg.CreatedAt) {
