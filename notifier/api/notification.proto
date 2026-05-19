@@ -62,7 +62,7 @@ message Notification {
   string template = 7;
   oneof config {
     EmailConfig email = 8;
-    WebhookConfig webhook = 9; 
+    WebhookConfig webhook = 9;
     SyslogConfig syslog = 10;
   }
   string central_cs_url = 11;

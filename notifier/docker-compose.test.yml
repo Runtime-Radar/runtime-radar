@@ -1,34 +1,34 @@
 services:
   mailpit:
     extends:
-      file: docker-compose.yml
+      file: ../docker-compose.yml
       service: mailpit
 
   syslog-ng:
     extends:
-      file: docker-compose.yml
+      file: ../docker-compose.yml
       service: syslog-ng
 
   postgres:
     extends:
-      file: docker-compose.yml
+      file: ../docker-compose.test.yml
       service: postgres
-    environment:
-      - POSTGRES_DB=cs_test
 
   test:
-    image: golang:1.25
-    working_dir: /go/src/repo
-    volumes:
-      - .:/go/src/repo
+    extends:
+      file: ../docker-compose.test.yml
+      service: test
     depends_on:
-      - postgres
-      - mailpit
-      - syslog-ng
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+      syslog-ng:
+        condition: service_started
     networks:
       - local
     environment:
-      - POSTGRES_ADDR=postgres
+      - COMPONENT=notifier
       - TEST_MAILPIT_HTTP_ADDR=http://mailpit:8025
       - TEST_MAILPIT_SMTP_ADDR=mailpit:1025
       - TEST_SYSLOG_UDP_ADDR=udp://syslog-ng:6514

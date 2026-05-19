@@ -1,6 +1,6 @@
 package template
 
-func Init(templatesHTMLFolder, templatesTextFolder string) {
-	initHTMLs(templatesHTMLFolder)
-	initTexts(templatesTextFolder)
+func Init(templatesFolder string) {
+	initHTMLs(templatesFolder)
+	initTexts(templatesFolder)
 }
