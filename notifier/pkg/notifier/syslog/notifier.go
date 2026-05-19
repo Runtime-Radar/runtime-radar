@@ -14,6 +14,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/notifier/api"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/model"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/template"
+	enforcer "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
 )
 
 var (
@@ -129,20 +130,20 @@ func mapEventPriorityToSyslog(event any) syslog.Priority {
 
 func mapSeverityToSyslog(severity string) syslog.Priority {
 	switch strings.ToLower(severity) {
-	case "critical":
+	case enforcer.CriticalSeverity.String():
 		return syslog.LOG_EMERG
-	case "high":
+	case enforcer.HighSeverity.String():
 		return syslog.LOG_ALERT
-	case "medium":
+	case enforcer.MediumSeverity.String():
 		return syslog.LOG_CRIT
-	case "":
-		return syslog.LOG_ERR
-	case "low":
+	case enforcer.LowSeverity.String():
 		return syslog.LOG_WARNING
-	case "unknown":
-		return syslog.LOG_NOTICE
 	case "info":
 		return syslog.LOG_INFO
+	case "unknown":
+		return syslog.LOG_NOTICE
+	case "":
+		return syslog.LOG_ERR
 	}
 	return syslog.LOG_DEBUG
 }
