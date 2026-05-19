@@ -19,6 +19,13 @@ service RuntimeStats {
       get: "/api/v1/stats/runtime-event/count"
     };
   }
+
+  rpc DetectorRating(DetectorRatingReq) returns (DetectorRatingResp) {
+    option (google.api.http) = {
+      post: "/api/v1/stats/detector/rating"
+      body: "*"
+    };
+  }
 }
 
 message RuntimeEventsCounterReq {
@@ -26,4 +33,30 @@ message RuntimeEventsCounterReq {
   // type represents the type of runtime event registered in the system.
   // Possible values are UNDEF, PROCESS_EXEC, PROCESS_EXIT, PROCESS_KPROBE, PROCESS_TRACEPOINT, PROCESS_LOADER and PROCESS_UPROBE
   optional string type = 2;
+}
+
+message DetectorRatingReq {
+  message Filter {
+    string pod_name = 1;
+    string pod_namespace = 2;
+    string container_name = 3;
+  }
+  Filter filter = 1;
+
+  common.Period period = 2;
+  // top-N items should be returned
+  int32 count = 3;
+  // sort by default: severity desc, count desc
+  repeated common.Sort sorts = 4;
+}
+
+message DetectorRatingResp {
+  message Counter {
+    string detector_id = 1;
+    string severity = 2;
+    int32 count = 3;
+  }
+
+  // detector rating by severity and number of detections
+  repeated Counter counters = 1;
 }
