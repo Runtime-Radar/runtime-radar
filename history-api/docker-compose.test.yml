@@ -1,8 +1,32 @@
 services:
-  test:
-      image: golang:1.25
-      working_dir: /go/src/repo
-      volumes:
-        - .:/go/src/repo
+  clickhouse:
+    extends:
+      file: ../docker-compose.test.yml
+      service: clickhouse
 
-      command: "go test -race -count=1 -vet=off ./..."
+  postgres:
+    extends:
+      file: ../docker-compose.test.yml
+      service: postgres
+
+  rabbitmq:
+    extends:
+      file: ../docker-compose.test.yml
+      service: rabbitmq
+
+  test:
+    extends:
+      file: ../docker-compose.test.yml
+      service: test
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - COMPONENT=history-api
+
+networks:
+  local:

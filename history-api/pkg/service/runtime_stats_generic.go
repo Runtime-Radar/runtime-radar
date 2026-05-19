@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/runtime-radar/runtime-radar/history-api/api"
+	"github.com/runtime-radar/runtime-radar/history-api/pkg/database"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/database/clickhouse"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/model"
+	"github.com/runtime-radar/runtime-radar/history-api/pkg/model/convert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -41,6 +43,38 @@ func (sg *RuntimeStatsGeneric) CountEvents(ctx context.Context, req *api.Runtime
 	}
 
 	return &api.Counter{Count: int32(cnt)}, nil
+}
+
+var detectorThreatsOrder = map[string]struct{}{"severity": {}, "detector_id": {}, "count": {}}
+
+func (sg *RuntimeStatsGeneric) DetectorRating(ctx context.Context, req *api.DetectorRatingReq) (resp *api.DetectorRatingResp, err error) {
+	from, to, err := timeFromPeriod(req.Period)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid time period: %v", err)
+	}
+
+	for _, s := range req.Sorts {
+		if _, ok := detectorThreatsOrder[s.GetField()]; !ok {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid order field: %s", s.GetField())
+		}
+	}
+
+	order := makeOrder(req.Sorts)
+	if order == "" {
+		order = defaultStatsOrder
+	}
+
+	filters := makeDetectorRatingFilter(req.Filter)
+
+	dr, err := sg.StatsRepository.GetDetectorRating(ctx, from, to, filters, order, int(req.Count))
+	if err != nil {
+		if errors.Is(err, database.ErrInvalidOrder) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		return nil, status.Errorf(codes.Internal, "can't get vulns rating by detector: %v", err)
+	}
+
+	return convert.DetectorCountersToProto(dr), nil
 }
 
 func validateRuntimeEventType(t string) (reason string, ok bool) {

@@ -33,3 +33,11 @@ func (sa *RuntimeStatsAuth) CountEvents(ctx context.Context, req *api.RuntimeEve
 	resp, err = sa.RuntimeStatsServer.CountEvents(ctx, req)
 	return
 }
+
+func (sa *RuntimeStatsAuth) DetectorRating(ctx context.Context, req *api.DetectorRatingReq) (resp *api.DetectorRatingResp, err error) {
+	if err := sa.Verifier.VerifyPermission(ctx, jwt.PermissionEvents, jwt.ActionRead); err != nil {
+		return nil, errcommon.PermissionErrorToStatus(err)
+	}
+	resp, err = sa.RuntimeStatsServer.DetectorRating(ctx, req)
+	return
+}

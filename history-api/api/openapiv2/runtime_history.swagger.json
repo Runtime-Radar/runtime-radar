@@ -432,6 +432,50 @@
         }
       }
     },
+    "tetragonBpfCmd": {
+      "type": "string",
+      "enum": [
+        "BPF_MAP_CREATE",
+        "BPF_MAP_LOOKUP_ELEM",
+        "BPF_MAP_UPDATE_ELEM",
+        "BPF_MAP_DELETE_ELEM",
+        "BPF_MAP_GET_NEXT_KEY",
+        "BPF_PROG_LOAD",
+        "BPF_OBJ_PIN",
+        "BPF_OBJ_GET",
+        "BPF_PROG_ATTACH",
+        "BPF_PROG_DETACH",
+        "BPF_PROG_TEST_RUN",
+        "BPF_PROG_GET_NEXT_ID",
+        "BPF_MAP_GET_NEXT_ID",
+        "BPF_PROG_GET_FD_BY_ID",
+        "BPF_MAP_GET_FD_BY_ID",
+        "BPF_OBJ_GET_INFO_BY_FD",
+        "BPF_PROG_QUERY",
+        "BPF_RAW_TRACEPOINT_OPEN",
+        "BPF_BTF_LOAD",
+        "BPF_BTF_GET_FD_BY_ID",
+        "BPF_TASK_FD_QUERY",
+        "BPF_MAP_LOOKUP_AND_DELETE_ELEM",
+        "BPF_MAP_FREEZE",
+        "BPF_BTF_GET_NEXT_ID",
+        "BPF_MAP_LOOKUP_BATCH",
+        "BPF_MAP_LOOKUP_AND_DELETE_BATCH",
+        "BPF_MAP_UPDATE_BATCH",
+        "BPF_MAP_DELETE_BATCH",
+        "BPF_LINK_CREATE",
+        "BPF_LINK_UPDATE",
+        "BPF_LINK_GET_FD_BY_ID",
+        "BPF_LINK_GET_NEXT_ID",
+        "BPF_ENABLE_STATS",
+        "BPF_ITER_CREATE",
+        "BPF_LINK_DETACH",
+        "BPF_PROG_BIND_MAP",
+        "BPF_TOKEN_CREATE"
+      ],
+      "default": "BPF_MAP_CREATE",
+      "description": " - BPF_MAP_CREATE: Create a map and return a file descriptor that refers to the\nmap.\n - BPF_MAP_LOOKUP_ELEM: Look up an element with a given key in the map referred to\nby the file descriptor map_fd.\n - BPF_MAP_UPDATE_ELEM: Create or update an element (key/value pair) in a specified map.\n - BPF_MAP_DELETE_ELEM: Look up and delete an element by key in a specified map.\n - BPF_MAP_GET_NEXT_KEY: Look up an element by key in a specified map and return the key\nof the next element. Can be used to iterate over all elements\nin the map.\n - BPF_PROG_LOAD: Verify and load an eBPF program, returning a new file descriptor\nassociated with the program.\n - BPF_OBJ_PIN: Pin an eBPF program or map referred by the specified bpf_fd\nto the provided pathname on the filesystem.\n - BPF_OBJ_GET: Open a file descriptor for the eBPF object pinned to the\nspecified pathname.\n - BPF_PROG_ATTACH: Attach an eBPF program to a target_fd at the specified\nattach_type hook.\n - BPF_PROG_DETACH: Detach the eBPF program associated with the target_fd at the\nhook specified by attach_type.\n - BPF_PROG_TEST_RUN: Run the eBPF program associated with the prog_fd a repeat\nnumber of times against a provided program context ctx_in and\ndata data_in, and return the modified program context\nctx_out, data_out (for example, packet data), result of the\nexecution retval, and duration of the test run.\n - BPF_PROG_GET_NEXT_ID: Fetch the next eBPF program currently loaded into the kernel.\n - BPF_MAP_GET_NEXT_ID: Fetch the next eBPF map currently loaded into the kernel.\n - BPF_PROG_GET_FD_BY_ID: Open a file descriptor for the eBPF program corresponding to prog_id.\n - BPF_MAP_GET_FD_BY_ID: Open a file descriptor for the eBPF map corresponding to map_id.\n - BPF_OBJ_GET_INFO_BY_FD: Obtain information about the eBPF object corresponding to bpf_fd.\n - BPF_PROG_QUERY: Obtain information about eBPF programs associated with the specified\nattach_type hook.\n - BPF_RAW_TRACEPOINT_OPEN: Attach an eBPF program to a tracepoint *name* to access kernel\ninternal arguments of the tracepoint in their raw form.\n - BPF_BTF_LOAD: Verify and load BPF Type Format (BTF) metadata into the kernel,\nreturning a new file descriptor associated with the metadata.\n - BPF_BTF_GET_FD_BY_ID: Open a file descriptor for the BPF Type Format (BTF)\ncorresponding to btf_id.\n - BPF_TASK_FD_QUERY: Obtain information about eBPF programs associated with the target\nprocess identified by pid and fd.\n - BPF_MAP_LOOKUP_AND_DELETE_ELEM: Look up an element with the given key in the map referred to\nby the file descriptor fd, and if found, delete the element.\n - BPF_MAP_FREEZE: Freeze the permissions of the specified map.\n - BPF_BTF_GET_NEXT_ID: Fetch the next BPF Type Format (BTF) object currently loaded into\nthe kernel.\n - BPF_MAP_LOOKUP_BATCH: Iterate and fetch multiple elements in a map.\n - BPF_MAP_LOOKUP_AND_DELETE_BATCH: Iterate and delete all elements in a map.\n - BPF_MAP_UPDATE_BATCH: Update multiple elements in a map by key.\n - BPF_MAP_DELETE_BATCH: Delete multiple elements in a map by key.\n - BPF_LINK_CREATE: Attach an eBPF program to a target_fd at the specified\nattach_type hook and return a file descriptor handle for\nmanaging the link.\n - BPF_LINK_UPDATE: Update the eBPF program in the specified link_fd to\nnew_prog_fd.\n - BPF_LINK_GET_FD_BY_ID: Open a file descriptor for the eBPF Link corresponding to\nlink_id.\n - BPF_LINK_GET_NEXT_ID: Fetch the next eBPF link currently loaded into the kernel.\n - BPF_ENABLE_STATS: Enable eBPF runtime statistics gathering.\n - BPF_ITER_CREATE: Create an iterator on top of the specified link_fd (as\npreviously created using BPF_LINK_CREATE) and return a\nfile descriptor that can be used to trigger the iteration.\n - BPF_LINK_DETACH: Forcefully detach the specified link_fd from its corresponding\nattachment point.\n - BPF_PROG_BIND_MAP: Bind a map to the lifetime of an eBPF program.\n - BPF_TOKEN_CREATE: Create BPF token with embedded information about what can be\npassed as an extra parameter to various bpf() syscall commands\nto grant BPF subsystem functionality to unprivileged processes."
+    },
     "tetragonCapabilities": {
       "type": "object",
       "properties": {
@@ -534,6 +578,10 @@
         "maybeExecProbe": {
           "type": "boolean",
           "description": "If this is set true, it means that the process might have been originated from\na Kubernetes exec probe. For this field to be true, the following must be true:\n1. The binary field matches the first element of the exec command list for either\n   liveness or readiness probe excluding the basename. For example, \"/bin/ls\"\n   and \"ls\" are considered a match.\n2. The arguments field exactly matches the rest of the exec command list."
+        },
+        "securityContext": {
+          "$ref": "#/definitions/tetragonSecurityContext",
+          "title": "The security context of the container"
         }
       }
     },
@@ -575,6 +623,12 @@
         "processUprobe": {
           "$ref": "#/definitions/tetragonProcessUprobe"
         },
+        "processThrottle": {
+          "$ref": "#/definitions/tetragonProcessThrottle"
+        },
+        "processLsm": {
+          "$ref": "#/definitions/tetragonProcessLsm"
+        },
         "test": {
           "$ref": "#/definitions/tetragonTest"
         },
@@ -593,6 +647,17 @@
         "aggregationInfo": {
           "$ref": "#/definitions/tetragonAggregationInfo",
           "description": "aggregation_info contains information about aggregation results. This field\nis set only for aggregated responses."
+        },
+        "clusterName": {
+          "type": "string",
+          "description": "Name of the cluster where this event was observed."
+        },
+        "nodeLabels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels associated with the node where this event was observed."
         }
       }
     },
@@ -660,10 +725,11 @@
         "KPROBE_ACTION_SIGNAL",
         "KPROBE_ACTION_TRACKSOCK",
         "KPROBE_ACTION_UNTRACKSOCK",
-        "KPROBE_ACTION_NOTIFYENFORCER"
+        "KPROBE_ACTION_NOTIFYENFORCER",
+        "KPROBE_ACTION_CLEANUPENFORCERNOTIFICATION"
       ],
       "default": "KPROBE_ACTION_UNKNOWN",
-      "description": " - KPROBE_ACTION_UNKNOWN: Unknown action\n - KPROBE_ACTION_POST: Post action creates an event (default action).\n - KPROBE_ACTION_FOLLOWFD: Post action creates a mapping between file descriptors and file names.\n - KPROBE_ACTION_SIGKILL: Sigkill action synchronously terminates the process.\n - KPROBE_ACTION_UNFOLLOWFD: Post action removes a mapping between file descriptors and file names.\n - KPROBE_ACTION_OVERRIDE: Override action modifies the return value of the call.\n - KPROBE_ACTION_COPYFD: Post action dupplicates a mapping between file descriptors and file\nnames.\n - KPROBE_ACTION_GETURL: GetURL action issue an HTTP Get request against an URL from userspace.\n - KPROBE_ACTION_DNSLOOKUP: GetURL action issue a DNS lookup against an URL from userspace.\n - KPROBE_ACTION_NOPOST: NoPost action suppresses the transmission of the event to userspace.\n - KPROBE_ACTION_SIGNAL: Signal action sends specified signal to the process.\n - KPROBE_ACTION_TRACKSOCK: TrackSock action tracks socket.\n - KPROBE_ACTION_UNTRACKSOCK: UntrackSock action un-tracks socket.\n - KPROBE_ACTION_NOTIFYENFORCER: NotifyEnforcer action notifies killer sensor."
+      "title": "- KPROBE_ACTION_UNKNOWN: Unknown action\n - KPROBE_ACTION_POST: Post action creates an event (default action).\n - KPROBE_ACTION_FOLLOWFD: Post action creates a mapping between file descriptors and file names.\n - KPROBE_ACTION_SIGKILL: Sigkill action synchronously terminates the process.\n - KPROBE_ACTION_UNFOLLOWFD: Post action removes a mapping between file descriptors and file names.\n - KPROBE_ACTION_OVERRIDE: Override action modifies the return value of the call.\n - KPROBE_ACTION_COPYFD: Post action dupplicates a mapping between file descriptors and file\nnames.\n - KPROBE_ACTION_GETURL: GetURL action issue an HTTP Get request against an URL from userspace.\n - KPROBE_ACTION_DNSLOOKUP: GetURL action issue a DNS lookup against an URL from userspace.\n - KPROBE_ACTION_NOPOST: NoPost action suppresses the transmission of the event to userspace.\n - KPROBE_ACTION_SIGNAL: Signal action sends specified signal to the process.\n - KPROBE_ACTION_TRACKSOCK: TrackSock action tracks socket.\n - KPROBE_ACTION_UNTRACKSOCK: UntrackSock action un-tracks socket.\n - KPROBE_ACTION_NOTIFYENFORCER: NotifyEnforcer action notifies enforcer sensor.\n - KPROBE_ACTION_CLEANUPENFORCERNOTIFICATION: CleanupEnforcerNotification action cleanups any state left by NotifyEnforcer"
     },
     "tetragonKprobeArgument": {
       "type": "object",
@@ -754,6 +820,15 @@
         },
         "netDevArg": {
           "$ref": "#/definitions/tetragonKprobeNetDev"
+        },
+        "bpfCmdArg": {
+          "$ref": "#/definitions/tetragonBpfCmd"
+        },
+        "syscallId": {
+          "$ref": "#/definitions/tetragonSyscallId"
+        },
+        "sockaddrArg": {
+          "$ref": "#/definitions/tetragonKprobeSockaddr"
         },
         "label": {
           "type": "string"
@@ -1004,6 +1079,21 @@
         }
       }
     },
+    "tetragonKprobeSockaddr": {
+      "type": "object",
+      "properties": {
+        "family": {
+          "type": "string"
+        },
+        "addr": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "tetragonKprobeTruncatedBytes": {
       "type": "object",
       "properties": {
@@ -1125,6 +1215,13 @@
         "workloadKind": {
           "type": "string",
           "description": "Kubernetes workload kind (e.g. \"Deployment\", \"DaemonSet\") of the Pod."
+        },
+        "podAnnotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Contains all the annotations of the pod."
         }
       }
     },
@@ -1143,7 +1240,7 @@
         "uid": {
           "type": "integer",
           "format": "int64",
-          "description": "User identifier associated with the process."
+          "description": "The effective User identifier used for permission checks. This field maps to the\n'ProcessCredentials.euid' field. Run with the `--enable-process-cred` flag to\nenable 'ProcessCredentials' and get all the User and Group identifiers."
         },
         "cwd": {
           "type": "string",
@@ -1159,7 +1256,7 @@
         },
         "flags": {
           "type": "string",
-          "description": "Flags are for debugging purposes only and should not be considered a\nreliable source of information. They hold various information about\nwhich syscalls generated events, use of internal Tetragon buffers,\nerrors and more.\n- `execve` This event is generated by an execve syscall for a new\nprocess. See procFs for the other option. A correctly formatted event\nshould either set execve or procFS (described next).\n- `procFS` This event is generated from a proc interface. This happens\nat Tetragon init when existing processes are being loaded into Tetragon\nevent buffer. All events should have either execve or procFS set.\n- `truncFilename` Indicates a truncated processes filename because the\nbuffer size is too small to contain the process filename. Consider\nincreasing buffer size to avoid this.\n- `truncArgs` Indicates truncated the processes arguments because the\nbuffer size was too small to contain all exec args. Consider increasing\nbuffer size to avoid this.\n- `taskWalk` Primarily useful for debugging. Indicates a walked process\nhierarchy to find a parent process in the Tetragon buffer. This may\nhappen when we did not receive an exec event for the immediate parent of\na process. Typically means we are looking at a fork that in turn did\nanother fork we don't currently track fork events exactly and instead\npush an event with the original parent exec data. This flag can provide\nthis insight into the event if needed.\n- `miss` An error flag indicating we could not find parent info in the\nTetragon event buffer. If this is set it should be reported to Tetragon\ndevelopers for debugging. Tetragon will do its best to recover\ninformation about the process from available kernel data structures\ninstead of using cached info in this case. However, args will not be\navailable.\n- `needsAUID` An internal flag for Tetragon to indicate the audit has\nnot yet been resolved. The BPF hooks look at this flag to determine if\nprobing the audit system is necessary.\n- `errorFilename` An error flag indicating an error happened while\nreading the filename. If this is set it should be reported to Tetragon\ndevelopers for debugging.\n- `errorArgs` An error flag indicating an error happened while reading\nthe process args. If this is set it should be reported to Tetragon\ndevelopers for debugging\n- `needsCWD` An internal flag for Tetragon to indicate the current\nworking directory has not yet been resolved. The Tetragon hooks look at\nthis flag to determine if probing the CWD is necessary.\n- `noCWDSupport` Indicates that CWD is removed from the event because\nthe buffer size is too small. Consider increasing buffer size to avoid\nthis.\n- `rootCWD` Indicates that CWD is the root directory. This is necessary\nto inform readers the CWD is not in the event buffer and is '/' instead.\n- `errorCWD` An error flag indicating an error occurred while reading\nthe CWD of a process. If this is set it should be reported to Tetragon\ndevelopers for debugging.\n- `clone` Indicates the process issued a clone before exec*. This is the\ngeneral flow to exec* a new process, however its possible to replace the\ncurrent process with a new process by doing an exec* without a clone. In\nthis case the flag will be omitted and the same PID will be used by the\nkernel for both the old process and the newly exec'd process."
+          "description": "Flags are for debugging purposes only and should not be considered a\nreliable source of information. They hold various information about\nwhich syscalls generated events, use of internal Tetragon buffers,\nerrors and more.\n- `execve` This event is generated by an execve syscall for a new\nprocess. See procFs for the other option. A correctly formatted event\nshould either set execve or procFS (described next).\n- `procFS` This event is generated from a proc interface. This happens\nat Tetragon init when existing processes are being loaded into Tetragon\nevent buffer. All events should have either execve or procFS set.\n- `truncFilename` Indicates a truncated processes filename because the\nbuffer size is too small to contain the process filename. Consider\nincreasing buffer size to avoid this.\n- `truncArgs` Indicates truncated the processes arguments because the\nbuffer size was too small to contain all exec args. Consider increasing\nbuffer size to avoid this.\n- `taskWalk` Primarily useful for debugging. Indicates a walked process\nhierarchy to find a parent process in the Tetragon buffer. This may\nhappen when we did not receive an exec event for the immediate parent of\na process. Typically means we are looking at a fork that in turn did\nanother fork we don't currently track fork events exactly and instead\npush an event with the original parent exec data. This flag can provide\nthis insight into the event if needed.\n- `miss` An error flag indicating we could not find parent info in the\nTetragon event buffer. If this is set it should be reported to Tetragon\ndevelopers for debugging. Tetragon will do its best to recover\ninformation about the process from available kernel data structures\ninstead of using cached info in this case. However, args will not be\navailable.\n- `needsAUID` An internal flag for Tetragon to indicate the audit has\nnot yet been resolved. The BPF hooks look at this flag to determine if\nprobing the audit system is necessary.\n- `errorFilename` An error flag indicating an error happened while\nreading the filename. If this is set it should be reported to Tetragon\ndevelopers for debugging.\n- `errorArgs` An error flag indicating an error happened while reading\nthe process args. If this is set it should be reported to Tetragon\ndevelopers for debugging\n- `needsCWD` An internal flag for Tetragon to indicate the current\nworking directory has not yet been resolved. The Tetragon hooks look at\nthis flag to determine if probing the CWD is necessary.\n- `noCWDSupport` Indicates that CWD is removed from the event because\nthe buffer size is too small. Consider increasing buffer size to avoid\nthis.\n- `rootCWD` Indicates that CWD is the root directory. This is necessary\nto inform readers the CWD is not in the event buffer and is '/' instead.\n- `errorCWD` An error flag indicating an error occurred while reading\nthe CWD of a process. If this is set it should be reported to Tetragon\ndevelopers for debugging.\n- `clone` Indicates the process issued a clone before exec*. This is the\ngeneral flow to exec* a new process, however its possible to replace the\ncurrent process with a new process by doing an exec* without a clone. In\nthis case the flag will be omitted and the same PID will be used by the\nkernel for both the old process and the newly exec'd process.\n- `unknown` Indicates the process was not found in the process cache\nand contains just pid and start time."
         },
         "startTime": {
           "type": "string",
@@ -1203,7 +1300,7 @@
         },
         "processCredentials": {
           "$ref": "#/definitions/tetragonProcessCredentials",
-          "title": "Process credentials"
+          "description": "Process credentials, disabled by default, can be enabled by the\n`--enable-process-cred` flag."
         },
         "binaryProperties": {
           "$ref": "#/definitions/tetragonBinaryProperties",
@@ -1211,7 +1308,11 @@
         },
         "user": {
           "$ref": "#/definitions/tetragonUserRecord",
-          "description": "UserRecord contains user information about the event.\n\nUserRecord is only supported when i) Tetragon is running as a systemd service or directly on the host, and\n ii) when  `--username-metadata` is set to \"unix\". In this case, the information is retrieved from\nthe traditional user database `/etc/passwd` and no name services lookups are performed.\nThe resolution will only be attempted for processes in the host namespace.\nNote that this resolution happens in user-space, which means that mapping might have changed\nbetween the in-kernel BPF hook being executed and the username resolution."
+          "description": "UserRecord contains user information about the event.\nIt is only supported when i) Tetragon is running as a systemd service or directly on the host, and\nii) when the flag `--username-metadata` is set to \"unix\". In this case, the information is retrieved from\nthe traditional user database `/etc/passwd` and no name services lookups are performed.\nThe resolution will only be attempted for processes in the host namespace.\nNote that this resolution happens in user-space, which means that mapping might have changed\nbetween the in-kernel BPF hook being executed and the username resolution."
+        },
+        "inInitTree": {
+          "type": "boolean",
+          "description": "If set to true, this process is containerized and is a member of the\nprocess tree rooted at pid=1 in its PID namespace. This is useful if,\nfor example, you wish to discern whether a process was spawned using a\ntool like nsenter or kubectl exec."
         }
       }
     },
@@ -1221,42 +1322,42 @@
         "uid": {
           "type": "integer",
           "format": "int64",
-          "title": "The real user ID"
+          "description": "The real user ID of the process' owner."
         },
         "gid": {
           "type": "integer",
           "format": "int64",
-          "title": "The real group ID"
+          "description": "The real group ID of the process' owner."
         },
         "euid": {
           "type": "integer",
           "format": "int64",
-          "title": "The effective user ID"
+          "description": "The effective user ID used for permission checks."
         },
         "egid": {
           "type": "integer",
           "format": "int64",
-          "title": "The effective group ID"
+          "description": "The effective group ID used for permission checks."
         },
         "suid": {
           "type": "integer",
           "format": "int64",
-          "title": "The saved user ID"
+          "description": "The saved user ID."
         },
         "sgid": {
           "type": "integer",
           "format": "int64",
-          "title": "The saved group ID"
+          "description": "The saved group ID."
         },
         "fsuid": {
           "type": "integer",
           "format": "int64",
-          "title": "the filesystem user ID"
+          "description": "the filesystem user ID used for filesystem access checks. Usually equals the euid."
         },
         "fsgid": {
           "type": "integer",
           "format": "int64",
-          "title": "The filesystem group ID"
+          "description": "The filesystem group ID used for filesystem access checks. Usually equals the egid."
         },
         "securebits": {
           "type": "array",
@@ -1320,6 +1421,14 @@
           "type": "string",
           "format": "date-time",
           "description": "Date and time of the event."
+        },
+        "ancestors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tetragonProcess"
+          },
+          "description": "Ancestors of the process beyond the immediate parent."
         }
       }
     },
@@ -1388,6 +1497,14 @@
             "$ref": "#/definitions/tetragonStackTraceEntry"
           },
           "description": "User-mode stack trace to the call."
+        },
+        "ancestors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tetragonProcess"
+          },
+          "description": "Ancestors of the process beyond the immediate parent."
         }
       }
     },
@@ -1407,6 +1524,60 @@
       },
       "title": "loader sensor event triggered for loaded binary/library"
     },
+    "tetragonProcessLsm": {
+      "type": "object",
+      "properties": {
+        "process": {
+          "$ref": "#/definitions/tetragonProcess"
+        },
+        "parent": {
+          "$ref": "#/definitions/tetragonProcess"
+        },
+        "functionName": {
+          "type": "string",
+          "description": "LSM hook name."
+        },
+        "policyName": {
+          "type": "string",
+          "description": "Name of the policy that created that LSM hook."
+        },
+        "message": {
+          "type": "string",
+          "description": "Short message of the Tracing Policy to inform users what is going on."
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tetragonKprobeArgument"
+          },
+          "description": "Arguments definition of the observed LSM hook."
+        },
+        "action": {
+          "$ref": "#/definitions/tetragonKprobeAction",
+          "description": "Action performed when the LSM hook matched."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Tags of the Tracing Policy to categorize the event."
+        },
+        "ancestors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tetragonProcess"
+          },
+          "description": "Ancestors of the process beyond the immediate parent."
+        },
+        "imaHash": {
+          "type": "string",
+          "description": "IMA file hash. Format algorithm:value."
+        }
+      }
+    },
     "tetragonProcessPrivilegesChanged": {
       "type": "string",
       "enum": [
@@ -1417,6 +1588,19 @@
       ],
       "default": "PRIVILEGES_CHANGED_UNSET",
       "description": "Reasons of why the process privileges changed.\n\n - PRIVILEGES_RAISED_EXEC_FILE_CAP: A privilege elevation happened due to the execution of a binary with file capability sets.\nThe kernel supports associating capability sets with an executable file using `setcap` command.\nThe file capability sets are stored in an extended attribute (see https://man7.org/linux/man-pages/man7/xattr.7.html)\nnamed `security.capability`. The file capability sets, in conjunction with the capability sets\nof the process, determine the process capabilities and privileges after the `execve` system call.\nFor further reference, please check sections `File capability extended attribute versioning` and\n`Namespaced file capabilities` of the capabilities man pages: https://man7.org/linux/man-pages/man7/capabilities.7.html.\nThe new granted capabilities can be listed inside the `process` object.\n - PRIVILEGES_RAISED_EXEC_FILE_SETUID: A privilege elevation happened due to the execution of a binary with set-user-ID to root.\nWhen a process with nonzero UIDs executes a binary with a set-user-ID to root also\nknown as suid-root executable, then the kernel switches the effective user ID to 0 (root) which\nis a privilege elevation operation since it grants access to resources owned by the root user.\nThe effective user ID is listed inside the `process_credentials` part of the `process` object.\nFor further reading, section `Capabilities and execution of programs by root` of https://man7.org/linux/man-pages/man7/capabilities.7.html.\nAfterward the kernel recalculates the capability sets of the process and grants all capabilities\nin the permitted and effective capability sets, except those masked out by the capability bounding set.\nIf the binary also have file capability sets then these bits are honored and the process gains just\nthe capabilities granted by the file capability sets (i.e., not all capabilities, as it would occur\nwhen executing a set-user-ID to root binary that does not have any associated file capabilities). This\nis described in section `Set-user-ID-root programs that have file capabilities` of https://man7.org/linux/man-pages/man7/capabilities.7.html.\nThe new granted capabilities can be listed inside the `process` object.\nThere is one exception for the special treatments of set-user-ID to root execution receiving all\ncapabilities, if the `SecBitNoRoot` bit of the Secure bits is set, then the kernel does not grant\nany capability. Please check section: `The securebits flags: establishing a capabilities-only environment`\nof the capabilities man pages: https://man7.org/linux/man-pages/man7/capabilities.7.html\n - PRIVILEGES_RAISED_EXEC_FILE_SETGID: A privilege elevation happened due to the execution of a binary with set-group-ID to root.\nWhen a process with nonzero GIDs executes a binary with a set-group-ID to root, the kernel switches\nthe effective group ID to 0 (root) which is a privilege elevation operation since it grants access to\nresources owned by the root group.\nThe effective group ID is listed inside the `process_credentials` part of the `process` object."
+    },
+    "tetragonProcessThrottle": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/tetragonThrottleType",
+          "title": "Throttle type"
+        },
+        "cgroup": {
+          "type": "string",
+          "title": "Cgroup name"
+        }
+      }
     },
     "tetragonProcessTracepoint": {
       "type": "object",
@@ -1463,6 +1647,14 @@
             "type": "string"
           },
           "description": "Tags of the Tracing Policy to categorize the event."
+        },
+        "ancestors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tetragonProcess"
+          },
+          "description": "Ancestors of the process beyond the immediate parent."
         }
       }
     },
@@ -1503,6 +1695,24 @@
             "type": "string"
           },
           "description": "Tags of the Tracing Policy to categorize the event."
+        },
+        "ancestors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/tetragonProcess"
+          },
+          "description": "Ancestors of the process beyond the immediate parent."
+        },
+        "offset": {
+          "type": "string",
+          "format": "uint64",
+          "title": "uprobe offset (mutualy exclusive with symbol)"
+        },
+        "refCtrOffset": {
+          "type": "string",
+          "format": "uint64",
+          "title": "uprobe ref_ctr_offset"
         }
       }
     },
@@ -1531,6 +1741,15 @@
       "default": "SecBitNotSet",
       "title": "- SecBitNoRoot: When set UID 0 has no special privileges. When unset, inheritance\nof root-permissions and suid-root executable under compatibility mode\nis supported. If the effective uid of the new process is 0 then\nthe effective and inheritable bitmasks of the executable file is raised.\nIf the real uid is 0, the effective (legacy) bit of the executable file\nis raised.\n - SecBitNoRootLocked: Make bit-0 SecBitNoRoot immutable\n - SecBitNoSetUidFixup: When set, setuid to/from uid 0 does not trigger capability-\"fixup\".\nWhen unset, to provide compatiblility with old programs relying on\nset*uid to gain/lose privilege, transitions to/from uid 0 cause\ncapabilities to be gained/lost.\n - SecBitNoSetUidFixupLocked: Make bit-2 SecBitNoSetUidFixup immutable\n - SecBitKeepCaps: When set, a process can retain its capabilities even after\ntransitioning to a non-root user (the set-uid fixup suppressed by\nbit 2). Bit-4 is cleared when a process calls exec(); setting both\nbit 4 and 5 will create a barrier through exec that no exec()'d\nchild can use this feature again.\n - SecBitKeepCapsLocked: Make bit-4 SecBitKeepCaps immutable\n - SecBitNoCapAmbientRaise: When set, a process cannot add new capabilities to its ambient set.\n - SecBitNoCapAmbientRaiseLocked: Make bit-6 SecBitNoCapAmbientRaise immutable"
     },
+    "tetragonSecurityContext": {
+      "type": "object",
+      "properties": {
+        "privileged": {
+          "type": "boolean",
+          "description": "True if this container is priviledged."
+        }
+      }
+    },
     "tetragonStackTraceEntry": {
       "type": "object",
       "properties": {
@@ -1551,6 +1770,18 @@
         "module": {
           "type": "string",
           "description": "module path for user space addresses."
+        }
+      }
+    },
+    "tetragonSyscallId": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "abi": {
+          "type": "string"
         }
       }
     },
@@ -1591,6 +1822,15 @@
           "format": "uint64"
         }
       }
+    },
+    "tetragonThrottleType": {
+      "type": "string",
+      "enum": [
+        "THROTTLE_UNKNOWN",
+        "THROTTLE_START",
+        "THROTTLE_STOP"
+      ],
+      "default": "THROTTLE_UNKNOWN"
     },
     "tetragonUserNamespace": {
       "type": "object",

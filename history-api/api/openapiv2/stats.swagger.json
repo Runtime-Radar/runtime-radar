@@ -351,6 +351,15 @@
         }
       }
     },
+    "VulnerabilityActionType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "NOTIFY",
+        "BLOCK"
+      ],
+      "default": "UNKNOWN"
+    },
     "VulnerabilityScoreMethod": {
       "type": "string",
       "enum": [
@@ -359,7 +368,9 @@
         "SCORE_METHOD_CVSSV3",
         "SCORE_METHOD_CVSSV31",
         "SCORE_METHOD_OWASP",
-        "SCORE_METHOD_OTHER"
+        "SCORE_METHOD_OTHER",
+        "SCORE_METHOD_CVSSV4",
+        "SCORE_METHOD_SSVC"
       ],
       "default": "SCORE_METHOD_NULL"
     },
@@ -493,6 +504,13 @@
             "$ref": "#/definitions/historyThreat"
           },
           "title": "failed admission controller's detectors"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "failed admission controller's rules"
         }
       }
     },
@@ -543,6 +561,13 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/historyComponentLicense"
+          }
+        },
+        "malwares": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/historyMalware"
           }
         }
       }
@@ -633,6 +658,14 @@
             "$ref": "#/definitions/historyAction"
           },
           "title": "actions reviewed by admission controller. not empty when type == admission_review"
+        },
+        "errorMessage": {
+          "type": "string",
+          "title": "Error message if scanning fails (e.g. image not found, access denied, or other)"
+        },
+        "verified": {
+          "type": "boolean",
+          "title": "Is image verified or not (for image signature check)"
         }
       }
     },
@@ -646,6 +679,9 @@
           "type": "integer",
           "format": "int64",
           "title": "scan duration in seconds"
+        },
+        "vulnKbVersion": {
+          "type": "string"
         }
       }
     },
@@ -684,6 +720,43 @@
         },
         "eventId": {
           "type": "string"
+        },
+        "verdict": {
+          "type": "string"
+        }
+      }
+    },
+    "historyMalware": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "verdict": {
+          "type": "string"
+        },
+        "componentId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type of malware"
+        },
+        "name": {
+          "type": "string",
+          "title": "Name of malware"
+        },
+        "engineName": {
+          "type": "string",
+          "title": "Name of scanner which identified malware"
+        },
+        "engineVersion": {
+          "type": "string",
+          "title": "Version of scanner"
+        },
+        "databaseVersion": {
+          "type": "string",
+          "title": "Version of database of scanner"
         }
       }
     },
@@ -761,6 +834,25 @@
         },
         "vector": {
           "type": "string"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/historyVulnerabilityAction"
+          }
+        }
+      }
+    },
+    "historyVulnerabilityAction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/VulnerabilityActionType"
+        },
+        "rule": {
+          "type": "string",
+          "title": "name of applied rule"
         }
       }
     },

@@ -10,6 +10,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const defaultStatsOrder = "severity desc, count desc"
+
 // makeRuntimeEventFilter prepares values and patterns from rf to be used in SQL query and constructs gorm expression.
 // nolint:goconst
 func makeRuntimeEventFilter(rf *api.RuntimeFilter) (clause.Expr, error) {
@@ -46,8 +48,6 @@ func makeRuntimeEventFilter(rf *api.RuntimeFilter) (clause.Expr, error) {
 		argsNum++
 	}
 
-	args := make([]interface{}, 0, argsNum)
-
 	r1 := strings.NewReplacer(
 		"%", "", // avoid malicious requests
 		"_", `\_`, // escape special symbol _
@@ -65,6 +65,7 @@ func makeRuntimeEventFilter(rf *api.RuntimeFilter) (clause.Expr, error) {
 		return tpl
 	}
 
+	args := make([]interface{}, 0, argsNum)
 	for _, t := range rf.GetEventType() {
 		eventTypeEq = append(eventTypeEq, "event_type = ?")
 		args = append(args, t)
@@ -201,6 +202,32 @@ func makeRuntimeEventFilter(rf *api.RuntimeFilter) (clause.Expr, error) {
 	}
 
 	return gorm.Expr(sql, args...), nil
+}
+
+func makeDetectorRatingFilter(rf *api.DetectorRatingReq_Filter) clause.Expr {
+	if rf == nil {
+		return clause.Expr{}
+	}
+
+	var names, namespaces, containers []string
+	var args []any
+
+	if t := rf.GetPodName(); t != "" {
+		names = append(names, "process_pod_name = ?")
+		args = append(args, t)
+	}
+
+	if t := rf.GetPodNamespace(); t != "" {
+		namespaces = append(namespaces, "process_pod_namespace = ?")
+		args = append(args, t)
+	}
+
+	if t := rf.GetContainerName(); t != "" {
+		containers = append(containers, "process_pod_container_name = ?")
+		args = append(args, t)
+	}
+
+	return gorm.Expr(makeAndWhereClause(names, namespaces, containers), args...)
 }
 
 // makeAndWhereClause returns SQL string with multiple conditions joint via AND.

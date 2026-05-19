@@ -8,14 +8,6 @@ import (
 	enf_model "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
 )
 
-// BlockBy represents a list of rules' IDs that block the event.
-// Currently it's just a slice, but can be extended with use of JSONB capabilities later on.
-type BlockBy []string
-
-// NotifyBy represents a list of rules' IDs that notify about event.
-// Currently it's just a slice, but can be extended with use of JSONB capabilities later on.
-type NotifyBy []string
-
 type Incident struct {
 	Base
 	BlockBy   BlockBy            `gorm:"type:jsonb"`
@@ -24,6 +16,8 @@ type Incident struct {
 	EventType string             `gorm:"index"`
 	EventID   *uuid.UUID         `gorm:"index"`
 }
+
+type BlockBy []string // atm it's just a slice, but can be extended with use of JSONB capabilities later on
 
 func (s *BlockBy) Scan(src interface{}) error {
 	b := src.([]byte)
@@ -36,6 +30,8 @@ func (s BlockBy) Value() (driver.Value, error) {
 	}
 	return json.Marshal(s)
 }
+
+type NotifyBy []string // atm it's just a slice, but can be extended with use of JSONB capabilities later on
 
 func (s *NotifyBy) Scan(src interface{}) error {
 	b := src.([]byte)

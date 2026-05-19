@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/runtime-radar/runtime-radar/history-api/pkg/database"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/model"
 	"gorm.io/gorm"
 )
 
 type StatsRepository interface {
 	CountEvents(ctx context.Context, from, to time.Time, filter any) (int, error)
+	GetDetectorRating(ctx context.Context, from, to time.Time, filters, order any, limit int) ([]*model.DetectorCounter, error)
 }
 
 type StatsDatabase struct {
@@ -36,6 +38,39 @@ func (s *StatsDatabase) CountEvents(ctx context.Context, from, to time.Time, fil
 	err := qb.Count(&cnt).Error
 
 	return int(cnt), err
+}
+
+func (s *StatsDatabase) GetDetectorRating(ctx context.Context, from, to time.Time, filter, order any, limit int) ([]*model.DetectorCounter, error) {
+	if reason, ok := validateTimePeriod(from, to); !ok {
+		return nil, fmt.Errorf("invalid time period: %s", reason)
+	}
+	sanitizedOrder, err := database.SanitizeOrder(order)
+	if err != nil {
+		return nil, err
+	}
+
+	if filter == nil {
+		filter = ""
+	}
+
+	results := []*model.DetectorCounter{}
+	qb := s.WithContext(ctx).
+		Model(&model.RuntimeEvent{}).
+		Where(filter).
+		Select("detector_id, threats_severities[indexOf(threats_detectors, detector_id)] as severity, COUNT(*) as count").
+		Joins("ARRAY JOIN threats_detectors as detector_id").
+		Group("detector_id,severity").
+		Order(sanitizedOrder)
+
+	if limit > 0 {
+		qb = qb.Limit(limit)
+	}
+
+	qb = applyTimePeriod(qb, "registered_at", from, to)
+
+	err = qb.Scan(&results).Error
+
+	return results, err
 }
 
 func validateTimePeriod(from, to time.Time) (reason string, ok bool) {

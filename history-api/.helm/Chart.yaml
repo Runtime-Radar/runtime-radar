@@ -2,7 +2,7 @@ apiVersion: v2
 name: history-api
 description: A Helm chart for Kubernetes
 type: application
-version: v0.0.1
+version: 0.0.1
 dependencies:
   - name: common
     repository: file://../../install/helm/charts/common
