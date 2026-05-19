@@ -36,7 +36,7 @@ tasks:
   docker-build:
     deps: [radar-ui:build]
     cmds:
-      - docker build --tag {{.DOCKER_IMAGE}} .
+      - docker build --iidfile .build --tag {{.DOCKER_IMAGE}} .
 
   docker-push:
     vars:
