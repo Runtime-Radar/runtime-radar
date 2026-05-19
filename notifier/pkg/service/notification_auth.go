@@ -5,6 +5,7 @@ import (
 
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"github.com/runtime-radar/runtime-radar/notifier/api"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -25,6 +26,9 @@ func (na *NotificationAuth) Create(ctx context.Context, req *api.Notification) (
 	if err := na.Verifier.VerifyPermission(ctx, jwt.PermissionNotifications, jwt.ActionCreate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = na.NotificationControllerServer.Create(ctx, req)
 	return
 }
@@ -33,6 +37,9 @@ func (na *NotificationAuth) Read(ctx context.Context, req *api.ReadNotificationR
 	if err := na.Verifier.VerifyPermission(ctx, jwt.PermissionNotifications, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = na.NotificationControllerServer.Read(ctx, req)
 	return
 }
@@ -41,6 +48,9 @@ func (na *NotificationAuth) Update(ctx context.Context, req *api.Notification) (
 	if err := na.Verifier.VerifyPermission(ctx, jwt.PermissionNotifications, jwt.ActionUpdate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = na.NotificationControllerServer.Update(ctx, req)
 	return
 }
@@ -49,6 +59,9 @@ func (na *NotificationAuth) Delete(ctx context.Context, req *api.DeleteNotificat
 	if err := na.Verifier.VerifyPermission(ctx, jwt.PermissionNotifications, jwt.ActionDelete); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = na.NotificationControllerServer.Delete(ctx, req)
 	return
 }
@@ -57,6 +70,9 @@ func (na *NotificationAuth) List(ctx context.Context, req *api.ListNotificationR
 	if err := na.Verifier.VerifyPermission(ctx, jwt.PermissionNotifications, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = na.NotificationControllerServer.List(ctx, req)
 	return
 }
@@ -65,6 +81,9 @@ func (na *NotificationAuth) DefaultTemplate(ctx context.Context, req *api.Defaul
 	if err := na.Verifier.VerifyPermission(ctx, jwt.PermissionNotifications, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = na.NotificationControllerServer.DefaultTemplate(ctx, req)
 	return
 }
