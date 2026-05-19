@@ -33,7 +33,7 @@ func (u *Updater) Run(stop <-chan struct{}) {
 				continue
 			}
 
-			oldCfg := u.Monitor.Config()
+			_, oldCfg := u.Monitor.Config()
 
 			log.Debug().Interface("old_config", oldCfg).Msgf("Old monitor config")
 			log.Debug().Interface("new_config", cfg).Msgf("New monitor config")
@@ -45,7 +45,7 @@ func (u *Updater) Run(stop <-chan struct{}) {
 					Interface("selector", sel).
 					Msgf("Monitor config changed, re-initializing")
 
-				u.Monitor.Reinit(sel, cfg)
+				u.Monitor.Update(sel, cfg)
 			} else {
 				log.Debug().Msgf("Monitor config didn't change")
 			}
