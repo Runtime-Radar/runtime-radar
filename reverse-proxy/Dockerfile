@@ -1,8 +1,10 @@
-FROM golang:1.25.0 AS tools
+ARG GO_VERSION=1.26.0
+
+FROM golang:${GO_VERSION} AS tools
 
 RUN CGO_ENABLED=0 GOBIN=/usr/bin go install github.com/go-task/task/v3/cmd/task@v3.38.0
 
-FROM golang:1.25.0 AS builder
+FROM golang:${GO_VERSION} AS builder
 
 COPY --from=tools /usr/bin/task /usr/bin
 COPY . /app
