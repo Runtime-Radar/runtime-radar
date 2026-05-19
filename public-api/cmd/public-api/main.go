@@ -24,6 +24,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/public-api/pkg/client"
 	"github.com/runtime-radar/runtime-radar/public-api/pkg/config"
 	"github.com/runtime-radar/runtime-radar/public-api/pkg/database"
+	"github.com/runtime-radar/runtime-radar/public-api/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/public-api/pkg/server"
 	"github.com/runtime-radar/runtime-radar/public-api/pkg/service"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -47,9 +48,15 @@ var (
 	shutdown = make(chan struct{})
 )
 
+type appServices struct {
+	ruleSvc           service.Rule
+	accessTokenSvc    service.AccessToken
+	runtimeHistorySvc service.RuntimeHistory
+}
+
 func main() {
 	cfg := config.New()
-	logger.Init("", cfg.LogLevel)
+	logger.Init(cfg.LogFile, cfg.LogLevel)
 
 	log.Info().Str("build_release", build.Release).Str("build_branch", build.Branch).Str("build_commit", build.Commit).Str("build_date", build.Date).Msgf("-> %s started", build.AppName)
 	defer log.Info().Msgf("<- %s exited", build.AppName)
@@ -127,17 +134,30 @@ func main() {
 		log.Fatal().Msgf("### Access token salt size must be 64 bytes, got %d", len(salt))
 	}
 
-	ruleSvc, accessTokenSvc, runtimeHistorySvc := composeServices(db, authAPI, ruleController, runtimeHistory, salt, cfg.Auth, verifier, token)
-	srv := server.New(cfg.ListenHTTPAddr, tlsConfig, accessTokenSvc, ruleSvc, runtimeHistorySvc)
+	// Initialize metrics
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
 
-	// Create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
+
+	// Run the instrumentation HTTP server for metrics, probes, etc.
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)
+			log.Fatal().Msgf("### Failed to serve instrumentation HTTP requests: %v", err)
 		}
 	}()
 	log.Info().Msgf("Instrumentation HTTP server listening at %v", cfg.InstrumentationAddr)
+
+	services := composeServices(db, authAPI, ruleController, runtimeHistory, salt, cfg.Auth, verifier, token)
+	srv := server.New(
+		cfg.ListenHTTPAddr,
+		tlsConfig,
+		services.accessTokenSvc,
+		services.ruleSvc,
+		services.runtimeHistorySvc,
+	)
 
 	go func() {
 		if cfg.TLS {
@@ -199,24 +219,26 @@ func composeServices(
 	isAuth bool,
 	jwtVerifier jwt.Verifier,
 	tokenKey []byte,
-) (ruleSvc service.Rule, accessTokenSvc service.AccessToken, runtimeHistorySvc service.RuntimeHistory) {
-	accessTokenSvc = &service.AccessTokenGeneric{
+) appServices {
+	services := appServices{}
+
+	services.accessTokenSvc = &service.AccessTokenGeneric{
 		accessTokenSalt,
 		tokenKey,
 		&database.AccessTokenDatabase{DB: db},
 	}
 
 	if isAuth {
-		accessTokenSvc = &service.AccessTokenAuth{
-			accessTokenSvc,
+		services.accessTokenSvc = &service.AccessTokenAuth{
+			services.accessTokenSvc,
 			tokenKey,
 			jwtVerifier,
 		}
 	}
 
-	ruleSvc = &service.RuleGeneric{ruleController}
-	ruleSvc = &service.RuleAuth{
-		ruleSvc,
+	services.ruleSvc = &service.RuleGeneric{ruleController}
+	services.ruleSvc = &service.RuleAuth{
+		services.ruleSvc,
 		&auth.Verifier{
 			usersGetter,
 			&database.AccessTokenDatabase{db},
@@ -224,9 +246,9 @@ func composeServices(
 		},
 	}
 
-	runtimeHistorySvc = &service.RuntimeHistoryGeneric{runtimeHistory}
-	runtimeHistorySvc = &service.RuntimeHistoryAuth{
-		runtimeHistorySvc,
+	services.runtimeHistorySvc = &service.RuntimeHistoryGeneric{runtimeHistory}
+	services.runtimeHistorySvc = &service.RuntimeHistoryAuth{
+		services.runtimeHistorySvc,
 		&auth.Verifier{
 			usersGetter,
 			&database.AccessTokenDatabase{db},
@@ -234,9 +256,9 @@ func composeServices(
 		},
 	}
 
-	accessTokenSvc = &service.AccessTokenLogging{accessTokenSvc}
-	ruleSvc = &service.RuleLogging{ruleSvc}
-	runtimeHistorySvc = &service.RuntimeHistoryLogging{runtimeHistorySvc}
+	services.accessTokenSvc = &service.AccessTokenLogging{&service.AccessTokenAudit{services.accessTokenSvc}}
+	services.ruleSvc = &service.RuleLogging{services.ruleSvc}
+	services.runtimeHistorySvc = &service.RuntimeHistoryLogging{services.runtimeHistorySvc}
 
-	return
+	return services
 }

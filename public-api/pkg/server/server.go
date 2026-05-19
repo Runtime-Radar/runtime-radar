@@ -7,6 +7,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
 	"github.com/runtime-radar/runtime-radar/lib/server/middleware"
@@ -21,7 +23,13 @@ const (
 )
 
 // New constructs and configures new *http.Server capable of serving application endpoints.
-func New(httpAddr string, tlsConfig *tls.Config, accessTokenSvc service.AccessToken, ruleSvc service.Rule, runtimeHistorySvc service.RuntimeHistory) *http.Server {
+func New(
+	httpAddr string,
+	tlsConfig *tls.Config,
+	accessTokenSvc service.AccessToken,
+	ruleSvc service.Rule,
+	runtimeHistorySvc service.RuntimeHistory,
+) *http.Server {
 	r := mux.NewRouter()
 
 	return &http.Server{
@@ -33,11 +41,14 @@ func New(httpAddr string, tlsConfig *tls.Config, accessTokenSvc service.AccessTo
 	}
 }
 
-func NewInstrumentation(listenAddress string) *http.Server {
+func NewInstrumentation(listenAddress string, gatherer prometheus.Gatherer) *http.Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/ready", healthcheck.ReadyHandler)
 	mux.HandleFunc("/live", healthcheck.LiveHandler)
+
+	handler := promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{})
+	mux.Handle("/metrics", handler)
 
 	h := alice.New(
 		middleware.Log,
@@ -51,7 +62,12 @@ func NewInstrumentation(listenAddress string) *http.Server {
 	}
 }
 
-func setupRouter(r *mux.Router, accessTokenSvc service.AccessToken, ruleSvc service.Rule, runtimeHistorySvc service.RuntimeHistory) http.Handler {
+func setupRouter(
+	r *mux.Router,
+	accessTokenSvc service.AccessToken,
+	ruleSvc service.Rule,
+	runtimeHistorySvc service.RuntimeHistory,
+) http.Handler {
 	r.StrictSlash(true)
 
 	corsOpts := cors.Options{
@@ -67,6 +83,7 @@ func setupRouter(r *mux.Router, accessTokenSvc service.AccessToken, ruleSvc serv
 		local_middleware.JWT,
 		local_middleware.AccessToken,
 		local_middleware.Correlation,
+		local_middleware.Metrics,
 	).Then(r)
 
 	r.Handle("/api/v1/access-token", constructor.AccessTokenCreate(accessTokenSvc)).Methods(http.MethodPost)
