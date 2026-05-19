@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -39,7 +40,7 @@ func New(address, database, user, password string, sslMode, sslCheckCert bool) (
 
 	if e := log.Debug(); e.Enabled() {
 		gormLogger = gorm_logger.New(
-			&GORMLogger{&log.Logger},
+			&logger.GORM{&log.Logger},
 			gorm_logger.Config{
 				SlowThreshold: 100 * time.Millisecond, // Slow SQL threshold
 				Colorful:      false,                  // Disable color
@@ -48,7 +49,7 @@ func New(address, database, user, password string, sslMode, sslCheckCert bool) (
 		)
 	} else {
 		gormLogger = gorm_logger.New(
-			&GORMLogger{&log.Logger},
+			&logger.GORM{&log.Logger},
 			gorm_logger.Config{
 				SlowThreshold: 100 * time.Millisecond, // Slow SQL threshold
 				Colorful:      false,                  // Disable color

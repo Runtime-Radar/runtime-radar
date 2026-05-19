@@ -5,6 +5,7 @@ import (
 
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/api"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -31,6 +32,9 @@ func (ra *RuleAuth) Create(ctx context.Context, req *api.Rule) (resp *api.Create
 	if err := ra.Verifier.VerifyPermission(ctx, jwt.PermissionRules, jwt.ActionCreate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ra.RuleControllerServer.Create(ctx, req)
 	return
 }
@@ -39,6 +43,9 @@ func (ra *RuleAuth) Read(ctx context.Context, req *api.ReadRuleReq) (resp *api.R
 	if err := ra.Verifier.VerifyPermission(ctx, jwt.PermissionRules, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ra.RuleControllerServer.Read(ctx, req)
 	return
 }
@@ -47,6 +54,9 @@ func (ra *RuleAuth) Update(ctx context.Context, req *api.Rule) (resp *emptypb.Em
 	if err := ra.Verifier.VerifyPermission(ctx, jwt.PermissionRules, jwt.ActionUpdate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ra.RuleControllerServer.Update(ctx, req)
 	return
 }
@@ -55,6 +65,9 @@ func (ra *RuleAuth) Delete(ctx context.Context, req *api.DeleteRuleReq) (resp *e
 	if err := ra.Verifier.VerifyPermission(ctx, jwt.PermissionRules, jwt.ActionDelete); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ra.RuleControllerServer.Delete(ctx, req)
 	return
 }
@@ -63,6 +76,9 @@ func (ra *RuleAuth) ListPage(ctx context.Context, req *api.ListRulePageReq) (res
 	if err := ra.Verifier.VerifyPermission(ctx, jwt.PermissionRules, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ra.RuleControllerServer.ListPage(ctx, req)
 	return
 }
@@ -71,6 +87,9 @@ func (ra *RuleAuth) NotifyTargetsInUse(ctx context.Context, req *api.NotifyTarge
 	if err := ra.Verifier.VerifyPermission(ctx, jwt.PermissionRules, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ra.RuleControllerServer.NotifyTargetsInUse(ctx, req)
 	return
 }

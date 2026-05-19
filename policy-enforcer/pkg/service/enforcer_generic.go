@@ -41,19 +41,19 @@ func (eg *EnforcerGeneric) EvaluatePolicyRuntimeEvent(ctx context.Context, req *
 	}
 
 	rules = filterRulesByFunc(rules, func(r *model.Rule) bool {
-		return isBinaryWhitelisted(req.GetAction().GetArgs().GetBinary(), r)
+		return whitelistedByPattern(req.GetAction().GetArgs().GetBinary(), r.Rule.Whitelist.GetBinaries())
 	})
 
-	for _, event := range req.GetResult().GetEvents() {
+	for _, ev := range req.GetResult().GetEvents() {
 		var eventSeverity model.Severity
-		eventSeverity.Set(event.GetSeverity())
+		eventSeverity.Set(ev.GetSeverity())
 
 		rs := filterRulesByFunc(rules, func(r *model.Rule) bool {
-			return isThreatWhitelisted(event.GetDetectorId(), r)
+			return slices.Contains(r.Rule.Whitelist.GetThreats(), ev.GetDetectorId())
 		})
 		block, notify := filterRulesBySeverity(rs, eventSeverity)
 
-		event.Policy = &api.Policy{
+		ev.Policy = &api.Policy{
 			BlockBy:  convert.RulesToProto(block),
 			NotifyBy: convert.RulesToProto(notify),
 		}
@@ -110,18 +110,9 @@ func filterRulesBySeverity(rs []*model.Rule, severity model.Severity) (block, no
 	return
 }
 
-func isThreatWhitelisted(threatID string, r *model.Rule) bool {
-	for _, t := range r.Rule.Whitelist.GetThreats() {
-		if threatID == t {
-			return true
-		}
-	}
-	return false
-}
-
-func isBinaryWhitelisted(bin string, r *model.Rule) bool {
-	for _, b := range r.Rule.Whitelist.GetBinaries() {
-		if g := glob.MustCompile(b); g.Match(bin) {
+func whitelistedByPattern(s string, patterns []string) bool {
+	for _, p := range patterns {
+		if g := glob.MustCompile(p); g.Match(s) {
 			return true
 		}
 	}
