@@ -48,13 +48,14 @@ type RuntimeEvent struct {
 	RegisteredAt time.Time `gorm:"type:DateTime64(9)"`
 
 	// Common event attributes
-	EventType        string `gorm:"type:Enum('UNDEF'=0,'PROCESS_EXEC'=1,'PROCESS_EXIT'=5,'PROCESS_KPROBE'=9,'PROCESS_TRACEPOINT'=10,'PROCESS_LOADER'=11,'PROCESS_UPROBE'=12)"`
-	NodeName         string
-	SourceEvent      *RuntimeEventJSON   `gorm:"type:String"` // Raw event from tetragon. Normally should not be nil.
-	Threats          RuntimeEventThreats `gorm:"type:Nullable(String)"`
-	ThreatsDetectors []string            `gorm:"type:Array(String)"`    // Identifiers of detectors from Threats
-	DetectErrors     DetectErrors        `gorm:"type:Nullable(String)"` // Errors returned by detectors contained in chain
-	TetragonVersion  string              // Version of tetragon lib that produced event
+	EventType         string `gorm:"type:Enum('UNDEF'=0,'PROCESS_EXEC'=1,'PROCESS_EXIT'=5,'PROCESS_KPROBE'=9,'PROCESS_TRACEPOINT'=10,'PROCESS_LOADER'=11,'PROCESS_UPROBE'=12)"`
+	NodeName          string
+	SourceEvent       *RuntimeEventJSON    `gorm:"type:String"` // Raw event from tetragon. Normally should not be nil.
+	Threats           RuntimeEventThreats  `gorm:"type:Nullable(String)"`
+	ThreatsDetectors  []string             `gorm:"type:Array(String)"`    // Identifiers of detectors from Threats
+	ThreatsSeverities []enf_model.Severity `gorm:"type:Array(Integer)"`   // Each element of severity corresponds to a detector in the ThreatsDetectors array
+	DetectErrors      DetectErrors         `gorm:"type:Nullable(String)"` // Errors returned by detectors contained in chain
+	TetragonVersion   string               // Version of tetragon lib that produced event
 
 	IsIncident       bool
 	IncidentSeverity enf_model.Severity

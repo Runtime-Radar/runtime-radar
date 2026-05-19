@@ -36,10 +36,12 @@ type Config struct {
 	LogFile                    string        // path to log file
 	ListenGRPCAddr             string        // address "[host]:port" that server should be listening on
 	ListenHTTPAddr             string        // address "[host]:port" that server should be listening for health checks
-	InstrumentationAddr        string        // address "[host]:port" that instrumentation server should be listening for health checks and metrics
+	InstrumentationAddr        string        // address "[host]:port" that instrumentation server should be listening on
 	TLS                        bool          // is TLS enabled?
+	RetentionInterval          time.Duration // Interval during which events are kept in DB
 	TokenKey                   string        // key for jwt token
 	Auth                       bool          // is auth enabled?
+	OwnCSURL                   string        // URL of current CS (http(s)://host[:port]).
 	GopsAddr                   string        // gops listen address
 }
 
@@ -75,10 +77,12 @@ func New() *Config {
 	flag.StringVar(&c.ListenGRPCAddr, "listenGRPCAddr", config.LookupEnvString("LISTEN_GRPC_ADDR", ":8000"), `Address in form of "[host]:port" that gRPC server should be listening on.`)
 	flag.StringVar(&c.ListenHTTPAddr, "listenHTTPAddr", config.LookupEnvString("LISTEN_HTTP_ADDR", ":9000"), `Address in form of "[host]:port" that HTTP server should be listening on.`)
 	flag.BoolVar(&c.TLS, "tls", config.LookupEnvBool("TLS", false), "Set to enable TLS.")
+	flag.DurationVar(&c.RetentionInterval, "retentionInterval", config.LookupEnvDuration("RETENTION_INTERVAL", time.Hour*24*30), `History retention interval, for how long will stored events be kept in DB, as a duration string which is compatibale with time.ParseDuraion, for example "24h"`)
 	flag.StringVar(&c.TokenKey, "tokenKey", config.LookupEnvString("TOKEN_KEY", ""), "Hex encoded token key to verify jwt token. Supported key sizes are 16, 24 and 32 bytes.")
 	flag.BoolVar(&c.Auth, "auth", config.LookupEnvBool("AUTH", false), "Set to enable JWT auth.")
 	flag.StringVar(&c.GopsAddr, "listenGopsAddr", config.LookupEnvString("LISTEN_GOPS_ADDR", "127.0.0.1:7000"), `Address in form of "[host]:port" that gops agent should be listening on. It's not safe to listen to interfaces other than loopback in production.`)
-	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
+	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
+	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation (metrics, probes...) HTTP server should be listening on.`)
 
 	flag.Parse()
 
