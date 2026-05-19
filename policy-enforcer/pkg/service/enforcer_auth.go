@@ -5,6 +5,7 @@ import (
 
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	lib_context "github.com/runtime-radar/runtime-radar/lib/security/jwt/context"
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/api"
 )
 
@@ -30,6 +31,9 @@ func (ea *EnforcerAuth) EvaluatePolicyRuntimeEvent(ctx context.Context, req *api
 	if err := ea.Verifier.VerifyPermission(ctx, jwt.PermissionScanning, jwt.ActionExecute); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+
+	lib_context.SetUserID(ctx)
+
 	resp, err = ea.EnforcerServer.EvaluatePolicyRuntimeEvent(ctx, req)
 	return
 }
