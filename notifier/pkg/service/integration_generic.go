@@ -92,7 +92,7 @@ func (ig *IntegrationGeneric) Read(ctx context.Context, req *api.ReadIntegration
 		return nil, status.Errorf(codes.Internal, "can't get integration: %v", err)
 	}
 
-	return convert.IntegrationToPB(i, true), nil
+	return convert.IntegrationToPB(i), nil
 }
 
 func (ig *IntegrationGeneric) Update(ctx context.Context, req *api.Integration) (*emptypb.Empty, error) {
@@ -203,7 +203,7 @@ func (ig *IntegrationGeneric) List(ctx context.Context, req *api.ListIntegration
 	}
 
 	return &api.ListIntegrationResp{
-		Integrations: convert.IntegrationsToPB(integrations, true),
+		Integrations: convert.IntegrationsToPB(integrations),
 	}, nil
 }
 
