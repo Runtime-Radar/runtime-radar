@@ -4,7 +4,11 @@
 		@grafana-redirect `{env.GRAFANA_REDIRECT} == "true"`
 		redir @grafana-redirect {$GRAFANA} 301
 
-		reverse_proxy {$GRAFANA}
+		reverse_proxy {$GRAFANA} {
+			transport http {
+				tls_insecure_skip_verify
+			}
+		}
 	}
 
 	handle /api/* {
@@ -103,9 +107,11 @@
 
 			# admission-controller
 			reverse_proxy /api/v1/detector/admission-controller/* {args[0]}://admission-controller:9000
+			reverse_proxy /api/v1/admission-controller/* {args[0]}://admission-controller:9000
 
 			# runtime-monitor
 			reverse_proxy /api/v1/config/runtime-monitor {args[0]}://runtime-monitor:9000
+			reverse_proxy /api/v1/config/runtime-monitor/* {args[0]}://runtime-monitor:9000
 
 			# event-processor
 			reverse_proxy /api/v1/config/event-processor {args[0]}://event-processor:9000
@@ -158,6 +164,7 @@
 {
 	servers {
 		protocols h1 h2c h2
+		metrics
 	}
 	log default {
 		level {$LOG_LEVEL:INFO}
@@ -178,11 +185,12 @@
 # cs routes
 :8000 :9000 {
 	log
-	import TLS.{$TLS:false}
+	import TLS.{$TLS:true}
 }
 
-# health api
-:9001 {
+# health api & metrics
+:9090 {
+	metrics /metrics
 	respond /health "Caddy is up" 200 {
 		close
 	}
