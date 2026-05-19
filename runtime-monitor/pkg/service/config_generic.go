@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/cilium/tetragon/api/v1/tetragon"
 	"github.com/cilium/tetragon/pkg/filters"
@@ -30,6 +31,7 @@ type ConfigGeneric struct {
 
 	ConfigRepository database.ConfigRepository
 	Monitor          monitor.Monitor
+	NodeName         string
 }
 
 func (cg *ConfigGeneric) Add(ctx context.Context, req *api.Config) (*emptypb.Empty, error) {
@@ -59,7 +61,7 @@ func (cg *ConfigGeneric) Add(ctx context.Context, req *api.Config) (*emptypb.Emp
 	// Changes applied instantly when requested. However, there can be multiple nodes in cluster,
 	// and consequently multiple runtime-monitor instances, each of which can update config.
 	// To handle this there will be background worker doing same check periodically and calling Reinit when needed.
-	oldCfg := cg.Monitor.Config()
+	_, oldCfg := cg.Monitor.Config()
 
 	log.Debug().Interface("old_config", oldCfg).Msgf("Old monitor config")
 	log.Debug().Interface("new_config", cfg).Msgf("New monitor config")
@@ -71,7 +73,7 @@ func (cg *ConfigGeneric) Add(ctx context.Context, req *api.Config) (*emptypb.Emp
 			Interface("selector", sel).
 			Msgf("Monitor config changed, re-initializing")
 
-		cg.Monitor.Reinit(sel, cfg)
+		cg.Monitor.Update(sel, cfg)
 	} else {
 		log.Debug().Msgf("Monitor config didn't change")
 	}
@@ -97,6 +99,44 @@ func (cg *ConfigGeneric) Read(ctx context.Context, _ *emptypb.Empty) (*api.Confi
 	return resp, nil
 }
 
+func (cg *ConfigGeneric) ResetToDefault(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
+	m := map[string]any{
+		"updated_at": time.Now(),
+	}
+	if err := cg.ConfigRepository.UpdateWithMap(ctx, model.DefaultConfig.ID, m); err != nil {
+		return nil, status.Errorf(codes.Internal, "can't update config: %v", err)
+	}
+
+	resp := &emptypb.Empty{}
+
+	return resp, nil
+}
+
+func (cg *ConfigGeneric) Status(ctx context.Context, _ *emptypb.Empty) (*api.ConfigStatus, error) {
+	cfg, err := cg.ConfigRepository.GetLast(ctx, false)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, status.Errorf(codes.NotFound, "config not found")
+	} else if err != nil {
+		return nil, status.Errorf(codes.Internal, "can't read config: %v", err)
+	}
+
+	sel, changed := config.Diff(model.DefaultConfig, cfg)
+
+	lastInitErr := ""
+	if err := cg.Monitor.LastInitErr(); err != nil {
+		lastInitErr = err.Error()
+	}
+
+	resp := &api.ConfigStatus{
+		Default:                cfg.ID == model.DefaultConfig.ID,
+		DefaultTracingPolicies: !changed || !sel.TracingPolicies,
+		LastInitError:          lastInitErr,
+		NodeName:               cg.NodeName,
+	}
+
+	return resp, nil
+}
+
 func (cg *ConfigGeneric) validateConfig(req *api.Config) (string, bool) {
 	if req.Config == nil {
 		return "no config", false
@@ -106,10 +146,6 @@ func (cg *ConfigGeneric) validateConfig(req *api.Config) (string, bool) {
 		return "empty or missing config version", false
 	} else if ver := req.Config.GetVersion(); ver != string(model.ConfigVersion) {
 		return fmt.Sprintf("config version mismatch: expected %s, got %s", model.ConfigVersion, ver), false
-	}
-
-	if len(req.Config.GetTracingPolicies()) == 0 {
-		return "no tracing policies", false
 	}
 
 	for i, f := range req.Config.GetAllowList() {
