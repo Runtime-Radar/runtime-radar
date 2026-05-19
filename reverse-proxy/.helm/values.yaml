@@ -7,7 +7,7 @@ image:
 containerPorts:
   http: 9000
   grpc: 8000
-  health: 9001
+  health: 9090
 service:
   type: ClusterIP
   annotations: {}
@@ -15,7 +15,7 @@ service:
   ports:
     http: 9000
     grpc: 8000
-    health: 9001
+    health: 9090
   nodePorts: {}
 containerSecurityContext:
   enabled: true
