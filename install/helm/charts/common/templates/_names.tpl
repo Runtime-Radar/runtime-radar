@@ -62,7 +62,7 @@ Get the configuration ConfigMap name.
 {{- if .Values.existingConfigmap -}}
     {{- printf "%s" (tpl .Values.existingConfigmap $) -}}
 {{- else -}}
-    {{- printf "%s" (include "common.fullname" .) -}}
+    {{- printf "%s-config" (include "common.name" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -78,12 +78,12 @@ Get the configuration Secret name.
 {{- end -}}
 
 {{/*
-Get the configuration secret.
+Get the PVC name.
 */}}
-{{- define "common.authSecretName" -}}
-{{- if .Values.auth.existingSecret -}}
-    {{- printf "%s" (tpl .Values.auth.existingSecret $) -}}
+{{- define "common.pvcName" -}}
+{{- if .Values.persistence.existingClaim -}}
+    {{- printf "%s" (tpl .Values.persistence.existingClaim $) -}}
 {{- else -}}
-    {{- printf "%s" (include "common.fullname" .) -}}
+    {{- printf "data-%s" (include "common.fullname" .) -}}
 {{- end -}}
 {{- end -}}

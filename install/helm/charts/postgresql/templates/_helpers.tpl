@@ -40,33 +40,39 @@ Return the path to the CRL file.
 {{- end -}}
 
 {{/*
-Get the admin-password key.
+Get the password key.
 */}}
-{{- define "postgresql.adminPasswordKey" -}}
-{{- if .Values.auth.existingSecret -}}
-    {{- with .Values.auth.existingSecretAdminPasswordKey -}}
-        {{- printf "%s" (tpl . $) -}}
-    {{- end -}}
+{{- define "postgresql.secretPasswordKey" -}}
+{{- with .Values.auth.existingSecretPasswordKey -}}
+    {{- tpl . $ -}}
 {{- else -}}
-    {{- "postgres-password" -}}
+    {{- "POSTGRES_PASSWORD" -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Get the password key.
+Get the username key.
+Returns the configured existingSecretUserKey, otherwise the default
+container-env-style key (also used for the chart-created secret).
 */}}
-{{- define "postgresql.userPasswordKey" -}}
-{{- $username := .Values.auth.username }}
-{{- if or (empty $username) (eq $username "postgres") -}}
-    {{- printf "%s" (include "postgresql.adminPasswordKey" .) -}}
+{{- define "postgresql.secretUserKey" -}}
+{{- with .Values.auth.existingSecretUserKey -}}
+    {{- tpl . $ -}}
 {{- else -}}
-    {{- if .Values.auth.existingSecret -}}
-        {{- with .Values.auth.existingSecretPasswordKey -}}
-            {{- printf "%s" (tpl . $) -}}
-        {{- end -}}
-    {{- else -}}
-        {{- "password" -}}
-    {{- end -}}
+    {{- "POSTGRES_USER" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the database key.
+Returns the configured existingSecretDatabaseKey, otherwise the default
+container-env-style key (also used for the chart-created secret).
+*/}}
+{{- define "postgresql.secretDatabaseKey" -}}
+{{- with .Values.auth.existingSecretDatabaseKey -}}
+    {{- tpl . $ -}}
+{{- else -}}
+    {{- "POSTGRES_DB" -}}
 {{- end -}}
 {{- end -}}
 

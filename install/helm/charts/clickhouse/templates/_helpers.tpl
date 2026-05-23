@@ -30,18 +30,35 @@ Return the path to the CA cert file.
 Get the ClickHouse password key inside the secret
 */}}
 {{- define "clickhouse.secretPasswordKey" -}}
-{{- if .Values.auth.existingSecret -}}
-    {{- .Values.auth.existingSecretPasswordKey -}}
-{{- else }}
-    {{- print "admin-password" -}}
+{{- with .Values.auth.existingSecretPasswordKey -}}
+    {{- tpl . $ -}}
+{{- else -}}
+    {{- "CLICKHOUSE_PASSWORD" -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Fix ClickHouse database name if it contains special symbols
+Get the username key.
+Returns the configured existingSecretUserKey, otherwise the default
+container-env-style key (also used for the chart-created secret).
 */}}
-{{- define "clickhouse.database" -}}
-{{- if regexMatch "^[a-zA-Z0-9_]*$" .Values.auth.database | not -}}
-    {{- printf "`%s`" .Values.auth.database -}}
+{{- define "clickhouse.secretUserKey" -}}
+{{- with .Values.auth.existingSecretUserKey -}}
+    {{- tpl . $ -}}
+{{- else -}}
+    {{- "CLICKHOUSE_USER" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the database key.
+Returns the configured existingSecretDatabaseKey, otherwise the default
+container-env-style key (also used for the chart-created secret).
+*/}}
+{{- define "clickhouse.secretDatabaseKey" -}}
+{{- with .Values.auth.existingSecretDatabaseKey -}}
+    {{- tpl . $ -}}
+{{- else -}}
+    {{- "CLICKHOUSE_DB" -}}
 {{- end -}}
 {{- end -}}

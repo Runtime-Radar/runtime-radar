@@ -43,11 +43,17 @@ type Values struct {
 			PublicAccessTokenSalt string `json:"publicAccessTokenSalt,omitempty"`
 		} `json:"keys,omitzero"`
 
-		Postgresql TLSGlobal `json:"postgresql"`
-		Redis      TLSGlobal `json:"redis"`
-		Clickhouse TLSGlobal `json:"clickhouse"`
-		Grafana    TLSGlobal `json:"grafana,omitzero"`
-		Loki       TLSGlobal `json:"loki,omitzero"`
+		Administrator struct {
+			Username string `json:"username,omitempty"`
+			Password string `json:"password,omitempty"`
+		} `json:"administrator,omitzero"`
+
+		Postgresql AuthTLSGlobal `json:"postgresql"`
+		Redis      AuthTLSGlobal `json:"redis"`
+		Rabbitmq   AuthGlobal    `json:"rabbitmq,omitzero"`
+		Clickhouse AuthTLSGlobal `json:"clickhouse"`
+		Grafana    TLSGlobal     `json:"grafana,omitzero"`
+		Loki       TLSGlobal     `json:"loki,omitzero"`
 	} `json:"global,omitzero"`
 
 	TLS struct {
@@ -56,13 +62,6 @@ type Values struct {
 		Cert    string `json:"cert,omitempty"`
 		CertKey string `json:"certKey,omitempty"`
 	} `json:"tls,omitzero"`
-
-	AuthAPI struct {
-		Administrator struct {
-			Username string `json:"username,omitempty"`
-			Password string `json:"password,omitempty"`
-		} `json:"administrator,omitzero"`
-	} `json:"auth-center,omitzero"`
 
 	ImagePullSecret struct {
 		Username string `json:"username,omitempty"`
@@ -248,20 +247,40 @@ type TLSGlobal struct {
 	} `json:"tls"`
 }
 
-// buildHelmArgs recursively converts a value to Helm command-line arguments.
-// It traverses the value and generates the appropriate --set or --set-string arguments
-// based on the value's kind.
+// AuthTLSGlobal is the global-section block for services that share both an
+// existing auth secret name and TLS settings across consumer sub-charts
+// (postgresql, redis, clickhouse).
+type AuthTLSGlobal struct {
+	Auth struct {
+		ExistingSecret string `json:"existingSecret,omitempty"`
+	} `json:"auth,omitzero"`
+	TLS struct {
+		Enabled bool `json:"enabled"`
+		Verify  bool `json:"verify"`
+	} `json:"tls"`
+}
+
+// AuthGlobal is the global-section block for services that share only an
+// existing auth secret name across consumer sub-charts (rabbitmq has no TLS
+// knobs at the global level).
+type AuthGlobal struct {
+	Auth struct {
+		ExistingSecret string `json:"existingSecret,omitempty"`
+	} `json:"auth,omitzero"`
+}
+
+// buildHelmArgs recursively converts a struct's fields to Helm command-line arguments.
+// It traverses the struct and generates the appropriate --set or --set-string arguments
+// based on field types.
 //
-// Each value is processed according to its kind:
+// Each field is processed according to its kind:
 //   - Strings use --set-string
 //   - Bool, numeric types use --set
-//   - Arrays/Slices are expanded into per-element args using the `name[i]` form
-//   - Structs are processed recursively over their fields
+//   - Arrays/Slices are JSON marshaled and use --set
+//   - Structs are processed recursively
 //
-// Struct fields with `json:"-"` are skipped.
-// Struct fields with `json:",omitempty"` or `json:",omitzero"` are skipped if they
-// contain zero values; this is communicated through the `hasOmit` argument when
-// recursing.
+// Fields with `json:"-"` are skipped.
+// Fields with `json:",omitempty"` or `json:",omitzero"` are skipped if they contain zero values.
 //
 // Returns an error if JSON marshaling fails for array/slice fields.
 func buildHelmArgs(v any, prefix string, hasOmit bool) ([]string, error) {

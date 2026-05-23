@@ -9,11 +9,24 @@ Return the proper RabbitMQ image name
 Get the password key to be retrieved from RabbitMQ secret.
 */}}
 {{- define "rabbitmq.secretPasswordKey" -}}
-    {{- if and .Values.auth.existingSecret .Values.auth.existingSecretPasswordKey -}}
-    {{- printf "%s" (tpl .Values.auth.existingSecretPasswordKey $) -}}
-    {{- else -}}
-        {{- printf "rabbitmq-password" -}}
-    {{- end -}}
+{{- with .Values.auth.existingSecretPasswordKey -}}
+    {{- tpl . $ -}}
+{{- else -}}
+    {{- "RABBIT_PASSWORD" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the username key.
+Returns the configured existingSecretUserKey, otherwise the default
+container-env-style key (also used for the chart-created secret).
+*/}}
+{{- define "rabbitmq.secretUserKey" -}}
+{{- with .Values.auth.existingSecretUserKey -}}
+    {{- tpl . $ -}}
+{{- else -}}
+    {{- "RABBIT_USER" -}}
+{{- end -}}
 {{- end -}}
 
 {{/*

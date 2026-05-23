@@ -26,9 +26,9 @@ spec:
     spec:
       serviceAccountName: {{ include "common.serviceAccountName" . }}
       {{- include "common.imagePullSecrets" . | nindent 6 }}
-      {{- if .Values.podSecurityContext.enabled }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
@@ -37,9 +37,9 @@ spec:
         - name: rabbitmq
           image: {{ include "rabbitmq.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-          {{- if .Values.containerSecurityContext.enabled }}
+          {{- with .Values.containerSecurityContext }}
           securityContext:
-            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           command:
             - /bin/bash
@@ -94,11 +94,14 @@ spec:
             - name: RABBITMQ_USE_LONGNAME
               value: "true"
             - name: RABBITMQ_DEFAULT_USER
-              value: {{ .Values.auth.username | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.auth.secretName" . }}
+                  key: {{ include "rabbitmq.secretUserKey" . }}
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "common.authSecretName" . }}
+                  name: {{ include "common.auth.secretName" . }}
                   key: {{ include "rabbitmq.secretPasswordKey" . }}
             - name: RABBITMQ_PLUGINS
               value: {{ include "rabbitmq.plugins" . | quote }}
@@ -118,21 +121,21 @@ spec:
             - name: metrics
               containerPort: {{ .Values.containerPorts.metrics }}
             {{- end }}
-          {{- if .Values.startupProbe.enabled }}
-          startupProbe: {{- omit .Values.startupProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.startupProbe }}
+          startupProbe: {{- toYaml . | nindent 12 }}
             tcpSocket:
               port: amqp
           {{- end }}
-          {{- if .Values.livenessProbe.enabled }}
-          livenessProbe: {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
             exec:
               command:
                 - sh
                 - -ec
                 - rabbitmq-diagnostics -q ping
           {{- end }}
-          {{- if .Values.readinessProbe.enabled }}
-          readinessProbe: {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
             exec:
               command:
                 - sh
