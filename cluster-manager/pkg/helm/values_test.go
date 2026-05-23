@@ -61,11 +61,11 @@ func TestBuildHelmArgs(t *testing.T) {
 				Nested     struct {
 					Field1 string `json:"field1"`
 					Field2 int    `json:"field2"`
-				} `json:"nested"`
+				} `json:"nested,omitempty"`
 				NestedEmpty struct {
 					Field1 string `json:"field1"`
 					Field2 int    `json:"field2"`
-				} `json:"nestedEmpty,omitzero"`
+				} `json:"nestedEmpty,omitempty"`
 				NestedZero struct {
 					Field1 string `json:"field1"`
 					Field2 int    `json:"field2"`
@@ -225,6 +225,10 @@ func generateValues() Values {
 	values.Global.ImageShortNames = false
 	values.Global.Keys.Encryption = "encryption-key"
 	values.Global.Keys.Token = "token-key"
+	values.Global.Postgresql.Auth.ExistingSecret = "pg-secret"
+	values.Global.Redis.Auth.ExistingSecret = "redis-secret"
+	values.Global.Rabbitmq.Auth.ExistingSecret = "rabbitmq-secret"
+	values.Global.Clickhouse.Auth.ExistingSecret = "ch-secret"
 
 	values.TLS.CertCA = "ca-cert-data"
 	values.TLS.Cert = "cert-data"
@@ -275,9 +279,9 @@ func generateValues() Values {
 	// CS Manager
 	values.CSManager.RegistrationToken = "registration-token"
 
-	// AuthAPI
-	values.AuthAPI.Administrator.Username = "user"
-	values.AuthAPI.Administrator.Password = "pass"
+	// Administrator
+	values.Global.Administrator.Username = "user"
+	values.Global.Administrator.Password = "pass"
 
 	return values
 }
@@ -311,6 +315,7 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set-string 'postgresql.auth.username=postgres'",
 		"--set-string 'postgresql.auth.password=postgres-password'",
 		"--set 'postgresql.persistence.enabled=true'",
+		"--set-string 'global.postgresql.auth.existingSecret=pg-secret'",
 		"--set 'global.postgresql.tls.enabled=true'",
 		"--set 'global.postgresql.tls.verify=true'",
 		"--set-string 'postgresql.persistence.storageClass=standard-1'",
@@ -318,8 +323,11 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set-string 'redis.auth.username=redis'",
 		"--set-string 'redis.auth.password=redis-password'",
 		"--set 'redis.persistence.enabled=false'",
+		"--set-string 'global.redis.auth.existingSecret=redis-secret'",
 		"--set 'global.redis.tls.enabled=false'",
 		"--set 'global.redis.tls.verify=false'",
+		"--set-string 'global.rabbitmq.auth.existingSecret=rabbitmq-secret'",
+		"--set-string 'global.clickhouse.auth.existingSecret=ch-secret'",
 		"--set 'metrics.enabled=false'",
 		"--set 'rabbitmq.deploy=true'",
 		"--set-string 'rabbitmq.auth.username=rabbitmq'",
@@ -341,8 +349,8 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set-string 'notifier.env[1].name=HTTPS_PROXY'",
 		"--set-string 'notifier.env[1].value=https://proxy.local'",
 		"--set-string 'cs-manager.registrationToken=registration-token'",
-		"--set-string 'auth-center.administrator.username=user'",
-		"--set-string 'auth-center.administrator.password=pass'",
+		"--set-string 'global.administrator.username=user'",
+		"--set-string 'global.administrator.password=pass'",
 	}
 
 	if diff := cmp.Diff(args, expectedArgs,
@@ -367,10 +375,6 @@ func TestValuesToYaml(t *testing.T) {
 	lines := strings.Split(yaml, "\n")
 
 	expectedLines := []string{
-		"auth-center:",
-		"  administrator:",
-		"    password: pass",
-		"    username: user",
 		"clickhouse:",
 		"  deploy: false",
 		"  externalHost: clickhouse.local",
@@ -379,8 +383,13 @@ func TestValuesToYaml(t *testing.T) {
 		"cs-manager:",
 		"  registrationToken: registration-token",
 		"global:",
+		"  administrator:",
+		"    password: pass",
+		"    username: user",
 		"  centralCsUrl: https://central-cs.local",
 		"  clickhouse:",
+		"    auth:",
+		"      existingSecret: ch-secret",
 		"    tls:",
 		"      enabled: false",
 		"      verify: false",
@@ -392,10 +401,17 @@ func TestValuesToYaml(t *testing.T) {
 		"    token: token-key",
 		"  ownCsUrl: https://cs.local",
 		"  postgresql:",
+		"    auth:",
+		"      existingSecret: pg-secret",
 		"    tls:",
 		"      enabled: true",
 		"      verify: true",
+		"  rabbitmq:",
+		"    auth:",
+		"      existingSecret: rabbitmq-secret",
 		"  redis:",
+		"    auth:",
+		"      existingSecret: redis-secret",
 		"    tls:",
 		"      enabled: false",
 		"      verify: false",

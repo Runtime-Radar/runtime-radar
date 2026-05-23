@@ -9,6 +9,10 @@ global:
   imagePullSecrets: []
   # -- Global StorageClass for Persistent Volume(s)
   storageClass: ""
+  rabbitmq:
+    auth:
+      # -- Name of an existing secret that contains the certificates (overrides `auth.existingSecret`)
+      existingSecret: ""
 
 # @section Common parameters
 # -- String to partially override common.fullname template (will maintain the release name)
@@ -77,7 +81,6 @@ ulimitNofiles: "65536"
 plugins: "rabbitmq_management rabbitmq_peer_discovery_k8s"
 # -- [string] RabbitMQ Configuration file content: required cluster configuration
 # Do not override unless you know what you are doing.
-# To add more configuration, use `extraConfiguration` of `advancedConfiguration` instead
 configuration: ""
 # -- The name of an existing ConfigMap with your custom configuration
 existingConfigmap: ""
@@ -137,8 +140,6 @@ containerPorts:
 # RabbitMQ pods' Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext:
-  # -- Enable RabbitMQ pods' Security Context
-  enabled: true
   # -- Set filesystem group change policy
   fsGroupChangePolicy: Always
   # -- Set kernel settings using the sysctl interface
@@ -154,8 +155,6 @@ podSecurityContext:
 #       drop: ["NET_RAW"]
 #     readOnlyRootFilesystem: true
 containerSecurityContext:
-  # -- Enabled RabbitMQ containers' Security Context
-  enabled: true
   # -- [object,nullable] Set SELinux options in container
   seLinuxOptions: null
   # -- Set RabbitMQ containers' Security Context runAsUser
@@ -177,8 +176,6 @@ containerSecurityContext:
 # Configure RabbitMQ containers' extra options for liveness probe
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 livenessProbe:
-  # -- Enable livenessProbe
-  enabled: true
   # -- Initial delay seconds for livenessProbe
   initialDelaySeconds: 120
   # -- Timeout seconds for livenessProbe
@@ -192,8 +189,6 @@ livenessProbe:
 # Configure RabbitMQ containers' extra options for readiness probe
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 readinessProbe:
-  # -- Enable readinessProbe
-  enabled: true
   # -- Initial delay seconds for readinessProbe
   initialDelaySeconds: 10
   # -- Timeout seconds for readinessProbe
@@ -207,8 +202,6 @@ readinessProbe:
 # Configure RabbitMQ containers' extra options for startup probe
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 startupProbe:
-  # -- Enable startupProbe
-  enabled: false
   # -- Initial delay seconds for startupProbe
   initialDelaySeconds: 10
   # -- Timeout seconds for startupProbe

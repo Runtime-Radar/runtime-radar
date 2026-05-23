@@ -9,7 +9,11 @@ global:
   imagePullSecrets: []
   # -- Global StorageClass for Persistent Volume(s)
   storageClass: ""
+
   redis:
+    auth:
+      # -- Name of an existing secret that contains the certificates (overrides `auth.existingSecret`)
+      existingSecret: ""
     tls:
       # -- [boolean, nullable] Enable TLS traffic support (overrides `tls.enabled`)
       enabled: null
@@ -45,7 +49,6 @@ imagePullSecrets: []
 
 # @section Redis&reg; parameters
 # Redis&reg; image
-# ref: https://hub.docker.com/r/bitnami/redis/tags/
 image:
   # -- [default: REGISTRY_NAME] Redis&reg; image registry
   registry: ""
@@ -156,8 +159,6 @@ containerPorts:
 # Configure Pods Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext:
-  # -- Enabled Redis&reg; master pods' Security Context
-  enabled: true
   # -- Set filesystem group change policy
   fsGroupChangePolicy: Always
   # -- Set kernel settings using the sysctl interface
@@ -169,8 +170,6 @@ podSecurityContext:
 # Configure Container Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 containerSecurityContext:
-  # -- Enabled Redis&reg; master containers' Security Context
-  enabled: true
   # -- [object,nullable] Set SELinux options in container
   seLinuxOptions: {}
   # -- Set Redis&reg; master containers' Security Context runAsUser
@@ -192,8 +191,6 @@ containerSecurityContext:
 # Configure extra options for Redis&reg; containers' liveness and readiness probes
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 startupProbe:
-  # -- Enable startupProbe on Redis&reg; master nodes
-  enabled: false
   # -- Initial delay seconds for startupProbe
   initialDelaySeconds: 20
   # -- Period seconds for startupProbe
@@ -205,8 +202,6 @@ startupProbe:
   # -- Success threshold for startupProbe
   failureThreshold: 5
 livenessProbe:
-  # -- Enable livenessProbe on Redis&reg; master nodes
-  enabled: true
   # -- Initial delay seconds for livenessProbe
   initialDelaySeconds: 20
   # -- Period seconds for livenessProbe
@@ -218,8 +213,6 @@ livenessProbe:
   # -- Success threshold for livenessProbe
   failureThreshold: 5
 readinessProbe:
-  # -- Enable readinessProbe on Redis&reg; master nodes
-  enabled: true
   # -- Initial delay seconds for readinessProbe
   initialDelaySeconds: 20
   # -- Period seconds for readinessProbe
@@ -235,9 +228,6 @@ readinessProbe:
 service:
   # -- Redis&reg; master service type
   type: ClusterIP
-  portNames:
-    # -- Redis&reg; master service port name
-    redis: "tcp-redis"
   ports:
     # -- Redis&reg; master service port
     redis: 6379
@@ -251,27 +241,29 @@ service:
 # Enable persistence using Persistent Volume Claims
 # ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 persistence:
-  # -- Enable PostgreSQL data persistence using PVC
+  # -- Enable persistence using Persistent Volume Claims
   enabled: true
   # -- Name of an existing PVC to use
   existingClaim: ""
-  # -- PVC Storage Class for PostgreSQL data volume
+  # -- Storage class of backing PVC
   # If defined, storageClassName: <storageClass>
   # If set to "-", storageClassName: "", which disables dynamic provisioning
   # If undefined (the default) or set to null, no storageClassName spec is
   #   set, choosing the default provisioner.  (gp2 on AWS, standard on
   #   GKE, AWS & OpenStack)
   storageClass: ""
-  # -- PVC Access Mode for PostgreSQL volume
+  # -- Persistent Volume Claim labels
+  labels: {}
+  # -- Persistent Volume Claim annotations
+  annotations: {}
+  # -- Persistent Volume Access Modes
   accessModes:
     - ReadWriteOnce
-  # -- PVC Storage Request for PostgreSQL volume
+  # -- Size of data volume
   size: 8Gi
-  # -- Annotations for the PVC
-  annotations: {}
-  # -- Labels for the PVC
-  labels: {}
-  # -- Selector to match an existing Persistent Volume (this value is evaluated as a template)
+  # -- Selector to match an existing Persistent Volume for ClickHouse data PVC
+  # If set, the PVC can't have a PV dynamically provisioned for it
+  # E.g.
   # selector:
   #   matchLabels:
   #     app: my-app
