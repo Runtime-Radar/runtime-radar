@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: 3.5.1
+dependencies:
+- name: common
+  repository: file://../common
+  version: 0.x.x
+description: Grafana Loki is a horizontally scalable, highly available, and multi-tenant
+  log aggregation system. It provides real-time long tailing and full persistence
+  to object storage.
+name: loki
+version: 0.0.1

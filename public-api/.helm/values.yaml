@@ -1,5 +1,4 @@
 image:
-  registry: ghcr.io/runtime-radar
   repository: public-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -11,7 +10,6 @@ service:
   ports:
     http: 9000
 containerSecurityContext:
-  enabled: true
   seLinuxOptions: {}
   privileged: false
   allowPrivilegeEscalation: false
@@ -19,21 +17,22 @@ containerSecurityContext:
   seccompProfile:
     type: "RuntimeDefault"
 podSecurityContext:
-  enabled: true
   fsGroupChangePolicy: Always
   sysctls: []
   supplementalGroups: []
 env:
   - name: AUTH_API_URL
-    value: '{{ printf "%s://auth-center:9000" (include "common.cs.http-scheme" .) }}'
+    value: '{{ printf "%s://auth-api:9000" (include "common.cs.http-scheme" .) }}'
   - name: POLICY_ENFORCER_GRPC_ADDR
     value: "policy-enforcer:8000"
   - name: HISTORY_API_GRPC_ADDR
     value: "history-api:8000"
+  - name: KUBE_MANAGER_GRPC_ADDR
+    value: "kube-manager:8000"
   - name: ACCESS_TOKEN_SALT
     valueFrom:
       secretKeyRef:
-        name: cs-keys
+        name: '{{ include "common.cs.keys.secretName" . }}'
         key: publicAccessTokenSalt
 postgresql:
   enabled: true
@@ -56,7 +55,6 @@ resources:
     memory: 128Mi
     ephemeral-storage: 1Mi
 livenessProbe:
-  enabled: true
   httpGet:
     path: /live
     scheme: HTTP
@@ -65,7 +63,6 @@ livenessProbe:
   successThreshold: 1
   failureThreshold: 2
 readinessProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP
@@ -74,7 +71,6 @@ readinessProbe:
   successThreshold: 1
   failureThreshold: 3
 startupProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP

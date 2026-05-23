@@ -20,6 +20,16 @@
                     "description": "Logging level for components",
                     "default": "INFO"
                 },
+                "metrics": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable CS metrics",
+                            "default": false
+                        }
+                    }
+                },
                 "tls": {
                     "type": "object",
                     "properties": {
@@ -50,7 +60,7 @@
                     "properties": {
                         "existingSecret": {
                             "type": "string",
-                            "description": "Existing secret name with keys `encryption` and `token`",
+                            "description": "Existing secret name with keys `encryption`, `token`, and `publicAccessTokenSalt`",
                             "default": ""
                         },
                         "encryption": {
@@ -70,9 +80,39 @@
                         }
                     }
                 },
+                "administrator": {
+                    "type": "object",
+                    "properties": {
+                        "existingSecret": {
+                            "type": "string",
+                            "description": "Name of an existing secret with administrator credentials (must contain keys `username` and `password`). When empty, the chart creates a Secret named `cs-account` from `username` and `password` below.",
+                            "default": ""
+                        },
+                        "username": {
+                            "type": "string",
+                            "description": "Administrator username. Ignored when `existingSecret` is set.",
+                            "default": ""
+                        },
+                        "password": {
+                            "type": "string",
+                            "description": "Administrator password. Ignored when `existingSecret` is set.",
+                            "default": ""
+                        }
+                    }
+                },
                 "postgresql": {
                     "type": "object",
                     "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret with PostgreSQL auth credentials (must contain `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`). When empty, the chart creates a Secret named `postgresql`. NOTE: when `postgresql.deploy=true` (default), you must also set `postgresql.auth.existingSecret` to the same value so the sub-chart reads from it. For external PostgreSQL, prefer `postgresql.deploy=false`.",
+                                    "default": ""
+                                }
+                            }
+                        },
                         "tls": {
                             "type": "object",
                             "properties": {
@@ -100,6 +140,16 @@
                 "redis": {
                     "type": "object",
                     "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret with Redis auth credentials (must contain `REDIS_USER`, `REDIS_PASSWORD`). When empty, the chart creates a Secret named `redis`. NOTE: when `redis.deploy=true` (default), you must also set `redis.auth.existingSecret` to the same value so the sub-chart reads from it.",
+                                    "default": ""
+                                }
+                            }
+                        },
                         "tls": {
                             "type": "object",
                             "properties": {
@@ -124,9 +174,34 @@
                         }
                     }
                 },
+                "rabbitmq": {
+                    "type": "object",
+                    "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret with RabbitMQ auth credentials (must contain `RABBIT_USER`, `RABBIT_PASSWORD`). When empty, the chart creates a Secret named `rabbitmq`. NOTE: when `rabbitmq.deploy=true` (default), you must also set `rabbitmq.auth.existingSecret` to the same value so the sub-chart reads from it.",
+                                    "default": ""
+                                }
+                            }
+                        }
+                    }
+                },
                 "clickhouse": {
                     "type": "object",
                     "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret with ClickHouse auth credentials (must contain `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DB`). When empty, the chart creates a Secret named `clickhouse`. NOTE: when `clickhouse.deploy=true` (default), you must also set `clickhouse.auth.existingSecret` to the same value so the sub-chart reads from it. For external ClickHouse, prefer `clickhouse.deploy=false`.",
+                                    "default": ""
+                                }
+                            }
+                        },
                         "tls": {
                             "type": "object",
                             "properties": {
@@ -288,26 +363,6 @@
                     "type": "number",
                     "description": "Number of replicas for the auth-center component",
                     "default": 2
-                },
-                "administrator": {
-                    "type": "object",
-                    "properties": {
-                        "existingSecret": {
-                            "type": "string",
-                            "description": "Name of the existing secret with administrator credentials",
-                            "default": ""
-                        },
-                        "username": {
-                            "type": "string",
-                            "description": "Administrator name",
-                            "default": ""
-                        },
-                        "password": {
-                            "type": "string",
-                            "description": "Administrator password",
-                            "default": ""
-                        }
-                    }
                 }
             }
         },
@@ -661,7 +716,7 @@
                     "properties": {
                         "existingSecret": {
                             "type": "string",
-                            "description": "Name of the existing secret with PostgreSQL credentials. The `auth.postgresPassword`, `auth.password`, and `auth.replicationPassword` values will be ignored and taken from this secret. The secret might also contain the `ldap-password` key if LDAP is enabled. If so, the `ldap.bind_password` value will be ignored and taken from this secret.",
+                            "description": "Name of an existing secret with PostgreSQL credentials, read by the sub-chart when `postgresql.deploy=true`. The `auth.postgresPassword`, `auth.password`, and `auth.replicationPassword` values will be ignored and taken from this secret. The secret must carry AUTH credentials only — `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (connection metadata `POSTGRES_ADDR`/`POSTGRES_SSL_*` lives in the always-created `cs-postgresql-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (auth-api, history-api, etc.), set `global.postgresql.auth.existingSecret` to the same value. The secret might also contain the `ldap-password` key if LDAP is enabled.",
                             "default": "postgresql"
                         },
                         "username": {
@@ -782,7 +837,7 @@
                     "properties": {
                         "existingSecret": {
                             "type": "string",
-                            "description": "Name of the existing secret with Redis credentials",
+                            "description": "Name of an existing secret with Redis credentials, read by the sub-chart when `redis.deploy=true`. When set, the `auth.password` parameter is ignored. The secret must carry AUTH credentials only — `REDIS_USER`, `REDIS_PASSWORD` (connection metadata `REDIS_ADDR`/`REDIS_TLS_*` lives in the always-created `cs-redis-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (auth-api, history-api, etc.), set `global.redis.auth.existingSecret` to the same value.",
                             "default": "redis"
                         },
                         "username": {
@@ -872,7 +927,7 @@
                         },
                         "existingSecret": {
                             "type": "string",
-                            "description": "Existing secret with RabbitMQ credentials (must contain value for the `rabbitmq-password` parameter)",
+                            "description": "Name of an existing secret with RabbitMQ credentials, read by the sub-chart when `rabbitmq.deploy=true`. When set, the `auth.password` parameter is ignored. The secret must carry AUTH credentials only — `RABBIT_USER`, `RABBIT_PASSWORD` (connection metadata `RABBIT_ADDR` lives in the always-created `cs-rabbitmq-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (event-processor, history-api, etc.), set `global.rabbitmq.auth.existingSecret` to the same value.",
                             "default": "rabbitmq"
                         },
                         "existingSecretPasswordKey": {
@@ -1028,7 +1083,7 @@
                         },
                         "existingSecret": {
                             "type": "string",
-                            "description": "Name of the secret with the administrator password",
+                            "description": "Name of an existing secret with ClickHouse credentials, read by the sub-chart when `clickhouse.deploy=true`. When set, the `auth.password` parameter is ignored. The secret must carry AUTH credentials only — `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DB` (connection metadata `CLICKHOUSE_ADDR`/`CLICKHOUSE_SSL_*` lives in the always-created `cs-clickhouse-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (history-api, event-processor, etc.), set `global.clickhouse.auth.existingSecret` to the same value.",
                             "default": "clickhouse"
                         },
                         "existingSecretPasswordKey": {
@@ -1057,6 +1112,147 @@
                             "default": ""
                         }
                     }
+                }
+            }
+        },
+        "grafana": {
+            "type": "object",
+            "properties": {
+                "externalHost": {
+                    "type": "string",
+                    "description": "External host with Grafana. Requires setting `grafana.deploy` to `false`.",
+                    "default": ""
+                },
+                "fullnameOverride": {
+                    "type": "string",
+                    "description": "String to fully override common.names.fullname",
+                    "default": "grafana"
+                },
+                "nodeSelector": {
+                    "type": "object",
+                    "description": "Node labels for pod assignment",
+                    "default": {}
+                },
+                "replicaCount": {
+                    "type": "number",
+                    "description": "Number of Grafana nodes",
+                    "default": 1
+                },
+                "tls": {
+                    "type": "object",
+                    "properties": {
+                        "autoGenerated": {
+                            "type": "boolean",
+                            "description": "Generate automatically self-signed TLS certificates if nothing is provided",
+                            "default": true,
+                            "nullable": true
+                        },
+                        "cert": {
+                            "type": "string",
+                            "description": "Certificate value",
+                            "default": ""
+                        },
+                        "certKey": {
+                            "type": "string",
+                            "description": "Certificate key value",
+                            "default": ""
+                        },
+                        "certCA": {
+                            "type": "string",
+                            "description": "CA Certificate value",
+                            "default": ""
+                        }
+                    }
+                },
+                "auth": {
+                    "type": "object",
+                    "properties": {
+                        "username": {
+                            "type": "string",
+                            "description": "Grafana administrator name",
+                            "default": "runtime-radar"
+                        },
+                        "password": {
+                            "type": "string",
+                            "description": "Grafana administartor password",
+                            "default": ""
+                        }
+                    }
+                },
+                "datasourcesSecretName": {
+                    "type": "string",
+                    "description": "The name of an externally-managed secret containing custom datasource files.",
+                    "default": "grafana-datasources"
+                },
+                "dashboardsProvider": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable the use of a Grafana dashboard provider",
+                            "default": true
+                        }
+                    }
+                },
+                "subPath": {
+                    "type": "string",
+                    "description": "Use sub path for grafana for exposing it via reverse proxy",
+                    "default": "grafana"
+                }
+            }
+        },
+        "prometheus": {
+            "type": "object",
+            "properties": {
+                "externalHost": {
+                    "type": "string",
+                    "description": "External host with Prometheus. Requires setting `prometheus.deploy` to `false`.",
+                    "default": ""
+                },
+                "fullnameOverride": {
+                    "type": "string",
+                    "description": "String to fully override common.names.fullname",
+                    "default": "prometheus"
+                },
+                "replicaCount": {
+                    "type": "number",
+                    "description": "Number of Prometheus replicas to deploy",
+                    "default": 1
+                },
+                "persistence": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable persistence using PVC",
+                            "default": true
+                        },
+                        "storageClass": {
+                            "type": "string",
+                            "description": "Persistent volume storage class",
+                            "default": ""
+                        },
+                        "size": {
+                            "type": "string",
+                            "description": "Data volume size",
+                            "default": "5Gi"
+                        },
+                        "existingClaim": {
+                            "type": "string",
+                            "description": "Name of an existing PVC",
+                            "default": ""
+                        },
+                        "selector": {
+                            "type": "object",
+                            "description": "Template to specify an existing persistent volume",
+                            "default": {}
+                        }
+                    }
+                },
+                "scrapeConfigmap": {
+                    "type": "string",
+                    "description": "ConfigMap which contains scrape config files",
+                    "default": "cs-metrics"
                 }
             }
         }

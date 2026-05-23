@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=values.schema.json
+
 # @section Global parameters
 global:
   # -- Global Docker image registry
@@ -6,6 +8,10 @@ global:
   imageTag: ""
   # -- Logging level for components
   logLevel: INFO
+
+  metrics:
+    # -- Enable CS metrics
+    enabled: false
 
   tls:
     # -- Enable TLS for RR components
@@ -18,7 +24,7 @@ global:
     enabled: true
 
   keys:
-    # -- Existing secret name with keys `encryption` and `token`
+    # -- Existing secret name with keys `encryption`, `token`, and `publicAccessTokenSalt`
     existingSecret: ""
     # -- Encryption key for secrets stored in database. Must be a 64-character hexadecimal string (32 bytes)
     # Generate with: openssl rand -hex 32
@@ -36,7 +42,18 @@ global:
     # 8848503f12a2cc1d1917045d0644680b63aa40616e4d51f1aca8143305a7f64197e28b051d691eb2b8a652f40ac0fae030056f56040fecec1f4b6c1429555068
     publicAccessTokenSalt: ""
 
+  administrator:
+    # -- Name of an existing secret with administrator credentials (must contain keys `username` and `password`). When empty, the chart creates a Secret named `cs-account` from `username` and `password` below.
+    existingSecret: ""
+    # -- Administrator username. Ignored when `existingSecret` is set.
+    username: ""
+    # -- Administrator password. Ignored when `existingSecret` is set.
+    password: ""
+
   postgresql:
+    auth:
+      # -- Name of an existing secret with PostgreSQL auth credentials (must contain `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`). When empty, the chart creates a Secret named `postgresql`. NOTE: when `postgresql.deploy=true` (default), you must also set `postgresql.auth.existingSecret` to the same value so the sub-chart reads from it. For external PostgreSQL, prefer `postgresql.deploy=false`.
+      existingSecret: ""
     tls:
       # -- [boolean, nullable] Enable TLS traffic support (overrides `tls.enabled`)
       enabled: true
@@ -46,6 +63,9 @@ global:
       existingSecret: ""
 
   redis:
+    auth:
+      # -- Name of an existing secret with Redis auth credentials (must contain `REDIS_USER`, `REDIS_PASSWORD`). When empty, the chart creates a Secret named `redis`. NOTE: when `redis.deploy=true` (default), you must also set `redis.auth.existingSecret` to the same value so the sub-chart reads from it.
+      existingSecret: ""
     tls:
       # -- [boolean, nullable] Enable TLS traffic support (overrides `tls.enabled`)
       enabled: true
@@ -54,7 +74,15 @@ global:
       # -- Name of an existing secret that contains the certificates (overrides `tls.existingSecret`)
       existingSecret: ""
 
+  rabbitmq:
+    auth:
+      # -- Name of an existing secret with RabbitMQ auth credentials (must contain `RABBIT_USER`, `RABBIT_PASSWORD`). When empty, the chart creates a Secret named `rabbitmq`. NOTE: when `rabbitmq.deploy=true` (default), you must also set `rabbitmq.auth.existingSecret` to the same value so the sub-chart reads from it.
+      existingSecret: ""
+
   clickhouse:
+    auth:
+      # -- Name of an existing secret with ClickHouse auth credentials (must contain `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DB`). When empty, the chart creates a Secret named `clickhouse`. NOTE: when `clickhouse.deploy=true` (default), you must also set `clickhouse.auth.existingSecret` to the same value so the sub-chart reads from it. For external ClickHouse, prefer `clickhouse.deploy=false`.
+      existingSecret: ""
     tls:
       # -- [boolean, nullable] Enable TLS traffic support (overrides `tls.enabled`)
       enabled: true
@@ -83,7 +111,7 @@ global:
   # -- Is this a child cluster
   isChildCluster: false
   # @skip global.csVersion
-  csVersion: "v0.1.0"
+  csVersion: ""
 
 # @section Common RR parameters
 # -- String to fully override common.fullname
@@ -121,13 +149,6 @@ auth-center:
   nodeSelector: {}
   # -- Number of replicas for the auth-center component
   replicas: 2
-  administrator:
-    # -- Name of the existing secret with administrator credentials
-    existingSecret: ""
-    # -- Administrator name
-    username: ""
-    # -- Administrator password
-    password: ""
 
 # @section Policy-enforcer component parameters
 policy-enforcer:
@@ -202,7 +223,6 @@ reverse-proxy:
     # nodePorts:
     #   http: 32320
     nodePorts: {}
-
 
 # @section CS-manager component parameters
 cs-manager:
@@ -321,7 +341,7 @@ postgresql:
     certCA: ""
   # PostgreSQL authentication parameters
   auth:
-    # -- Name of the existing secret with PostgreSQL credentials. The `auth.postgresPassword`, `auth.password`, and `auth.replicationPassword` values will be ignored and taken from this secret. The secret might also contain the `ldap-password` key if LDAP is enabled. If so, the `ldap.bind_password` value will be ignored and taken from this secret.
+    # -- Name of an existing secret with PostgreSQL credentials, read by the sub-chart when `postgresql.deploy=true`. The `auth.postgresPassword`, `auth.password`, and `auth.replicationPassword` values will be ignored and taken from this secret. The secret must carry AUTH credentials only — `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (connection metadata `POSTGRES_ADDR`/`POSTGRES_SSL_*` lives in the always-created `cs-postgresql-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (auth-api, history-api, etc.), set `global.postgresql.auth.existingSecret` to the same value. The secret might also contain the `ldap-password` key if LDAP is enabled.
     existingSecret: postgresql
     # -- Name of custom user to be created
     username: runtime-radar
@@ -388,8 +408,7 @@ redis:
     certCA: ""
   # Redis authentication parameters
   auth:
-    # -- Name of the existing secret with Redis credentials
-    # NOTE: When it's set, the previous `auth.password` parameter is ignored
+    # -- Name of an existing secret with Redis credentials, read by the sub-chart when `redis.deploy=true`. When set, the `auth.password` parameter is ignored. The secret must carry AUTH credentials only — `REDIS_USER`, `REDIS_PASSWORD` (connection metadata `REDIS_ADDR`/`REDIS_TLS_*` lives in the always-created `cs-redis-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (auth-api, history-api, etc.), set `global.redis.auth.existingSecret` to the same value.
     existingSecret: redis
     # -- Redis username
     username: runtime-radar
@@ -446,7 +465,7 @@ rabbitmq:
     username: runtime-radar
     # -- RabbitMQ application password
     password: ""
-    # -- Existing secret with RabbitMQ credentials (must contain value for the `rabbitmq-password` parameter)
+    # -- Name of an existing secret with RabbitMQ credentials, read by the sub-chart when `rabbitmq.deploy=true`. When set, the `auth.password` parameter is ignored. The secret must carry AUTH credentials only — `RABBIT_USER`, `RABBIT_PASSWORD` (connection metadata `RABBIT_ADDR` lives in the always-created `cs-rabbitmq-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (event-processor, history-api, etc.), set `global.rabbitmq.auth.existingSecret` to the same value.
     existingSecret: rabbitmq
     # -- Password key to be retrieved from existing secret
     existingSecretPasswordKey: RABBIT_PASSWORD
@@ -551,7 +570,7 @@ clickhouse:
     username: runtime-radar
     # -- ClickHouse administartor password
     password: ""
-    # -- Name of the secret with the administrator password
+    # -- Name of an existing secret with ClickHouse credentials, read by the sub-chart when `clickhouse.deploy=true`. When set, the `auth.password` parameter is ignored. The secret must carry AUTH credentials only — `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DB` (connection metadata `CLICKHOUSE_ADDR`/`CLICKHOUSE_SSL_*` lives in the always-created `cs-clickhouse-config` ConfigMap and must not be placed in this Secret). NOTE: To make the same secret visible to all consumer services (history-api, event-processor, etc.), set `global.clickhouse.auth.existingSecret` to the same value.
     existingSecret: clickhouse
     # -- Name of the key stored in the existing secret
     existingSecretPasswordKey: CLICKHOUSE_PASSWORD
@@ -563,6 +582,110 @@ clickhouse:
     enabled: false
     # -- ClickHouse metrics external host
     externalHost: ""
+
+# @section Grafana installation configuration
+grafana:
+  # -- External host with Grafana. Requires setting `grafana.deploy` to `false`.
+  externalHost: ""
+  # -- String to fully override common.names.fullname
+  fullnameOverride: grafana
+  # -- Node labels for pod assignment
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  nodeSelector: {}
+  # -- Number of Grafana nodes
+  replicaCount: 1
+  # -- [object] Resource configuration for Clickhouse container
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1024Mi
+      ephemeral-storage: 50Mi
+    limits:
+      cpu: "1.0"
+      memory: 1536Mi
+      ephemeral-storage: 1024Mi
+  # Grafana TLS parameters
+  tls:
+    # -- [boolean, nullable] Generate automatically self-signed TLS certificates if nothing is provided
+    autoGenerated: true
+    # -- Certificate value
+    cert: ""
+    # -- Certificate key value
+    certKey: ""
+    # -- CA Certificate value
+    certCA: ""
+  # Grafana Authentication
+  auth:
+    # -- Grafana administrator name
+    username: runtime-radar
+    # -- Grafana administartor password
+    password: ""
+  # Datasources configuration
+  # -- The name of an externally-managed secret containing custom datasource files.
+  datasourcesSecretName: grafana-datasources
+  # Create dasboard provider to load dashboards, a default one is created to load dashboards
+  # from "/var/lib/grafana/dashboards"
+  dashboardsProvider:
+    # -- Enable the use of a Grafana dashboard provider
+    enabled: true
+  # -- [object] Array with the names of a series of ConfigMaps containing dashboards files
+  dashboardsConfigMaps:
+    - configMapName: cs-dashboards
+      folderName: cs
+  # -- Use sub path for grafana for exposing it via reverse proxy
+  subPath: "grafana"
+  # @skip grafana.grafana.extraEnvVars Array containing extra env vars to configure Grafana
+  extraEnvVars:
+    - name: GF_LOKI_TLS_CA_CERT
+      valueFrom:
+        secretKeyRef:
+          name: loki-crt
+          key: ca.crt
+          optional: true
+
+# @section Prometheus installation configuration
+prometheus:
+  # -- External host with Prometheus. Requires setting `prometheus.deploy` to `false`.
+  externalHost: ""
+  # -- String to fully override common.names.fullname
+  fullnameOverride: prometheus
+  # -- Number of Prometheus replicas to deploy
+  replicaCount: 1
+  # -- [object] Resource configuration for Clickhouse container
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+      ephemeral-storage: 50Mi
+    limits:
+      cpu: 375m
+      memory: 384Mi
+      ephemeral-storage: 1024Mi
+  # Enable persistence using Persistent Volume Claims
+  persistence:
+    # -- Enable persistence using PVC
+    enabled: true
+    # -- Persistent volume storage class
+    # If defined, storageClassName: <storageClass>
+    # If set to "-", storageClassName: "", which disables dynamic provisioning
+    # If undefined (the default) or set to null, no storageClassName spec is
+    #   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    #   GKE, AWS & OpenStack)
+    storageClass: ""
+    # -- Data volume size
+    size: 5Gi
+    # -- Name of an existing PVC
+    existingClaim: ""
+    # -- Template to specify an existing persistent volume
+    # If set, the PVC can't have a PV dynamically provisioned for it
+    # E.g.
+    # selector:
+    #   matchLabels:
+    #     app: my-app
+    selector: {}
+  # -- ConfigMap which contains scrape config files
+  # ref: <https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scrape_config>
+  scrapeConfigmap: "cs-metrics"
 
 # @skip List of disabled by default tags in helm chart
 tags:
