@@ -10,6 +10,9 @@ global:
   # -- Global StorageClass for Persistent Volume(s)
   storageClass: ""
   postgresql:
+    auth:
+      # -- Name of an existing secret that contains the certificates (overrides `auth.existingSecret`)
+      existingSecret: ""
     tls:
       # -- [boolean, nullable] Enable TLS traffic support (overrides `tls.enabled`)
       enabled: null
@@ -165,8 +168,6 @@ containerPorts:
 # Pod Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 podSecurityContext:
-  # -- Enabled pods' Security Context
-  enabled: true
   # -- Set filesystem group change policy
   fsGroupChangePolicy: Always
   # -- Set kernel settings using the sysctl interface
@@ -178,8 +179,6 @@ podSecurityContext:
 # Container Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 containerSecurityContext:
-  # -- Enable containers' Security Context
-  enabled: true
   # -- [object,nullable] Set SELinux options in container
   seLinuxOptions: {}
   # -- Set containers' Security Context runAsUser
@@ -203,8 +202,6 @@ containerSecurityContext:
 # Configure extra options for PostgreSQL containers' liveness, readiness and startup probes
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
 livenessProbe:
-  # -- Enable livenessProbe on PostgreSQL containers
-  enabled: true
   # -- Initial delay seconds for livenessProbe
   initialDelaySeconds: 30
   # -- Period seconds for livenessProbe
@@ -216,8 +213,6 @@ livenessProbe:
   # -- Success threshold for livenessProbe
   successThreshold: 1
 readinessProbe:
-  # -- Enable readinessProbe on PostgreSQL containers
-  enabled: true
   # -- Initial delay seconds for readinessProbe
   initialDelaySeconds: 5
   # -- Period seconds for readinessProbe
@@ -229,8 +224,6 @@ readinessProbe:
   # -- Success threshold for readinessProbe
   successThreshold: 1
 startupProbe:
-  # -- Enable startupProbe on PostgreSQL containers
-  enabled: false
   # -- Initial delay seconds for startupProbe
   initialDelaySeconds: 30
   # -- Period seconds for startupProbe
@@ -256,29 +249,32 @@ service:
     # -- Annotations for the headless service.
     annotations: {}
 # @section Persistence Parameters
-# PostgreSQL persistence configuration
+# Enable persistence using Persistent Volume Claims
+# ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 persistence:
-  # -- Enable PostgreSQL data persistence using PVC
+  # -- Enable persistence using Persistent Volume Claims
   enabled: true
   # -- Name of an existing PVC to use
   existingClaim: ""
-  # -- PVC Storage Class for PostgreSQL data volume
+  # -- Storage class of backing PVC
   # If defined, storageClassName: <storageClass>
   # If set to "-", storageClassName: "", which disables dynamic provisioning
   # If undefined (the default) or set to null, no storageClassName spec is
   #   set, choosing the default provisioner.  (gp2 on AWS, standard on
   #   GKE, AWS & OpenStack)
   storageClass: ""
-  # -- PVC Access Mode for PostgreSQL volume
+  # -- Persistent Volume Claim labels
+  labels: {}
+  # -- Persistent Volume Claim annotations
+  annotations: {}
+  # -- Persistent Volume Access Modes
   accessModes:
     - ReadWriteOnce
-  # -- PVC Storage Request for PostgreSQL volume
+  # -- Size of data volume
   size: 8Gi
-  # -- Annotations for the PVC
-  annotations: {}
-  # -- Labels for the PVC
-  labels: {}
-  # -- Selector to match an existing Persistent Volume (this value is evaluated as a template)
+  # -- Selector to match an existing Persistent Volume for ClickHouse data PVC
+  # If set, the PVC can't have a PV dynamically provisioned for it
+  # E.g.
   # selector:
   #   matchLabels:
   #     app: my-app
@@ -351,8 +347,6 @@ metrics:
   # PostgreSQL Prometheus exporter containers' Security Context
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext:
-    # -- Enable containers' Security Context
-    enabled: true
     # -- [object,nullable] Set SELinux options in container
     seLinuxOptions: {}
     # -- Set containers' Security Context runAsUser
@@ -376,8 +370,6 @@ metrics:
   # Configure extra options for PostgreSQL Prometheus exporter containers' liveness, readiness and startup probes
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes
   livenessProbe:
-    # -- Enable livenessProbe on PostgreSQL Prometheus exporter containers
-    enabled: true
     # -- Initial delay seconds for livenessProbe
     initialDelaySeconds: 5
     # -- Period seconds for livenessProbe
@@ -389,8 +381,6 @@ metrics:
     # -- Success threshold for livenessProbe
     successThreshold: 1
   readinessProbe:
-    # -- Enable readinessProbe on PostgreSQL Prometheus exporter containers
-    enabled: true
     # -- Initial delay seconds for readinessProbe
     initialDelaySeconds: 5
     # -- Period seconds for readinessProbe
@@ -402,8 +392,6 @@ metrics:
     # -- Success threshold for readinessProbe
     successThreshold: 1
   startupProbe:
-    # -- Enable startupProbe on PostgreSQL Prometheus exporter containers
-    enabled: false
     # -- Initial delay seconds for startupProbe
     initialDelaySeconds: 10
     # -- Period seconds for startupProbe
@@ -514,8 +502,6 @@ backup:
     # -- Set the cronjob parameter restartPolicy
     restartPolicy: OnFailure
     podSecurityContext:
-      # -- Enable PodSecurityContext for CronJob/Backup
-      enabled: true
       # -- Set filesystem group change policy
       fsGroupChangePolicy: Always
       # -- Set kernel settings using the sysctl interface
@@ -527,8 +513,6 @@ backup:
     # backup container's Security Context
     # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
     containerSecurityContext:
-      # -- Enable containers' Security Context
-      enabled: true
       # -- [object,nullable] Set SELinux options in container
       seLinuxOptions: {}
       # -- Set containers' Security Context runAsUser

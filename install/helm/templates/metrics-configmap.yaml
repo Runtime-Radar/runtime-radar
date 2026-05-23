@@ -1,0 +1,196 @@
+{{- $metricsEnabled := or (.Values.global.metrics).enabled .Values.metrics.enabled .Values.postgresql.metrics.enabled .Values.rabbitmq.metrics.enabled .Values.clickhouse.metrics.enabled -}}
+{{- if and .Values.prometheus.deployed $metricsEnabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cs-metrics
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/part-of: prometheus
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+data:
+  kubernetes.yaml: |-
+    scrape_configs:
+      - job_name: 'kubernetes-pods'
+        metrics_path: '/metrics'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            regex: 'reverse-proxy-.*'
+            action: drop
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ include "common.namespace" .  | squote }}
+            action: keep
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            regex: '^(9090|9187)$'
+            action: keep
+      - job_name: 'tetragon'
+        metrics_path: '/metrics'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ include "common.namespace" . | squote }}
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_name]
+            regex: 'runtime-monitor-.*'
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            regex: '2112'
+            action: keep
+
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - target_label: service
+            replacement: 'tetragon'
+            action: replace
+      - job_name: 'caddy'
+        metrics_path: '/metrics'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            regex: 'reverse-proxy-.*'
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            regex: '9090'
+            action: keep
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ include "common.namespace" .  | squote }}
+            action: keep
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - target_label: service
+            replacement: 'reverse-proxy'
+            action: replace
+
+  {{- if and .Values.postgresql.metrics.enabled .Values.postgresql.metrics.externalHost }}
+  postgresql.yaml: |-
+    scrape_configs:
+      - job_name: 'postgresql'
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+        static_configs:
+          - targets: ['{{ .Values.postgresql.metrics.externalHost }}']
+        relabel_configs:
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - target_label: service
+            replacement: 'postgres'
+            action: replace  {{- end }}
+
+  {{- if and .Values.rabbitmq.metrics.enabled .Values.rabbitmq.metrics.externalHost }}
+  rabbitmq.yaml: |-
+    scrape_configs:
+      - job_name: 'rabbitmq'
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+        static_configs:
+          - targets: ['{{ .Values.rabbitmq.metrics.externalHost }}']
+        relabel_configs:
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - target_label: service
+            replacement: 'rabbitmq'
+            action: replace
+  {{- end }}
+
+  {{- if and .Values.rabbitmq.metrics.enabled (not .Values.rabbitmq.metrics.externalHost) }}
+  rabbitmq.yaml: |-
+    scrape_configs:
+      - job_name: 'rabbitmq'
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            regex: 'rabbitmq-.*'
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            regex: '9419'
+            action: keep
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ include "common.namespace" .  | squote }}
+            action: keep
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - target_label: service
+            replacement: 'rabbitmq'
+            action: replace
+  {{- end }}
+
+  {{- if and .Values.clickhouse.metrics.enabled .Values.clickhouse.metrics.externalHost }}
+  clickhouse.yaml: |-
+    scrape_configs:
+      - job_name: 'clickhouse'
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+        static_configs:
+          - targets: ['{{ .Values.clickhouse.metrics.externalHost }}']
+        relabel_configs:
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - target_label: service
+            replacement: 'clickhouse'
+            action: replace
+  {{- end }}
+
+  {{- if and .Values.clickhouse.metrics.enabled (not .Values.clickhouse.metrics.externalHost) }}
+  clickhouse.yaml: |-
+    scrape_configs:
+      - job_name: 'clickhouse'
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            regex: 'clickhouse-.*'
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            regex: '8001'
+            action: keep
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ include "common.namespace" .  | squote }}
+            action: keep
+          - target_label: cluster
+            replacement: {{ include "common.cs.ownCsUrl" . | squote }}
+            action: replace
+          - target_label: service
+            replacement: 'clickhouse'
+            action: replace
+  {{- end }}
+{{- end }}
+
+{{- if and .Values.grafana.deployed }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cs-dashboards
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/part-of: grafana
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+data:
+{{ (.Files.Glob "dashboards/*").AsConfig | indent 2 }}
+{{- end }}
