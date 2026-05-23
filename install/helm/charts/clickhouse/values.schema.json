@@ -24,6 +24,16 @@
                 "clickhouse": {
                     "type": "object",
                     "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret that contains the auth credentials (overrides `auth.existingSecret`)",
+                                    "default": ""
+                                }
+                            }
+                        },
                         "tls": {
                             "type": "object",
                             "properties": {
@@ -157,7 +167,17 @@
                 },
                 "existingSecretPasswordKey": {
                     "type": "string",
-                    "description": "Name of the key inside the existing secret",
+                    "description": "Name of the key inside the existing secret. When empty, defaults to the container-env-style key `CLICKHOUSE_PASSWORD`",
+                    "default": ""
+                },
+                "existingSecretUserKey": {
+                    "type": "string",
+                    "description": "Name of the secret key holding the ClickHouse username. When empty, defaults to the container-env-style key `CLICKHOUSE_USER`.",
+                    "default": ""
+                },
+                "existingSecretDatabaseKey": {
+                    "type": "string",
+                    "description": "Name of the secret key holding the ClickHouse database name. When empty, defaults to the container-env-style key `CLICKHOUSE_DB`. Note: the database name is read from the secret via `secretKeyRef` and used as-is; database names containing special characters must be stored already-escaped (no backtick-escaping is applied).",
                     "default": ""
                 }
             }
@@ -354,11 +374,6 @@
         "podSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enabled ClickHouse pods' Security Context",
-                    "default": true
-                },
                 "fsGroupChangePolicy": {
                     "type": "string",
                     "description": "Set filesystem group change policy",
@@ -386,11 +401,6 @@
         "containerSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable containers' Security Context",
-                    "default": true
-                },
                 "runAsUser": {
                     "type": "number",
                     "description": "Set containers' Security Context runAsUser",
@@ -451,11 +461,6 @@
         "livenessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable livenessProbe on ClickHouse containers",
-                    "default": true
-                },
                 "failureThreshold": {
                     "type": "number",
                     "description": "Failure threshold for livenessProbe",
@@ -486,11 +491,6 @@
         "readinessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable readinessProbe on ClickHouse containers",
-                    "default": true
-                },
                 "failureThreshold": {
                     "type": "number",
                     "description": "Failure threshold for readinessProbe",
@@ -521,11 +521,6 @@
         "startupProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable startupProbe on ClickHouse containers",
-                    "default": false
-                },
                 "failureThreshold": {
                     "type": "number",
                     "description": "Failure threshold for startupProbe",

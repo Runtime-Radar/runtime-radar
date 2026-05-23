@@ -27,7 +27,6 @@ spec:
     - ports:
         - port: {{ .Values.service.ports.epmd }}
         - port: {{ .Values.service.ports.amqp }}
-        - port: {{ .Values.service.ports.amqpTls }}
         - port: {{ .Values.service.ports.dist }}
         - port: {{ .Values.service.ports.manager }}
         {{- if (eq (include "common.metrics.enabled" .) "true") }}
@@ -44,7 +43,6 @@ spec:
     - ports:
         - port: {{ .Values.containerPorts.epmd }}
         - port: {{ .Values.containerPorts.amqp }}
-        - port: {{ .Values.containerPorts.amqpTls }}
         - port: {{ .Values.containerPorts.dist }}
         - port: {{ .Values.containerPorts.manager }}
         {{- if (eq (include "common.metrics.enabled" $) "true") }}
