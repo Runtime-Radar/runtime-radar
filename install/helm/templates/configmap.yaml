@@ -15,7 +15,68 @@ data:
   AUTH: {{ include "common.cs.auth.enabled" . | quote }}
   IS_CHILD_CLUSTER: {{ include "common.cs.isChildCluster" . | quote }}
   OWN_CS_URL: {{ include "common.cs.ownCsUrl" . | quote }}
+  LOG_LEVEL: {{ include "common.cs.logLevel" . | quote }}
   {{- $centralCsUrl := include "common.cs.centralCsUrl" . }}
   CENTRAL_CS_URL: {{ $centralCsUrl | quote }}
   CENTRAL_CS_TLS_CHECK_CERT: {{ .Values.tls.verify | quote }}
   CENTRAL_CS_HOSTNAME: {{ $centralCsUrl | urlParse | pluck "hostname" | first | quote }}
+  GOPS_CONFIG_DIR: "/tmp"
+  {{- if ((.Values.global).logger).enabled }}
+  LOGGER_ENABLED: "true"
+  LOG_FILE: {{ printf "/var/log/cs/%s.log" (include "common.name" .) | quote }}
+  {{- end }}
+  {{- if ((.Values.global).metrics).enabled }}
+  METRICS_ENABLED: "true"
+  {{- end }}
+  {{- if or ((.Values.global).logger).enabled  ((.Values.global).metrics).enabled }}
+  GRAFANA: {{ include "common.cs.grafana.address" . | quote }}
+  GRAFANA_URL: {{ default (include "common.cs.ownCsUrl" . | trimSuffix "/" | printf "%s/grafana") .Values.grafana.externalHost | quote }}
+  GRAFANA_REDIRECT: {{ empty .Values.grafana.externalHost | not | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.cs.postgresql.configmapName" . }}
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  POSTGRES_ADDR: {{ .Values.postgresql.externalHost | default "postgresql" | quote }}
+  POSTGRES_SSL_MODE: {{ .Values.global.postgresql.tls.enabled | toString | quote }}
+  POSTGRES_SSL_CHECK_CERT: {{ .Values.global.postgresql.tls.verify | toString | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.cs.redis.configmapName" . }}
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  REDIS_ADDR: {{ .Values.redis.externalHost | default "redis" | quote }}
+  REDIS_TLS_MODE: {{ .Values.global.redis.tls.enabled | toString | quote }}
+  REDIS_TLS_CHECK_CERT: {{ .Values.global.redis.tls.verify | toString | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.cs.rabbitmq.configmapName" . }}
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  RABBIT_ADDR: {{ .Values.rabbitmq.externalHost | default "rabbitmq" | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.cs.clickhouse.configmapName" . }}
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+data:
+  {{- $clickhousePort := .Values.global.clickhouse.tls.enabled | ternary "9440" "9000" }}
+  CLICKHOUSE_ADDR: {{ .Values.clickhouse.externalHost | default (printf "clickhouse:%s" $clickhousePort) | quote }}
+  CLICKHOUSE_SSL_MODE: {{ .Values.global.clickhouse.tls.enabled | toString | quote }}
+  CLICKHOUSE_SSL_CHECK_CERT: {{ .Values.global.clickhouse.tls.verify | toString | quote }}

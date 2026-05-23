@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: 12.0.2
+dependencies:
+- name: common
+  repository: file://../common
+  version: 0.x.x
+description: Grafana is an open source metric analytics and visualization suite for
+  visualizing time series data that supports various types of data sources.
+name: grafana
+version: 0.0.1

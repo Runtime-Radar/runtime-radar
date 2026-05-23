@@ -20,6 +20,21 @@
                     "type": "string",
                     "description": "Global StorageClass for Persistent Volume(s)",
                     "default": ""
+                },
+                "rabbitmq": {
+                    "type": "object",
+                    "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret that contains the certificates (overrides `auth.existingSecret`)",
+                                    "default": ""
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -226,11 +241,6 @@
         "podSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable RabbitMQ pods' Security Context",
-                    "default": true
-                },
                 "fsGroupChangePolicy": {
                     "type": "string",
                     "description": "Set filesystem group change policy",
@@ -258,11 +268,6 @@
         "containerSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enabled RabbitMQ containers' Security Context",
-                    "default": true
-                },
                 "runAsUser": {
                     "type": "number",
                     "description": "Set RabbitMQ containers' Security Context runAsUser",
@@ -318,11 +323,6 @@
         "livenessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable livenessProbe",
-                    "default": true
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for livenessProbe",
@@ -353,11 +353,6 @@
         "readinessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable readinessProbe",
-                    "default": true
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for readinessProbe",
@@ -388,11 +383,6 @@
         "startupProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable startupProbe",
-                    "default": false
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for startupProbe",

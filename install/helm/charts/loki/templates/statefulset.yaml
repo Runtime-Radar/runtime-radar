@@ -1,0 +1,195 @@
+{{- $tlsEnabled := eq (include "common.tls.enabled" .) "true" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "common.fullname" . }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "common.fullname" . }}-headless
+  template:
+    metadata:
+      {{- with (include "common.podAnnotations" .) }}
+      annotations:
+        {{- . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.podLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "common.serviceAccountName" . }}
+      {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if $tlsEnabled }}
+      initContainers:
+        - name: copy-certs
+          image: {{ include "loki.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              cp -L /tmp/certs/* /etc/loki/certs/
+              chmod 600 {{ include "loki.tlsCertKey" $ }}
+          volumeMounts:
+            - name: raw-certificates
+              mountPath: /tmp/certs
+            - name: loki-certificates
+              mountPath: /etc/loki/certs
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+      {{- end }}
+      containers:
+        - name: loki
+          image: {{ include "loki.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - -config.file=/etc/loki/config/loki.yaml
+            - -target={{ .Values.targetModule }}
+          {{- if .Values.extraEnvVars }}
+          env:
+            {{- with .Values.extraEnvVars }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.containerPorts.http }}
+              name: http
+            - containerPort: {{ .Values.containerPorts.grpc }}
+              name: grpc
+          {{- with .Values.startupProbe }}
+          startupProbe: {{- toYaml . | nindent 12 }}
+            tcpSocket:
+              port: http
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
+            httpGet:
+              path: /ready
+              port: http
+              scheme: {{ $tlsEnabled | ternary "HTTPS" "HTTP" }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
+            httpGet:
+              path: /ready
+              port: http
+              scheme: {{ $tlsEnabled | ternary "HTTPS" "HTTP" }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: loki-config
+              mountPath: /etc/loki/config/loki.yaml
+              subPath: loki.yaml
+            - name: loki-config
+              mountPath: /etc/loki/runtime-config/runtime-config.yaml
+              subPath: runtime-config.yaml
+            - name: data
+              mountPath: /var/loki
+            {{- if $tlsEnabled }}
+            - name: loki-certificates
+              mountPath: /etc/loki/certs
+            {{- end }}
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        - name: loki-config
+          configMap:
+            name: {{ include "common.configmapName" . }}
+        {{- if  $tlsEnabled }}
+        - name: raw-certificates
+          secret:
+            secretName: {{ include "common.tls.secretName" . }}
+        - name: loki-certificates
+          emptyDir: {}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+  {{- if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+  {{- else if .Values.persistence.existingClaim }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.persistence.existingClaim . }}
+  {{- else }}
+  {{- with .Values.persistence.persistentVolumeClaimRetentionPolicy }}
+  persistentVolumeClaimRetentionPolicy:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+        {{- with (include "common.mergeAnnotations" (dict "context" . "value" .Values.persistence.annotations)) }}
+        annotations:
+          {{- . | nindent 10 }}
+        {{- end }}
+        {{- with (include "common.mergeLabels" (dict "context" . "value" .Values.persistence.labels)) }}
+        labels:
+          {{- . | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes: {{- toYaml .Values.persistence.accessModes | nindent 10 }}
+        {{- with .Values.persistence.dataSource }}
+        dataSource: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+        {{- with .Values.persistence.selector }}
+        selector: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with (default .Values.persistence.storageClass (.Values.global).storageClass) }}
+        storageClassName: {{ eq . "-" | ternary "" . | quote }}
+        {{- end }}
+  {{- end }}

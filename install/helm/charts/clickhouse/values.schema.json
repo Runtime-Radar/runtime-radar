@@ -24,6 +24,16 @@
                 "clickhouse": {
                     "type": "object",
                     "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret that contains the certificates (overrides `auth.existingSecret`)",
+                                    "default": ""
+                                }
+                            }
+                        },
                         "tls": {
                             "type": "object",
                             "properties": {
@@ -354,11 +364,6 @@
         "podSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enabled ClickHouse pods' Security Context",
-                    "default": true
-                },
                 "fsGroupChangePolicy": {
                     "type": "string",
                     "description": "Set filesystem group change policy",
@@ -386,11 +391,6 @@
         "containerSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable containers' Security Context",
-                    "default": true
-                },
                 "runAsUser": {
                     "type": "number",
                     "description": "Set containers' Security Context runAsUser",
@@ -451,11 +451,6 @@
         "livenessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable livenessProbe on ClickHouse containers",
-                    "default": true
-                },
                 "failureThreshold": {
                     "type": "number",
                     "description": "Failure threshold for livenessProbe",
@@ -486,11 +481,6 @@
         "readinessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable readinessProbe on ClickHouse containers",
-                    "default": true
-                },
                 "failureThreshold": {
                     "type": "number",
                     "description": "Failure threshold for readinessProbe",
@@ -521,11 +511,6 @@
         "startupProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable startupProbe on ClickHouse containers",
-                    "default": false
-                },
                 "failureThreshold": {
                     "type": "number",
                     "description": "Failure threshold for startupProbe",

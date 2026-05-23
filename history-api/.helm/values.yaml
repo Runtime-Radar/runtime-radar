@@ -1,4 +1,5 @@
 image:
+  registry: ghcr.io/runtime-radar
   repository: history-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -12,7 +13,6 @@ service:
     grpc: 8000
     http: 9000
 containerSecurityContext:
-  enabled: true
   seLinuxOptions: {}
   privileged: false
   allowPrivilegeEscalation: false
@@ -20,7 +20,6 @@ containerSecurityContext:
   seccompProfile:
     type: "RuntimeDefault"
 podSecurityContext:
-  enabled: true
   fsGroupChangePolicy: Always
   sysctls: []
   supplementalGroups: []
@@ -57,7 +56,6 @@ resources:
     memory: 128Mi
     ephemeral-storage: 1Mi
 livenessProbe:
-  enabled: true
   httpGet:
     path: /live
     scheme: HTTP
@@ -66,7 +64,6 @@ livenessProbe:
   successThreshold: 1
   failureThreshold: 2
 readinessProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP
@@ -75,7 +72,6 @@ readinessProbe:
   successThreshold: 1
   failureThreshold: 3
 startupProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP

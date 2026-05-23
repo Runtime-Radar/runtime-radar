@@ -1,5 +1,4 @@
 image:
-  registry: ghcr.io/runtime-radar
   repository: reverse-proxy
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -18,7 +17,6 @@ service:
     health: 9090
   nodePorts: {}
 containerSecurityContext:
-  enabled: true
   seLinuxOptions: {}
   privileged: false
   allowPrivilegeEscalation: false
@@ -31,7 +29,6 @@ containerSecurityContext:
     add:
       - NET_BIND_SERVICE
 podSecurityContext:
-  enabled: true
   fsGroupChangePolicy: Always
   sysctls: []
   supplementalGroups: []
@@ -68,7 +65,6 @@ debugReverseProxy: ""
 isChildCluster: false
 centralCsUrl: ""
 livenessProbe:
-  enabled: true
   httpGet:
     path: /health
     port: health
@@ -77,7 +73,6 @@ livenessProbe:
   successThreshold: 1
   failureThreshold: 2
 readinessProbe:
-  enabled: true
   httpGet:
     path: /ready
     port: health

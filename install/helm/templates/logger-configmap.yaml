@@ -1,0 +1,147 @@
+{{- if .Values.global.logger.enabled }}
+{{- $lokiUrl := include "common.cs.loki.address" . }}
+{{- $loki := urlParse $lokiUrl }}
+{{- if not (regexMatch "^[^:]+:[0-9]+$" $loki.host) }}
+{{- fail "loki.externalHost should be a <scheme://host:port>" }}
+{{- end }}
+{{- $host := $loki.hostname }}
+{{- $port := index (splitList ":" $loki.host) 1 }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.cs.logger.configmapName" . }}
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+data:
+  fluent-bit.yaml: |-
+    service:
+      flush: 1
+      daemon: off
+      log_level: info
+
+    pipeline:
+      inputs:
+        - name: tail
+          buffer_chunk_size: "${BUFFER_CHUNK_SIZE}"
+          buffer_max_size: "${BUFFER_MAX_SIZE}"
+          skip_long_lines: on
+          key: __log
+          {{- if empty .Values.global.logger.syslog }}
+          parser: json
+          {{- end }}
+          path: "${LOG_FILE}"
+          tag: app.*
+
+      outputs:
+        - name: loki
+          match: "app.*"
+          host: {{ $host }}
+          port: {{ $port }}
+          {{- if .Values.loki.tenant_id }}
+          tenant_id: {{ .Values.loki.tenant_id | quote }}
+          {{- end }}
+          {{- if .Values.global.loki.tls.enabled }}
+          tls: on
+          tls.verify: {{ .Values.global.loki.tls.verify | ternary "on" "off" }}
+          {{- if .Values.global.loki.tls.verify }}
+          tls.ca_file: /etc/ssl/certs/loki.pem
+          {{- else }}
+          tls.ca_path: /etc/ssl/certs
+          {{- end }}
+          {{- end }}
+          labels: "job=cs,level=$level,audit=$audit,pod=${POD_NAME},component=${COMPONENT}"
+          line_format: json
+          remove_keys: __audit,__log
+
+    {{- if .Values.global.logger.syslog }}
+    {{- $syslog := urlParse .Values.global.logger.syslog }}
+    {{- if not (regexMatch "^[^:]+:[0-9]+$" $syslog.host) }}
+    {{- fail "global.logger.syslog should be a <[udp|tcp]://host:port>" }}
+    {{- end }}
+    {{- $host := $syslog.hostname }}
+    {{- $port := index (splitList ":" $syslog.host) 1 }}
+    {{- $mode := $syslog.scheme }}
+        - name: syslog
+          match: "audit.*"
+          host: {{ $host }}
+          port: {{ $port }}
+          mode: {{ $mode }}
+          syslog_format: rfc5424
+          syslog_maxsize: 2048
+          syslog_severity_key: severity
+          syslog_facility_preset: 13
+          syslog_hostname_preset: "${POD_NAME}"
+          syslog_appname_preset: "${COMPONENT}"
+          syslog_sd_key: __data
+          syslog_message_key: __log
+
+          processors:
+            logs:
+              - name: content_modifier
+                condition:
+                  op: and
+                  rules:
+                    - field: "$level"
+                      op: regex
+                      value: "^(E|e)"
+                action: insert
+                key: severity
+                value: 3
+              - name: content_modifier
+                condition:
+                  op: and
+                  rules:
+                    - field: "$level"
+                      op: regex
+                      value: "^(W|w)"
+                action: insert
+                key: severity
+                value: 4
+              - name: content_modifier
+                condition:
+                  op: and
+                  rules:
+                    - field: "$level"
+                      op: regex
+                      value: "^(I|i)"
+                action: insert
+                key: severity
+                value: 6
+              - name: content_modifier
+                condition:
+                  op: and
+                  rules:
+                    - field: "$level"
+                      op: regex
+                      value: "^(D|d)"
+                action: insert
+                key: severity
+                value: 7
+
+      filters:
+        - name: parser
+          match: app.*
+          key_name: __log
+          parser: json
+          preserve_key: true
+        - name: modify
+          match: app.*
+          condition: Key_value_matches $audit true
+          set: __audit true
+        - name: rewrite_tag
+          match: app.*
+          rule: "$__audit ^true$ audit.$TAG true"
+          emitter_name: re_emitted
+    {{- end }}
+
+    parsers:
+      - name: json
+        format: json
+        time_key: time
+        time_format: "%Y-%m-%dT%H:%M:%S.%LZ"
+{{- end }}
