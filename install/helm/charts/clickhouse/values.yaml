@@ -11,6 +11,9 @@ global:
   storageClass: ""
 
   clickhouse:
+    auth:
+      # -- Name of an existing secret that contains the certificates (overrides `auth.existingSecret`)
+      existingSecret: ""
     tls:
       # -- [boolean, nullable] Enable TLS traffic support (overrides `tls.enabled`)
       enabled: null
@@ -173,8 +176,6 @@ containerPorts:
 # Configure Pods Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext:
-  # -- Enabled ClickHouse pods' Security Context
-  enabled: true
   # -- Set filesystem group change policy
   fsGroupChangePolicy: Always
   # -- Set kernel settings using the sysctl interface
@@ -186,8 +187,6 @@ podSecurityContext:
 # Configure Container Security Context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 containerSecurityContext:
-  # -- Enable containers' Security Context
-  enabled: true
   # -- [object,nullable] Set SELinux options in container
   seLinuxOptions: {}
   # -- Set containers' Security Context runAsUser
@@ -211,8 +210,6 @@ containerSecurityContext:
 # Configure extra options for ClickHouse containers' liveness and readiness probes
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
 livenessProbe:
-  # -- Enable livenessProbe on ClickHouse containers
-  enabled: true
   # -- Failure threshold for livenessProbe
   failureThreshold: 3
   # -- Initial delay seconds for livenessProbe
@@ -224,8 +221,6 @@ livenessProbe:
   # -- Timeout seconds for livenessProbe
   timeoutSeconds: 1
 readinessProbe:
-  # -- Enable readinessProbe on ClickHouse containers
-  enabled: true
   # -- Failure threshold for readinessProbe
   failureThreshold: 3
   # -- Initial delay seconds for readinessProbe
@@ -237,8 +232,6 @@ readinessProbe:
   # -- Timeout seconds for readinessProbe
   timeoutSeconds: 1
 startupProbe:
-  # -- Enable startupProbe on ClickHouse containers
-  enabled: false
   # -- Failure threshold for startupProbe
   failureThreshold: 3
   # -- Initial delay seconds for startupProbe

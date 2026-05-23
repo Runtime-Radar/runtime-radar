@@ -27,9 +27,9 @@ spec:
     spec:
       serviceAccountName: {{ include "common.serviceAccountName" . }}
       {{- include "common.imagePullSecrets" . | nindent 6 }}
-      {{- if .Values.podSecurityContext.enabled }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
@@ -43,9 +43,9 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if .Values.containerSecurityContext.enabled }}
+          {{- with .Values.containerSecurityContext }}
           securityContext:
-            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           command:
             - /bin/sh
@@ -63,9 +63,9 @@ spec:
         - name: postgresql
           image: {{ include "postgresql.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-          {{- if .Values.containerSecurityContext.enabled }}
+          {{- with .Values.containerSecurityContext }}
           securityContext:
-            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           command:
             - /usr/local/bin/docker-entrypoint.sh
@@ -82,7 +82,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "common.authSecretName" . }}
+                  name: {{ include "common.auth.secretName" . }}
                   key: {{ include "postgresql.userPasswordKey" . }}
             {{- with .Values.auth.database }}
             - name: POSTGRES_DB
@@ -95,30 +95,30 @@ spec:
           ports:
             - name: tcp-postgresql
               containerPort: {{ .Values.containerPorts.postgresql }}
-          {{- if .Values.startupProbe.enabled }}
-          startupProbe: {{- omit .Values.startupProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.startupProbe }}
+          startupProbe: {{- toYaml . | nindent 12 }}
             exec:
               command:
                 - /bin/sh
                 - -c
-                {{- include "postgresql.probeCommand" . | nindent 16 }}
+                {{- include "postgresql.probeCommand" $ | nindent 16 }}
           {{- end }}
-          {{- if .Values.livenessProbe.enabled }}
-          livenessProbe: {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
             exec:
               command:
                 - /bin/sh
                 - -c
-                {{- include "postgresql.probeCommand" . | nindent 16 }}
+                {{- include "postgresql.probeCommand" $ | nindent 16 }}
           {{- end }}
-          {{- if .Values.readinessProbe.enabled }}
-          readinessProbe: {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
             exec:
               command:
                 - /bin/sh
                 - -c
                 - -e
-                {{- include "postgresql.probeCommand" . | nindent 16 }}
+                {{- include "postgresql.probeCommand" $ | nindent 16 }}
           {{- end }}
           {{- with .Values.resources }}
           resources:
@@ -151,9 +151,9 @@ spec:
         - name: metrics
           image: {{ include "common.metrics.image" . }}
           imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
-          {{- if .Values.metrics.containerSecurityContext.enabled }}
+          {{- with .Values.metrics.containerSecurityContext }}
           securityContext:
-            {{- omit .Values.metrics.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- if or .Values.metrics.customMetrics .Values.metrics.collectors }}
           args:
@@ -173,7 +173,7 @@ spec:
             - name: DATA_SOURCE_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "common.authSecretName" . }}
+                  name: {{ include "common.auth.secretName" . }}
                   key: {{ $pwdKey }}
             - name: DATA_SOURCE_USER
               value: {{ default "postgres" $customUser | quote }}
@@ -183,19 +183,19 @@ spec:
           ports:
             - name: http-metrics
               containerPort: {{ .Values.metrics.containerPorts.metrics }}
-          {{- if .Values.metrics.startupProbe.enabled }}
-          startupProbe: {{- omit .Values.metrics.startupProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.metrics.startupProbe }}
+          startupProbe: {{- toYaml . | nindent 12 }}
             tcpSocket:
               port: http-metrics
           {{- end }}
-          {{- if .Values.metrics.livenessProbe.enabled }}
-          livenessProbe: {{- omit .Values.metrics.livenessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.metrics.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
             httpGet:
               path: /
               port: http-metrics
           {{- end }}
-          {{- if .Values.metrics.readinessProbe.enabled }}
-          readinessProbe: {{- omit .Values.metrics.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.metrics.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
             httpGet:
               path: /
               port: http-metrics

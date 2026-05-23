@@ -43,5 +43,7 @@ Fix ClickHouse database name if it contains special symbols
 {{- define "clickhouse.database" -}}
 {{- if regexMatch "^[a-zA-Z0-9_]*$" .Values.auth.database | not -}}
     {{- printf "`%s`" .Values.auth.database -}}
+{{- else }}
+    {{- .Values.auth.database -}}
 {{- end -}}
 {{- end -}}

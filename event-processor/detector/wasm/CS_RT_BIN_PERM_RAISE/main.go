@@ -415,7 +415,7 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
         },
         "ancestors": []
     },
-    "node_name": "ptcs-master-node",
+    "node_name": "cs-master-node",
     "time": "2024-11-13T10:15:07.462452981Z",
     "aggregation_info": null
 }

@@ -1,0 +1,118 @@
+{{- if not .Values.existingConfigmap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.configmapName" . }}
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+data:
+  prometheus.yml: |-
+    {{- if .Values.configuration }}
+      {{- tpl .Values.configuration $ | nindent 6 }}
+    {{- else }}
+      global:
+        {{- if .Values.scrapeInterval }}
+        scrape_interval: {{ .Values.scrapeInterval }}
+        {{- end }}
+        {{- if .Values.scrapeTimeout }}
+        scrape_timeout: {{ .Values.scrapeTimeout }}
+        {{- end }}
+        {{- if .Values.evaluationInterval }}
+        evaluation_interval: {{ .Values.evaluationInterval }}
+        {{- end }}
+        external_labels:
+          monitor: {{ include "common.fullname" . }}
+          {{- if .Values.externalLabels }}
+          {{- tpl (toYaml .Values.externalLabels) . | nindent 10 }}
+          {{- end }}
+      {{- if .Values.remoteWrite }}
+      remote_write: {{- tpl (toYaml .Values.remoteWrite) . | nindent 8 }}
+      {{- end }}
+      scrape_configs:
+        - job_name: prometheus
+          kubernetes_sd_configs:
+            - role: endpoints
+              namespaces:
+                names:
+                - {{ include "common.namespace" . }}
+          metrics_path: /metrics
+          relabel_configs:
+            - source_labels:
+                - job
+              target_label: __tmp_prometheus_job_name
+            - action: keep
+              source_labels:
+                - __meta_kubernetes_service_label_app_kubernetes_io_component
+                - __meta_kubernetes_service_labelpresent_app_kubernetes_io_component
+              regex: (server);true
+            - action: keep
+              source_labels:
+                - __meta_kubernetes_service_label_app_kubernetes_io_instance
+                - __meta_kubernetes_service_labelpresent_app_kubernetes_io_instance
+              regex: ({{ .Release.Name }});true
+            - action: keep
+              source_labels:
+                - __meta_kubernetes_service_label_app_kubernetes_io_name
+                - __meta_kubernetes_service_labelpresent_app_kubernetes_io_name
+              regex: (prometheus);true
+            - action: keep
+              source_labels:
+                - __meta_kubernetes_endpoint_port_name
+              regex: http
+            - source_labels:
+                - __meta_kubernetes_endpoint_address_target_kind
+                - __meta_kubernetes_endpoint_address_target_name
+              separator: ;
+              regex: Node;(.*)
+              replacement: {{"${1}"}}
+              target_label: node
+            - source_labels:
+                - __meta_kubernetes_endpoint_address_target_kind
+                - __meta_kubernetes_endpoint_address_target_name
+              separator: ;
+              regex: Pod;(.*)
+              replacement: {{"${1}"}}
+              target_label: pod
+            - source_labels:
+                - __meta_kubernetes_namespace
+              target_label: namespace
+            - source_labels:
+                - __meta_kubernetes_service_name
+              target_label: service
+            - source_labels:
+                - __meta_kubernetes_pod_name
+              target_label: pod
+            - source_labels:
+                - __meta_kubernetes_pod_container_name
+              target_label: container
+            - action: drop
+              source_labels:
+                - __meta_kubernetes_pod_phase
+              regex: (Failed|Succeeded)
+            - source_labels:
+                - __meta_kubernetes_service_name
+              target_label: job
+              replacement: {{"${1}"}}
+            - target_label: endpoint
+              replacement: http
+            - source_labels:
+                - __address__
+              target_label: __tmp_hash
+              modulus: 1
+              action: hashmod
+            - source_labels:
+                - __tmp_hash
+              regex: 0
+              action: keep
+      {{- if .Values.scrapeConfigmap}}
+      scrape_config_files:
+        - /etc/prometheus/scrape-config-files/*.yaml
+        - /etc/prometheus/scrape-config-files/*.yml
+      {{- end }}
+    {{- end }}
+{{- end }}

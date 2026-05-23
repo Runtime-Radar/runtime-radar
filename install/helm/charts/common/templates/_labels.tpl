@@ -14,10 +14,14 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "common.selectorLabels" -}}
+{{- with .Values.selectorLabels }}
+{{- tpl (toYaml .) . }}
+{{- else }}
 app.kubernetes.io/name: {{ include "common.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- with .Values.labels }}
 {{- toYaml . }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -27,7 +31,7 @@ Pod labels
 {{- define "common.podLabels" -}}
 {{- include "common.labels" . }}
 {{- with .Values.podLabels }}
-{{- tpl (toYaml .) $ }}
+{{ tpl (toYaml .) $ }}
 {{- end }}
 {{- end }}
 
