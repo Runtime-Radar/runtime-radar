@@ -1,0 +1,146 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with (include "common.podAnnotations" .) }}
+      annotations:
+        {{- . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.podLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "common.serviceAccountName" . }}
+      {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}
+      containers:
+        - name: prometheus
+          image: {{ include "prometheus.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/var/lib/prometheus/data"
+            - "--storage.tsdb.retention.time={{ .Values.retention }}"
+            - "--storage.tsdb.retention.size={{ .Values.retentionSize }}"
+            - "--log.level={{ .Values.logLevel }}"
+            - "--log.format={{ .Values.logFormat }}"
+            - "--web.listen-address=:{{ .Values.containerPorts.http }}"
+            - "--web.console.libraries=/etc/prometheus/console_libraries"
+            - "--web.console.templates=/etc/prometheus/consoles"
+            {{- if .Values.enableAdminAPI}}
+            - "--web.enable-admin-api"
+            {{- end }}
+            {{- if .Values.enableRemoteWriteReceiver }}
+            -  "--web.enable-remote-write-receiver"
+            {{- end }}
+            {{- if .Values.routePrefix }}
+            - "--web.route-prefix={{ .Values.routePrefix }}"
+            {{- end }}
+            {{- if .Values.enableFeatures }}
+            - "--enable-feature={{ join "," .Values.enableFeatures }}"
+            {{- end }}
+          {{- if .Values.extraEnvVars }}
+          env:
+            {{- with .Values.extraEnvVars }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPorts.http }}
+              protocol: TCP
+          {{- with .Values.startupProbe }}
+          startupProbe: {{- toYaml . | nindent 12 }}
+            tcpSocket:
+              port: http
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
+            httpGet:
+              path: /-/healthy
+              port: http
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
+            httpGet:
+              path: /-/ready
+              port: http
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: config
+              mountPath: /etc/prometheus/prometheus.yml
+              readOnly: true
+              subPath: prometheus.yml
+            {{- if .Values.scrapeConfigmap }}
+            - name: scrape-config-files
+              mountPath: /etc/prometheus/scrape-config-files
+              readOnly: true
+            {{- end }}
+            - name: data
+              mountPath: /var/lib/prometheus/data
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: {{ include "common.configmapName" . }}
+        {{- if .Values.scrapeConfigmap }}
+        - name: scrape-config-files
+          configMap:
+            name: {{ .Values.scrapeConfigmap }}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- else }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "common.pvcName" . }}
+        {{- end }}

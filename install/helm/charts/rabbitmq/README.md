@@ -4,11 +4,12 @@
 
 ### Global parameters
 
-| Name                      | Description                                     | Value |
-| ------------------------- | ----------------------------------------------- | ----- |
-| `global.imageRegistry`    | Global Docker image registry                    | `""`  |
-| `global.imagePullSecrets` | Global Docker registry secret names as an array | `[]`  |
-| `global.storageClass`     | Global StorageClass for Persistent Volume(s)    | `""`  |
+| Name                                  | Description                                                                                 | Value |
+| ------------------------------------- | ------------------------------------------------------------------------------------------- | ----- |
+| `global.imageRegistry`                | Global Docker image registry                                                                | `""`  |
+| `global.imagePullSecrets`             | Global Docker registry secret names as an array                                             | `[]`  |
+| `global.storageClass`                 | Global StorageClass for Persistent Volume(s)                                                | `""`  |
+| `global.rabbitmq.auth.existingSecret` | Name of an existing secret that contains the certificates (overrides `auth.existingSecret`) | `""`  |
 
 ### Common parameters
 
@@ -61,12 +62,10 @@
 | `containerPorts.manager`                            | manager                                                                                 | `15672`          |
 | `containerPorts.epmd`                               | EPMD                                                                                    | `4369`           |
 | `containerPorts.metrics`                            | metrics                                                                                 | `9419`           |
-| `podSecurityContext.enabled`                        | Enable RabbitMQ pods' Security Context                                                  | `true`           |
 | `podSecurityContext.fsGroupChangePolicy`            | Set filesystem group change policy                                                      | `Always`         |
 | `podSecurityContext.sysctls`                        | Set kernel settings using the sysctl interface                                          | `[]`             |
 | `podSecurityContext.supplementalGroups`             | Set filesystem extra groups                                                             | `[]`             |
 | `podSecurityContext.fsGroup`                        | Set RabbitMQ pod's Security Context fsGroup                                             | `1001`           |
-| `containerSecurityContext.enabled`                  | Enabled RabbitMQ containers' Security Context                                           | `true`           |
 | `containerSecurityContext.seLinuxOptions`           | Set SELinux options in container                                                        | `nil`            |
 | `containerSecurityContext.runAsUser`                | Set RabbitMQ containers' Security Context runAsUser                                     | `1001`           |
 | `containerSecurityContext.runAsGroup`               | Set RabbitMQ containers' Security Context runAsGroup                                    | `1001`           |
@@ -75,19 +74,16 @@
 | `containerSecurityContext.readOnlyRootFilesystem`   | Set container's Security Context readOnlyRootFilesystem                                 | `true`           |
 | `containerSecurityContext.capabilities.drop`        | Set container's Security Context runAsNonRoot                                           | `["ALL"]`        |
 | `containerSecurityContext.seccompProfile.type`      | Set container's Security Context seccomp profile                                        | `RuntimeDefault` |
-| `livenessProbe.enabled`                             | Enable livenessProbe                                                                    | `true`           |
 | `livenessProbe.initialDelaySeconds`                 | Initial delay seconds for livenessProbe                                                 | `120`            |
 | `livenessProbe.timeoutSeconds`                      | Timeout seconds for livenessProbe                                                       | `20`             |
 | `livenessProbe.periodSeconds`                       | Period seconds for livenessProbe                                                        | `30`             |
 | `livenessProbe.failureThreshold`                    | Failure threshold for livenessProbe                                                     | `6`              |
 | `livenessProbe.successThreshold`                    | Success threshold for livenessProbe                                                     | `1`              |
-| `readinessProbe.enabled`                            | Enable readinessProbe                                                                   | `true`           |
 | `readinessProbe.initialDelaySeconds`                | Initial delay seconds for readinessProbe                                                | `10`             |
 | `readinessProbe.timeoutSeconds`                     | Timeout seconds for readinessProbe                                                      | `20`             |
 | `readinessProbe.periodSeconds`                      | Period seconds for readinessProbe                                                       | `30`             |
 | `readinessProbe.failureThreshold`                   | Failure threshold for readinessProbe                                                    | `3`              |
 | `readinessProbe.successThreshold`                   | Success threshold for readinessProbe                                                    | `1`              |
-| `startupProbe.enabled`                              | Enable startupProbe                                                                     | `false`          |
 | `startupProbe.initialDelaySeconds`                  | Initial delay seconds for startupProbe                                                  | `10`             |
 | `startupProbe.timeoutSeconds`                       | Timeout seconds for startupProbe                                                        | `20`             |
 | `startupProbe.periodSeconds`                        | Period seconds for startupProbe                                                         | `30`             |

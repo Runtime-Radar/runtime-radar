@@ -99,7 +99,7 @@ Return TLS secret name
 */}}
 {{- define "common.tls.existingSecret" -}}
 {{- $global := (get (.Values.global | default dict) .Chart.Name | default dict) }}
-{{- with default ($global.tls).existingSecret (.Values.tls).existingSecret -}}
+{{- with default (.Values.tls).existingSecret ($global.tls).existingSecret -}}
     {{- printf "%s" (tpl . $) -}}
 {{- end -}}
 {{- end -}}
