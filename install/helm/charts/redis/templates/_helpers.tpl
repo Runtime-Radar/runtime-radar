@@ -9,10 +9,23 @@ Return the proper Redis image name
 Get the password key to be retrieved from Redis&reg; secret.
 */}}
 {{- define "redis.secretPasswordKey" -}}
-{{- if and .Values.auth.existingSecret .Values.auth.existingSecretPasswordKey -}}
-{{- printf "%s" (tpl .Values.auth.existingSecretPasswordKey $) -}}
+{{- with .Values.auth.existingSecretPasswordKey -}}
+    {{- tpl . $ -}}
 {{- else -}}
-{{- printf "redis-password" -}}
+    {{- "REDIS_PASSWORD" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the username key.
+Returns the configured existingSecretUserKey, otherwise the default
+container-env-style key (also used for the chart-created secret).
+*/}}
+{{- define "redis.secretUserKey" -}}
+{{- with .Values.auth.existingSecretUserKey -}}
+    {{- tpl . $ -}}
+{{- else -}}
+    {{- "REDIS_USER" -}}
 {{- end -}}
 {{- end -}}
 

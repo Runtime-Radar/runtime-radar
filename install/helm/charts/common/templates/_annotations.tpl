@@ -13,11 +13,11 @@ Pod annotations
 {{- define "common.podAnnotations" -}}
 {{- include "common.annotations" . }}
 {{- with .Values.podAnnotations }}
-{{- tpl (toYaml .) $ }}
+{{ tpl (toYaml .) $ }}
 {{- end }}
 {{- if eq (include "common.metrics.enabled" .) "true" }}
 {{- with (.Values.metrics).podAnnotations }}
-{{- tpl (toYaml .) $ }}
+{{ tpl (toYaml .) $ }}
 {{- end }}
 {{- end }}
 {{- end }}

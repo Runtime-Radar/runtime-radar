@@ -2,46 +2,46 @@ apiVersion: v2
 name: runtime-radar
 description: A Helm chart for Kubernetes
 type: application
-version: 'v0.1.0'
+version: 'v0.2.0'
 dependencies:
   - name: auth-center
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../auth-center/.helm
     tags: [cs-app, auth-center]
   - name: cluster-manager
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../cluster-manager/.helm
     tags: [cs-app, cluster-manager]
   - name: event-processor
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../event-processor/.helm
     tags: [cs-app, event-processor, runtime]
   - name: history-api
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../history-api/.helm
     tags: [cs-app, history-api]
   - name: notifier
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../notifier/.helm
     tags: [cs-app, notifier]
   - name: policy-enforcer
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../policy-enforcer/.helm
     tags: [cs-app, policy-enforcer]
   - name: cs-manager
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../cs-manager/.helm
     tags: [cs-app, cs-manager]
   - name: reverse-proxy
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../reverse-proxy/.helm
     tags: [cs-app, reverse-proxy]
   - name: runtime-monitor
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../runtime-monitor/.helm
     tags: [cs-app, runtime-monitor, 3rd-party, runtime]
   - name: public-api
-    version: v0.x.x
+    version: 0.x.x
     repository: file://../../public-api/.helm
     tags: [cs-app, public-api]
   - name: postgresql
@@ -60,16 +60,24 @@ dependencies:
     version: 0.x.x
     condition: clickhouse.deploy
     tags: [3rd-party, clickhouse]
+  - name: grafana
+    version: 0.x.x
+    condition: grafana.deploy
+    tags: [3rd-party, grafana, monitoring]
+  - name: prometheus
+    version: 0.x.x
+    condition: prometheus.deploy
+    tags: [3rd-party, prometheus, monitoring]
   - name: common
     version: 0.x.x
     tags: [cs-lib]
 
 annotations:
-  runtime-monitor.tetragon: quay.io/cilium/tetragon:v1.3.0
+  runtime-monitor.tetragon: quay.io/cilium/tetragon:v1.5.0
   postgresql: postgres:17.5
   postgresql.metrics: quay.io/prometheuscommunity/postgres-exporter:v0.17.1
   redis: redis:8.0.2
   rabbitmq: rabbitmq:4.1.1-management
   clickhouse: clickhouse/clickhouse-server:25.9.4
   grafana: grafana/grafana:12.0.2
-  prometheus.server: prom/prometheus:v3.4.1
+  prometheus: prom/prometheus:v3.4.1

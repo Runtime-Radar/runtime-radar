@@ -13,7 +13,6 @@ service:
     grpc: 8000
     http: 9000
 containerSecurityContext:
-  enabled: true
   seLinuxOptions: {}
   privileged: false
   allowPrivilegeEscalation: false
@@ -21,26 +20,17 @@ containerSecurityContext:
   seccompProfile:
     type: "RuntimeDefault"
 podSecurityContext:
-  enabled: true
   fsGroupChangePolicy: Always
   sysctls: []
   supplementalGroups: []
 env:
-  - name: ADMINISTRATOR_USERNAME
-    valueFrom:
-      secretKeyRef:
-        name: auth-center-account
-        key: username
-  - name: ADMINISTRATOR_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: auth-center-account
-        key: password
   - name: PUBLIC_ACCESS_TOKEN_SALT_KEY
     valueFrom:
       secretKeyRef:
-        name: cs-keys
+        name: '{{ include "common.cs.keys.secretName" . }}'
         key: publicAccessTokenSalt
+administrator:
+  existingSecret: cs-account
 encryption:
   enabled: true
 postgresql:
@@ -63,7 +53,6 @@ resources: {}
 #   memory: 512Mi
 #   ephemeral-storage: 1Gi
 livenessProbe:
-  enabled: true
   httpGet:
     path: /live
     scheme: HTTP
@@ -72,7 +61,6 @@ livenessProbe:
   successThreshold: 1
   failureThreshold: 2
 readinessProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP
@@ -81,7 +69,6 @@ readinessProbe:
   successThreshold: 1
   failureThreshold: 3
 startupProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP

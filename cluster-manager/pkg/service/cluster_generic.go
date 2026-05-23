@@ -519,9 +519,9 @@ func (cg *ClusterGeneric) buildValues(cfg *model.ClusterConfig, token string) *h
 		}
 	}
 
-	// AuthAPI
-	v.AuthAPI.Administrator.Username = cg.AdministratorUsername
-	v.AuthAPI.Administrator.Password = cg.AdministratorPassword
+	// Administrator
+	v.Global.Administrator.Username = cg.AdministratorUsername
+	v.Global.Administrator.Password = cg.AdministratorPassword
 
 	return &v
 }

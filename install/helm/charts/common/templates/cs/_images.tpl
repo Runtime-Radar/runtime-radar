@@ -6,6 +6,6 @@ Return the proper image name
 {{- with (.context.Values.global).imageRegistry -}}
 {{- $_ := set $.image "registry" . -}}
 {{- end -}}
-{{- $tag := coalesce (.context.Values.global).imageTag (.context.Values.global).csVersion .context.Chart.Version -}}
+{{- $tag := default (include "common.cs.csVersion" .context) (.context.Values.global).imageTag -}}
 {{- include "common.image" (dict "defaultTag" $tag | mergeOverwrite .) -}}
 {{- end -}}

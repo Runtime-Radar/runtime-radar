@@ -1,0 +1,20 @@
+{{- $tlsEnabled := eq (include "common.tls.enabled" .) "true" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.fullname" . }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.mergeAnnotations" (dict "context" . "value" .Values.service.annotations)) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: grafana
+      targetPort: grafana
+      port: {{ .Values.service.ports.grafana }}
+      protocol: TCP
+  selector:
+    {{- include "common.selectorLabels" . | nindent 4 }}

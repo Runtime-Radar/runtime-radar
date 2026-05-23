@@ -1,0 +1,212 @@
+{{- $tlsEnabled := eq (include "common.tls.enabled" .) "true" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with (include "common.podAnnotations" .) }}
+      annotations:
+        {{- . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.podLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "common.serviceAccountName" . }}
+      {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}
+      containers:
+        - name: grafana
+          image: {{ include "grafana.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.auth.secretName" . }}
+                  key: {{ include "grafana.secretUserKey" . }}
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.auth.secretName" . }}
+                  key: {{ include "grafana.secretPasswordKey" . }}
+            {{- if $tlsEnabled }}
+            - name: GF_SERVER_PROTOCOL
+              value: https
+            - name: GF_SERVER_CERT_FILE
+              value: {{ include "grafana.tlsCert" . }}
+            - name: GF_SERVER_CERT_KEY
+              value: {{ include "grafana.tlsCertKey" . }}
+            {{- end }}
+            {{- if .Values.subPath }}
+            - name: GF_SERVER_ROOT_URL
+              value: {{ include "grafana.rootUrl" . | quote }}
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+            {{- end }}
+            - name: GF_INSTALL_PLUGINS
+              value: {{ default "" .Values.plugins | quote }}
+            - name: GF_PATHS_PLUGINS
+              value: "/var/lib/grafana/plugins"
+            - name: GF_PATHS_PROVISIONING
+              value: "/etc/grafana/provisioning"
+            - name: GF_PATHS_CONFIG
+              value: "/etc/grafana/grafana.ini"
+            - name: GF_PATHS_DATA
+              value: "/var/lib/grafana/data"
+            - name: GF_PATHS_LOGS
+              value: "/var/log/grafana"
+            - name: GF_LOG_MODE
+              value: {{ .Values.logLevel | quote }}
+            {{- with .Values.extraEnvVars }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: grafana
+              containerPort: {{ .Values.containerPorts.grafana }}
+              protocol: TCP
+          {{- with .Values.startupProbe }}
+          startupProbe: {{- toYaml . | nindent 12 }}
+            httpGet:
+              path: /api/health
+              port: grafana
+              scheme: {{ $tlsEnabled | ternary "HTTPS" "HTTP" }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
+            httpGet:
+              path: /api/health
+              port: grafana
+              scheme: {{ $tlsEnabled | ternary "HTTPS" "HTTP" }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
+            httpGet:
+              path: /api/health
+              port: grafana
+              scheme: {{ $tlsEnabled | ternary "HTTPS" "HTTP" }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /var/lib/grafana/plugins
+              subPath: plugin-dir
+          {{- if $tlsEnabled }}
+            - name: grafana-certificates
+              mountPath: /etc/grafana/certs
+          {{- end }}
+          {{- if or .Values.configuration .Values.existingConfigmap }}
+            - name: config
+              mountPath: /etc/grafana/grafana.ini
+              subPath: grafana.ini
+          {{- end }}
+            - name: data
+              mountPath: /var/lib/grafana/data
+          {{- if .Values.dashboardsProvider.enabled }}
+            - name: dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+          {{- end }}
+          {{- range .Values.dashboardsConfigMaps }}
+            - name: {{ .configMapName }}
+          {{- $path := "/var/lib/grafana/dashboards" }}
+          {{- if .folderName }}
+            {{- $path = printf "%s/%s" $path .folderName | trimSuffix "/" }}
+          {{- end }}
+          {{- if .fileName }}
+            {{- $path = printf "%s/%s" $path .fileName }}
+          {{- end }}
+              mountPath: {{ $path }}
+          {{- if .fileName }}
+              subPath: {{ .fileName }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.datasourcesSecretName }}
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        {{- if or .Values.configuration .Values.existingConfigmap }}
+        - name: config
+          secret:
+            secretName: {{ include "common.configSecretName" . }}
+        {{- end }}
+        {{- if $tlsEnabled }}
+        - name: grafana-certificates
+          secret:
+            secretName: {{ include "common.tls.secretName" . }}
+            defaultMode: 256
+        {{- end }}
+        {{- if .Values.dashboardsProvider.enabled }}
+        - name: dashboards-provider
+          configMap:
+            {{- if .Values.dashboardsProvider.existingConfigMap }}
+            name: {{ .Values.dashboardsProvider.existingConfigMap }}
+            {{- else }}
+            name: {{ include "common.fullname" . }}-provider
+            {{- end }}
+        {{- end }}
+        {{- range .Values.dashboardsConfigMaps }}
+        - name: {{ .configMapName }}
+          configMap:
+            name: {{ .configMapName }}
+        {{- end }}
+        {{- if .Values.datasourcesSecretName }}
+        - name: datasources
+          secret:
+            secretName: {{ .Values.datasourcesSecretName }}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- else }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "common.pvcName" . }}
+        {{- end }}

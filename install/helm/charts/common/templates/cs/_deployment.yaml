@@ -16,18 +16,33 @@ spec:
       {{- include "common.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- $podAnnotations := include "common.podAnnotations" . }}
+      {{- $authEnabled := eq (include "common.cs.auth.enabled" .) "true" }}
+      {{- if or $podAnnotations $authEnabled }}
       annotations:
-        {{- include "common.podAnnotations" . | indent 8 }}
-        {{- if eq (include "common.cs.auth.enabled" .) "true" }}
+        {{- with $podAnnotations }}
+        {{- . | nindent 8 }}
+        {{- end }}
+        {{- if $authEnabled }}
         checksum/keys: {{ default (randAlphaNum 32) ((.Values.global).keys).token | sha256sum | quote }}
         {{- end }}
+      {{- end }}
       labels:
         {{- include "common.podLabels" . | nindent 8 }}
     spec:
+      enableServiceLinks: {{ eq (kindOf .Values.enableServiceLinks) "bool" | ternary .Values.enableServiceLinks false }}
       serviceAccountName: {{ include "common.cs.serviceAccountName" . }}
       {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.initContainers }}
+      initContainers:
+        {{- tpl (toYaml .Values.initContainers) . | nindent 8 -}}
+      {{- end }}
       containers:
         {{- include "common.cs.container.app" . | nindent 8 -}}
+
+        {{- if (.Values.gateway).enabled -}}
+        {{- include "common.cs.container.gateway" . | nindent 8 -}}
+        {{- end -}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -41,10 +56,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if ne (include "common.cs.devMode.enabled" .) "true" }}
-      {{- if (.Values.podSecurityContext).enabled }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- end }}
-      {{- include "common.cs.volumes" . | nindent 6 }}
+      volumes:
+        {{- include "common.cs.volumes" . | nindent 8 }}
 {{- end -}}

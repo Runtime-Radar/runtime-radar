@@ -26,9 +26,9 @@ spec:
     spec:
       serviceAccountName: {{ include "common.serviceAccountName" . }}
       {{- include "common.imagePullSecrets" . | nindent 6 }}
-      {{- if (.Values.podSecurityContext).enabled }}
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
@@ -42,9 +42,9 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if (.Values.containerSecurityContext).enabled }}
+          {{- with .Values.containerSecurityContext }}
           securityContext:
-            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           command:
             - /bin/sh
@@ -65,9 +65,9 @@ spec:
         - name: clickhouse
           image: {{ include "clickhouse.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-          {{- if (.Values.containerSecurityContext).enabled }}
+          {{- with .Values.containerSecurityContext }}
           securityContext:
-            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
             - name: CLICKHOUSE_HTTP_PORT
@@ -103,16 +103,22 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: CLICKHOUSE_USER
-              value: {{ .Values.auth.username | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.auth.secretName" $ }}
+                  key: {{ include "clickhouse.secretUserKey" $ }}
             - name: CLICKHOUSE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "common.authSecretName" $ }}
+                  name: {{ include "common.auth.secretName" $ }}
                   key: {{ include "clickhouse.secretPasswordKey" $ }}
-            {{- if .Values.auth.database }}
+            - name: CLICKHOUSE_DB_RAW
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.auth.secretName" $ }}
+                  key: {{ include "clickhouse.secretDatabaseKey" $ }}
             - name: CLICKHOUSE_DB
-              value: {{ include "clickhouse.database" . | quote }}
-            {{- end }}
+              value: "`$(CLICKHOUSE_DB_RAW)`"
             {{- with .Values.extraEnvVars }}
             {{- tpl (toYaml .) $ | nindent 12 }}
             {{- end }}
@@ -150,19 +156,19 @@ spec:
             - name: http-metrics
               containerPort: {{ $.Values.containerPorts.metrics }}
             {{- end }}
-          {{- if .Values.startupProbe.enabled }}
-          startupProbe: {{- omit .Values.startupProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.startupProbe }}
+          startupProbe: {{- toYaml . | nindent 12 }}
             httpGet:
               path: /ping
               port: http
           {{- end }}
-          {{- if .Values.livenessProbe.enabled }}
-          livenessProbe: {{- omit .Values.livenessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
             tcpSocket:
               port: http
           {{- end }}
-          {{- if .Values.readinessProbe.enabled }}
-          readinessProbe: {{- omit .Values.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
             httpGet:
               path: /ping
               port: http

@@ -45,7 +45,6 @@ resources:
     memory: 512Mi
     ephemeral-storage: 1Mi
 livenessProbe:
-  enabled: true
   httpGet:
     path: /live
     scheme: HTTP
@@ -54,7 +53,6 @@ livenessProbe:
   successThreshold: 1
   failureThreshold: 2
 readinessProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP
@@ -63,7 +61,6 @@ readinessProbe:
   successThreshold: 1
   failureThreshold: 3
 startupProbe:
-  enabled: true
   httpGet:
     path: /ready
     scheme: HTTP

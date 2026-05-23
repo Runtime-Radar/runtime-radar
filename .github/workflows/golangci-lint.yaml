@@ -16,7 +16,7 @@ on:
       - '.golangci.yml'
 
 env:
-  GO_VERSION: '1.25'
+  GO_VERSION: '1.26'
   TASK_VERSION: '3.38.0'
 
 jobs:

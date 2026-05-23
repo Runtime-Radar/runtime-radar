@@ -1,0 +1,1041 @@
+{
+	"annotations": {
+		"list": [
+			{
+				"builtIn": 1,
+				"datasource": {
+					"type": "datasource",
+					"uid": "grafana"
+				},
+				"enable": true,
+				"hide": true,
+				"iconColor": "rgba(0, 211, 255, 1)",
+				"name": "Annotations & Alerts",
+				"type": "dashboard"
+			}
+		]
+	},
+	"description": "Provides information about the health of ClickHouse, RabbitMQ, and PostgreSQL, the current cluster state (central cluster, unregistered child cluster, and registered child cluster), and the license and vulnerability database update status. To get information about the health of external services, you must configure the internal Prometheus system for this purpose or install the external Prometheus system.",
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": 5,
+	"links": [],
+	"panels": [
+		{
+			"datasource": {
+				"type": "prometheus",
+				"uid": "Prometheus"
+			},
+			"description": "",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"fixedColor": "green",
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "left",
+						"cellOptions": {
+							"applyToRow": true,
+							"mode": "basic",
+							"type": "color-background"
+						},
+						"filterable": true,
+						"inspect": false
+					},
+					"mappings": [
+						{
+							"options": {
+								"0": {
+									"color": "red",
+									"index": 0,
+									"text": "down"
+								},
+								"1": {
+									"color": "green",
+									"index": 1,
+									"text": "up"
+								}
+							},
+							"type": "value"
+						},
+						{
+							"options": {
+								"match": "null+nan",
+								"result": {
+									"index": 2,
+									"text": "down"
+								}
+							},
+							"type": "special"
+						}
+					],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "transparent"
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Cluster"
+						},
+						"properties": [
+							{
+								"id": "custom.width",
+								"value": 297
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Service"
+						},
+						"properties": [
+							{
+								"id": "custom.width",
+								"value": 114
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Status"
+						},
+						"properties": [
+							{
+								"id": "custom.width",
+								"value": 87
+							}
+						]
+					}
+				]
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 6,
+				"x": 0,
+				"y": 0
+			},
+			"id": 21,
+			"options": {
+				"cellHeight": "sm",
+				"footer": {
+					"countRows": false,
+					"fields": "",
+					"reducer": ["sum"],
+					"show": false
+				},
+				"showHeader": true
+			},
+			"pluginVersion": "12.0.2",
+			"targets": [
+				{
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"editorMode": "code",
+					"exemplar": true,
+					"expr": "up{cluster=~\"$cluster\",service=\"reverse-proxy\"}",
+					"format": "table",
+					"hide": false,
+					"instant": false,
+					"legendFormat": "__auto",
+					"range": true,
+					"refId": "B"
+				}
+			],
+			"title": "Reverse-proxy availability",
+			"transformations": [
+				{
+					"id": "labelsToFields",
+					"options": {}
+				},
+				{
+					"id": "groupBy",
+					"options": {
+						"fields": {
+							"Value": {
+								"aggregations": ["last"],
+								"operation": "aggregate"
+							},
+							"cluster": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"instance": {
+								"aggregations": []
+							},
+							"service": {
+								"aggregations": []
+							}
+						}
+					}
+				},
+				{
+					"id": "organize",
+					"options": {
+						"excludeByName": {},
+						"includeByName": {},
+						"indexByName": {},
+						"renameByName": {
+							"Value (last)": "Status",
+							"cluster": "Cluster",
+							"service": "Service"
+						}
+					}
+				}
+			],
+			"type": "table"
+		},
+		{
+			"datasource": {
+				"type": "prometheus",
+				"uid": "Prometheus"
+			},
+			"description": "",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"fixedColor": "green",
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "left",
+						"cellOptions": {
+							"applyToRow": true,
+							"mode": "basic",
+							"type": "color-background"
+						},
+						"filterable": true,
+						"inspect": false
+					},
+					"mappings": [
+						{
+							"options": {
+								"0": {
+									"color": "red",
+									"index": 0,
+									"text": "down"
+								},
+								"1": {
+									"color": "green",
+									"index": 1,
+									"text": "up"
+								}
+							},
+							"type": "value"
+						},
+						{
+							"options": {
+								"match": "null+nan",
+								"result": {
+									"color": "red",
+									"index": 2,
+									"text": "down"
+								}
+							},
+							"type": "special"
+						}
+					],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "transparent"
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Status"
+						},
+						"properties": [
+							{
+								"id": "custom.width",
+								"value": 76
+							}
+						]
+					}
+				]
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 6,
+				"x": 6,
+				"y": 0
+			},
+			"id": 25,
+			"options": {
+				"cellHeight": "sm",
+				"footer": {
+					"countRows": false,
+					"fields": "",
+					"reducer": ["sum"],
+					"show": false
+				},
+				"showHeader": true
+			},
+			"pluginVersion": "12.0.2",
+			"targets": [
+				{
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"editorMode": "code",
+					"exemplar": true,
+					"expr": "up{cluster=~\"$cluster\",service=\"clickhouse\"}",
+					"format": "table",
+					"hide": false,
+					"instant": false,
+					"legendFormat": "__auto",
+					"range": true,
+					"refId": "B"
+				}
+			],
+			"title": "Clickhouse availability",
+			"transformations": [
+				{
+					"id": "labelsToFields",
+					"options": {}
+				},
+				{
+					"id": "groupBy",
+					"options": {
+						"fields": {
+							"Value": {
+								"aggregations": ["last"],
+								"operation": "aggregate"
+							},
+							"cluster": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"instance": {
+								"aggregations": []
+							},
+							"service": {
+								"aggregations": []
+							}
+						}
+					}
+				},
+				{
+					"id": "organize",
+					"options": {
+						"excludeByName": {},
+						"includeByName": {},
+						"indexByName": {},
+						"renameByName": {
+							"Value (last)": "Status",
+							"cluster": "Cluster",
+							"service": "Service"
+						}
+					}
+				}
+			],
+			"type": "table"
+		},
+		{
+			"datasource": {
+				"type": "prometheus",
+				"uid": "Prometheus"
+			},
+			"description": "",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"fixedColor": "green",
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "left",
+						"cellOptions": {
+							"applyToRow": true,
+							"mode": "basic",
+							"type": "color-background"
+						},
+						"filterable": true,
+						"inspect": false
+					},
+					"mappings": [
+						{
+							"options": {
+								"0": {
+									"color": "red",
+									"index": 0,
+									"text": "down"
+								},
+								"1": {
+									"color": "green",
+									"index": 1,
+									"text": "up"
+								}
+							},
+							"type": "value"
+						},
+						{
+							"options": {
+								"match": "null+nan",
+								"result": {
+									"index": 2,
+									"text": "down"
+								}
+							},
+							"type": "special"
+						}
+					],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "transparent"
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Status"
+						},
+						"properties": [
+							{
+								"id": "custom.width",
+								"value": 76
+							}
+						]
+					}
+				]
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 6,
+				"x": 12,
+				"y": 0
+			},
+			"id": 26,
+			"options": {
+				"cellHeight": "sm",
+				"footer": {
+					"countRows": false,
+					"fields": "",
+					"reducer": ["sum"],
+					"show": false
+				},
+				"showHeader": true
+			},
+			"pluginVersion": "12.0.2",
+			"targets": [
+				{
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"editorMode": "code",
+					"exemplar": true,
+					"expr": "up{cluster=~\"$cluster\",service=\"rabbitmq\"}",
+					"format": "table",
+					"hide": false,
+					"instant": false,
+					"legendFormat": "__auto",
+					"range": true,
+					"refId": "B"
+				}
+			],
+			"title": "RabbitMQ availability",
+			"transformations": [
+				{
+					"id": "labelsToFields",
+					"options": {}
+				},
+				{
+					"id": "groupBy",
+					"options": {
+						"fields": {
+							"Value": {
+								"aggregations": ["last"],
+								"operation": "aggregate"
+							},
+							"cluster": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"instance": {
+								"aggregations": []
+							},
+							"service": {
+								"aggregations": []
+							}
+						}
+					}
+				},
+				{
+					"id": "organize",
+					"options": {
+						"excludeByName": {},
+						"includeByName": {},
+						"indexByName": {},
+						"renameByName": {
+							"Value (last)": "Status",
+							"cluster": "Cluster",
+							"service": "Service"
+						}
+					}
+				}
+			],
+			"type": "table"
+		},
+		{
+			"datasource": {
+				"type": "prometheus",
+				"uid": "Prometheus"
+			},
+			"description": "",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"fixedColor": "green",
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "left",
+						"cellOptions": {
+							"applyToRow": true,
+							"mode": "basic",
+							"type": "color-background"
+						},
+						"filterable": true,
+						"inspect": false
+					},
+					"mappings": [
+						{
+							"options": {
+								"0": {
+									"color": "red",
+									"index": 0,
+									"text": "down"
+								},
+								"1": {
+									"color": "green",
+									"index": 1,
+									"text": "up"
+								}
+							},
+							"type": "value"
+						},
+						{
+							"options": {
+								"match": "null+nan",
+								"result": {
+									"index": 2,
+									"text": "down"
+								}
+							},
+							"type": "special"
+						}
+					],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "transparent"
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Status"
+						},
+						"properties": [
+							{
+								"id": "custom.width",
+								"value": 76
+							}
+						]
+					}
+				]
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 6,
+				"x": 18,
+				"y": 0
+			},
+			"id": 27,
+			"options": {
+				"cellHeight": "sm",
+				"footer": {
+					"countRows": false,
+					"fields": "",
+					"reducer": ["sum"],
+					"show": false
+				},
+				"showHeader": true
+			},
+			"pluginVersion": "12.0.2",
+			"targets": [
+				{
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"editorMode": "code",
+					"exemplar": true,
+					"expr": "pg_up{cluster=~\"$cluster\"}",
+					"format": "table",
+					"hide": false,
+					"instant": false,
+					"legendFormat": "__auto",
+					"range": true,
+					"refId": "B"
+				}
+			],
+			"title": "PostgreSQL availability",
+			"transformations": [
+				{
+					"id": "labelsToFields",
+					"options": {}
+				},
+				{
+					"id": "groupBy",
+					"options": {
+						"fields": {
+							"Value": {
+								"aggregations": ["last"],
+								"operation": "aggregate"
+							},
+							"cluster": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"instance": {
+								"aggregations": []
+							},
+							"service": {
+								"aggregations": []
+							}
+						}
+					}
+				},
+				{
+					"id": "organize",
+					"options": {
+						"excludeByName": {},
+						"includeByName": {},
+						"indexByName": {},
+						"renameByName": {
+							"Value (last)": "Status",
+							"cluster": "Cluster",
+							"service": "Service"
+						}
+					}
+				}
+			],
+			"type": "table"
+		},
+		{
+			"datasource": {
+				"type": "prometheus",
+				"uid": "Prometheus"
+			},
+			"description": "",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "left",
+						"cellOptions": {
+							"type": "color-text"
+						},
+						"filterable": true,
+						"inspect": false
+					},
+					"mappings": [
+						{
+							"options": {
+								"0": {
+									"color": "green",
+									"index": 0,
+									"text": "Central cluster"
+								},
+								"1": {
+									"color": "red",
+									"index": 1,
+									"text": "Child unregistered "
+								},
+								"2": {
+									"color": "green",
+									"index": 2,
+									"text": "Child registered"
+								}
+							},
+							"type": "value"
+						},
+						{
+							"options": {
+								"match": "null",
+								"result": {
+									"color": "yellow",
+									"index": 3,
+									"text": "Unknown cluster status"
+								}
+							},
+							"type": "special"
+						}
+					],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green"
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 14,
+				"x": 0,
+				"y": 7
+			},
+			"id": 7,
+			"options": {
+				"cellHeight": "sm",
+				"enablePagination": false,
+				"footer": {
+					"countRows": false,
+					"fields": "",
+					"reducer": ["sum"],
+					"show": false
+				},
+				"showHeader": true,
+				"sortBy": []
+			},
+			"pluginVersion": "12.0.2",
+			"targets": [
+				{
+					"editorMode": "code",
+					"expr": "sum(cluster_state_gauge{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"cs-manager\"})by(cluster,instance)",
+					"format": "table",
+					"legendFormat": "{{label_name}}",
+					"range": true,
+					"refId": "A"
+				}
+			],
+			"title": "",
+			"transformations": [
+				{
+					"id": "labelsToFields",
+					"options": {
+						"keepLabels": ["cluster"],
+						"mode": "columns",
+						"valueLabel": "instance"
+					}
+				},
+				{
+					"id": "groupBy",
+					"options": {
+						"fields": {
+							"Cluster": {
+								"aggregations": ["last"],
+								"operation": "groupby"
+							},
+							"Status": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"Value": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"cluster": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"{cluster=\"$cluster\", instance=\"$instance\"}": {
+								"aggregations": [],
+								"operation": "groupby"
+							}
+						}
+					}
+				},
+				{
+					"id": "organize",
+					"options": {
+						"excludeByName": {
+							"Time": true
+						},
+						"includeByName": {},
+						"indexByName": {
+							"Time": 0,
+							"cluster": 1,
+							"{cluster=\"$cluster\", instance=\"$instance\"}": 2
+						},
+						"renameByName": {
+							"Time": "",
+							"Value": "Status",
+							"cluster": "Cluster",
+							"{cluster=\"$cluster\", instance=\"$instance\"}": "Status"
+						}
+					}
+				},
+				{
+					"id": "groupBy",
+					"options": {
+						"fields": {
+							"Cluster": {
+								"aggregations": [],
+								"operation": "groupby"
+							},
+							"Status": {
+								"aggregations": ["last"],
+								"operation": "aggregate"
+							}
+						}
+					}
+				}
+			],
+			"type": "table"
+		},
+		{
+			"datasource": {
+				"type": "prometheus",
+				"uid": "Prometheus"
+			},
+			"description": "",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"fixedColor": "green",
+						"mode": "fixed"
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "red"
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 5,
+				"x": 14,
+				"y": 7
+			},
+			"id": 14,
+			"options": {
+				"colorMode": "value",
+				"graphMode": "area",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"percentChangeColorMode": "standard",
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"showPercentChange": false,
+				"textMode": "auto",
+				"wideLayout": true
+			},
+			"pluginVersion": "12.0.2",
+			"targets": [
+				{
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"editorMode": "code",
+					"exemplar": true,
+					"expr": "sum(rate(grpc_server_started_total{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"cs-manager\"}[$interval]))",
+					"hide": false,
+					"instant": false,
+					"legendFormat": "{{cluster}} - {{instance}}",
+					"range": true,
+					"refId": "B"
+				}
+			],
+			"title": "CS manager RPS",
+			"type": "stat"
+		},
+		{
+			"datasource": {
+				"type": "prometheus",
+				"uid": "Prometheus"
+			},
+			"description": "",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"fixedColor": "green",
+						"mode": "fixed"
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "red"
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 5,
+				"x": 19,
+				"y": 7
+			},
+			"id": 18,
+			"options": {
+				"colorMode": "value",
+				"graphMode": "area",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"percentChangeColorMode": "standard",
+				"reduceOptions": {
+					"calcs": ["lastNotNull"],
+					"fields": "",
+					"values": false
+				},
+				"showPercentChange": false,
+				"textMode": "auto",
+				"wideLayout": true
+			},
+			"pluginVersion": "12.0.2",
+			"targets": [
+				{
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"editorMode": "code",
+					"exemplar": true,
+					"expr": "sum(rate(grpc_server_started_total{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"cluster-manager\"}[$interval]))",
+					"hide": false,
+					"instant": false,
+					"legendFormat": "{{cluster}} - {{instance}}",
+					"range": true,
+					"refId": "B"
+				}
+			],
+			"title": "Cluster manager RPS",
+			"type": "stat"
+		}
+	],
+	"preload": false,
+	"schemaVersion": 41,
+	"tags": ["cluster", "cs"],
+	"templating": {
+		"list": [
+			{
+				"current": {
+					"text": "All",
+					"value": "$__all"
+				},
+				"definition": "label_values(go_goroutines,cluster)",
+				"includeAll": true,
+				"label": "Cluster",
+				"name": "cluster",
+				"options": [],
+				"query": {
+					"qryType": 1,
+					"query": "label_values(go_goroutines,cluster)",
+					"refId": "PrometheusVariableQueryEditor-VariableQuery"
+				},
+				"refresh": 2,
+				"regex": "",
+				"type": "query"
+			},
+			{
+				"auto": true,
+				"auto_count": 30,
+				"auto_min": "10s",
+				"current": {
+					"text": "$__auto",
+					"value": "$__auto"
+				},
+				"label": "Interval",
+				"name": "interval",
+				"options": [
+					{
+						"selected": false,
+						"text": "1m",
+						"value": "1m"
+					},
+					{
+						"selected": false,
+						"text": "5m",
+						"value": "5m"
+					},
+					{
+						"selected": false,
+						"text": "10m",
+						"value": "10m"
+					},
+					{
+						"selected": false,
+						"text": "15m",
+						"value": "15m"
+					},
+					{
+						"selected": false,
+						"text": "30m",
+						"value": "30m"
+					},
+					{
+						"selected": false,
+						"text": "1h",
+						"value": "1h"
+					}
+				],
+				"query": "1m,5m,10m,15m,30m,1h",
+				"refresh": 2,
+				"type": "interval"
+			}
+		]
+	},
+	"time": {
+		"from": "now-3h",
+		"to": "now"
+	},
+	"timepicker": {},
+	"timezone": "browser",
+	"title": "Cluster status",
+	"uid": "987694f4-187f-4c4e-b335-13ee42eee9bc",
+	"version": 1,
+	"weekStart": "monday"
+}

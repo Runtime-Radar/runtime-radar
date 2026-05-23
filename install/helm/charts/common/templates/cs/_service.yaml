@@ -21,10 +21,10 @@ spec:
     {{- range $key, $val := (.Values.service).ports }}
     - name: {{ $key }}
       targetPort: {{ $key }}
-      port: {{ $val }}
+      port: {{ tpl (toString $val) $ }}
       protocol: TCP
       {{- if and (eq ($context.Values.service).type "NodePort") (($context.Values.service).nodePorts | default dict | pluck $key) }}
-      nodePort: {{ get ($context.Values.service).nodePorts $key }}
+      nodePort: {{ tpl (get ($context.Values.service).nodePorts $key | toString) $ }}
       {{- end }}
     {{- end }}
   selector:

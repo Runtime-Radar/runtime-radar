@@ -20,6 +20,21 @@
                     "type": "string",
                     "description": "Global StorageClass for Persistent Volume(s)",
                     "default": ""
+                },
+                "rabbitmq": {
+                    "type": "object",
+                    "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret that contains the auth credentials (overrides `auth.existingSecret`)",
+                                    "default": ""
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -104,13 +119,18 @@
                 },
                 "existingSecret": {
                     "type": "string",
-                    "description": "Existing secret with RabbitMQ credentials (must contain a value for `rabbitmq-password` key)",
+                    "description": "Existing secret with RabbitMQ credentials (must contain a value for the `RABBIT_PASSWORD` key)",
                     "default": ""
                 },
                 "existingSecretPasswordKey": {
                     "type": "string",
-                    "description": "Password key to be retrieved from existing secret",
-                    "default": "rabbitmq-password"
+                    "description": "Password key to be retrieved from existing secret. When empty, defaults to the container-env-style key `RABBIT_PASSWORD`",
+                    "default": ""
+                },
+                "existingSecretUserKey": {
+                    "type": "string",
+                    "description": "Name of the secret key holding the RabbitMQ username. When empty, defaults to the container-env-style key `RABBIT_USER`.",
+                    "default": ""
                 }
             }
         },
@@ -226,11 +246,6 @@
         "podSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable RabbitMQ pods' Security Context",
-                    "default": true
-                },
                 "fsGroupChangePolicy": {
                     "type": "string",
                     "description": "Set filesystem group change policy",
@@ -258,11 +273,6 @@
         "containerSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enabled RabbitMQ containers' Security Context",
-                    "default": true
-                },
                 "runAsUser": {
                     "type": "number",
                     "description": "Set RabbitMQ containers' Security Context runAsUser",
@@ -318,11 +328,6 @@
         "livenessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable livenessProbe",
-                    "default": true
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for livenessProbe",
@@ -353,11 +358,6 @@
         "readinessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable readinessProbe",
-                    "default": true
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for readinessProbe",
@@ -388,11 +388,6 @@
         "startupProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable startupProbe",
-                    "default": false
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for startupProbe",

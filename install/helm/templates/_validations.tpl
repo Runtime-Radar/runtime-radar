@@ -91,27 +91,27 @@ cs: tls
 {{- $_ := set $annotations $key $value }}
 {{- end }}
 
-{{- if ne ($annotation := get $annotations "runtime-monitor.tetragon") ($image := include "common.images.image" (dict "imageRoot" (get .Values "runtime-monitor").tetragon.image)) }}
+{{- if ne ($annotation := get $annotations "runtime-monitor.tetragon") ($image := include "common.image" (dict "context" . "image" (get .Values "runtime-monitor").tetragon.image)) }}
 cs: runtime-monitor.tetragon.image is incorrect
     Image in annotation is not the same as in values of chart or subchart {{ printf "('%s' != '%s')" $annotation $image }}
 {{- end }}
-{{- if ne ($annotation := get $annotations "postgresql") ($image := include "common.images.image" (dict "imageRoot" .Values.postgresql.image)) }}
+{{- if ne ($annotation := get $annotations "postgresql") ($image := include "common.image" (dict "context" . "image" .Values.postgresql.image)) }}
 cs: postgresql.image is incorrect
     Image in annotation is not the same as in values of chart or subchart {{ printf "('%s' != '%s')" $annotation $image }}
 {{- end }}
-{{- if ne ($annotation := get $annotations "postgresql.metrics") ($image := include "common.images.image" (dict "imageRoot" .Values.postgresql.metrics.image)) }}
+{{- if ne ($annotation := get $annotations "postgresql.metrics") ($image := include "common.image" (dict "context" . "image" .Values.postgresql.metrics.image)) }}
 cs: postgresql.metrics.image is incorrect
     Image in annotation is not the same as in values of chart or subchart {{ printf "('%s' != '%s')" $annotation $image }}
 {{- end }}
-{{- if ne ($annotation := get $annotations "redis") ($image := include "common.images.image" (dict "imageRoot" .Values.redis.image)) }}
+{{- if ne ($annotation := get $annotations "redis") ($image := include "common.image" (dict "context" . "image" .Values.redis.image)) }}
 cs: redis.image is incorrect
     Image in annotation is not the same as in values of chart or subchart {{ printf "('%s' != '%s')" $annotation $image }}
 {{- end }}
-{{- if ne ($annotation := get $annotations "rabbitmq") ($image := include "common.images.image" (dict "imageRoot" .Values.rabbitmq.image)) }}
+{{- if ne ($annotation := get $annotations "rabbitmq") ($image := include "common.image" (dict "context" . "image" .Values.rabbitmq.image)) }}
 cs: rabbitmq.image is incorrect
     Image in annotation is not the same as in values of chart or subchart {{ printf "('%s' != '%s')" $annotation $image }}
 {{- end }}
-{{- if ne ($annotation := get $annotations "clickhouse") ($image := include "common.images.image" (dict "imageRoot" .Values.clickhouse.image)) }}
+{{- if ne ($annotation := get $annotations "clickhouse") ($image := include "common.image" (dict "context" . "image" .Values.clickhouse.image)) }}
 cs: clickhouse.image is incorrect
     Image in annotation is not the same as in values of chart or subchart {{ printf "('%s' != '%s')" $annotation $image }}
 {{- end }}
