@@ -13,8 +13,8 @@ To install Runtime Radar using Helm,
      --set-string 'global.ownCsUrl=https://your-domain.com:32000' \
      --set-string 'global.keys.publicAccessTokenSalt=INIT-DO-NOT-USE' \
      --set-string 'global.keys.encryption=INIT-DO-NOT-USE' \
-     --set-string 'auth-center.administrator.username=admin' \
-     --set-string 'auth-center.administrator.password=Password' \
+     --set-string 'global.administrator.username=admin' \
+     --set-string 'global.administrator.password=Password' \
      --set-string 'reverse-proxy.service.type=NodePort' \
      --set-string 'reverse-proxy.service.nodePorts.http=32000'
    ```
