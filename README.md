@@ -52,8 +52,8 @@ Join the Runtime Radar community channels:
 ### v0.2.0
 
 - [x] 🟢 Optimization of threat detection logic (PR #13).
-- [ ] 🟢 Support for an expert mode that enables the addition of custom sources (`TracingPolicy`) and the modification/deletion of existing ones.
-- [ ] 🟢 Metrics and dashboards enhancing observability.
+- [x] 🟢 Support for an expert mode that enables the addition of custom sources (`TracingPolicy`) and the modification/deletion of existing ones.
+- [x] 🟢 Metrics and dashboards enhancing observability.
 
 ### v0.3.0
 
