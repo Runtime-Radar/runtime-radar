@@ -13,3 +13,4 @@ kubeconfig.yaml
 .task/
 .build
 .helmpreview
+.ignore
