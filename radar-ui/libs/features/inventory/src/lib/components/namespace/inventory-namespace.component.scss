@@ -1,0 +1,48 @@
+.inventory-feature-namespace {
+    position: relative;
+    line-height: 0;
+
+    &.hidden .inventory-feature-namespace {
+        &-header {
+            opacity: 0.35;
+        }
+
+        &-pods {
+            border-color: rgba(#21222c, 0.35); // @todo: replace to koobiq token
+        }
+    }
+
+    &-header {
+        box-sizing: border-box;
+        min-width: (48px * 2) + 2px;
+        position: relative;
+        margin: 0 16px 4px 16px;
+        padding: 4px 28px 4px 16px;
+        line-height: 22px;
+        background-color: var(--kbq-background-bg);
+        border: 1px solid #c4c7d4; // @todo: replace to koobiq token
+        border-radius: 8px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        cursor: pointer;
+
+        @for $i from 1 through 3 {
+            &.width-#{$i} {
+                width: (114px * $i) - 16px;
+            }
+        }
+    }
+
+    &-pods {
+        gap: 16px;
+        padding: 16px;
+        border: 1px solid #21222c; // @todo: replace to koobiq token
+        border-radius: 16px;
+
+        &--multiple {
+            display: grid;
+            grid-template-columns: repeat(3, auto);
+        }
+    }
+}

@@ -1,0 +1,100 @@
+:host {
+    display: block;
+    padding: 32px;
+}
+
+.inventory-feature-map {
+    position: relative;
+    margin-top: 32px;
+
+    &-title {
+        margin: 0;
+    }
+
+    &-area {
+        position: relative;
+
+        &-drag {
+            display: flex;
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 750px;
+            height: calc(100vh - 140px);
+            min-height: 505px;
+            position: relative;
+            margin-top: 32px;
+            border-radius: 12px;
+            border: 1px solid #d7dee4; // @todo: replace to koobiq token
+            background-image: radial-gradient(circle, #d7dee4 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: hidden;
+
+            &.grab {
+                touch-action: none;
+                user-select: none;
+                cursor: grab;
+
+                &:active {
+                    cursor: grabbing;
+                }
+            }
+
+            &-content {
+                width: calc(150vw - 298px);
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: 1;
+                flex-wrap: wrap;
+                gap: 64px;
+                padding: 80px 24px;
+            }
+
+            &-nodes {
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 32px;
+                margin: 0 16px 64px 16px;
+
+                &-header {
+                    display: inline-block;
+                    box-sizing: border-box;
+                    max-width: 212px;
+                    position: relative;
+                    padding: 4px 28px 4px 16px;
+                    line-height: 24px;
+                    background-color: #f3f4f6; // @todo: replace to koobiq token
+                    border-radius: 8px;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    cursor: pointer;
+
+                    &.hidden {
+                        opacity: 0.35;
+                    }
+                }
+            }
+
+            &-groups {
+                gap: 32px;
+            }
+        }
+
+        &-action {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            z-index: 1;
+            background-color: var(--kbq-background-bg);
+            border-radius: 8px;
+        }
+
+        &-legend {
+            position: absolute;
+            left: 24px;
+            bottom: 24px;
+            z-index: 1;
+        }
+    }
+}

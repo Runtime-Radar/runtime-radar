@@ -14,7 +14,7 @@ import {
     UPDATE_NOTIFICATION_STATE_DOC_ACTION
 } from './notification-action.store';
 
-const adapter = createEntityAdapter<Notification>();
+export const adapter = createEntityAdapter<Notification>();
 
 const INITIAL_STATE: NotificationState = {
     loadStatus: LoadStatus.INIT,

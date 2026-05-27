@@ -1,7 +1,7 @@
 {
     "name": "feature-integration",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/features/integration",
     "sourceRoot": "libs/features/integration/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/features/integration"],
+            "outputs": ["{workspaceRoot}/coverage/libs/features/integration"],
             "options": {
                 "jestConfig": "libs/features/integration/jest.config.ts",
                 "passWithNoTests": true

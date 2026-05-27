@@ -1,0 +1,65 @@
+:host {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+}
+
+.inventory-feature-sidepanel-node {
+    position: relative;
+
+    &-header {
+        width: 100%;
+        box-sizing: border-box;
+        position: relative;
+        margin-top: 8px;
+        padding: 8px 16px;
+        border: 1px solid #d7dee4; // @todo: replace to koobiq token
+        border-radius: 8px;
+        cursor: pointer;
+
+        &--colored {
+            background-color: #f3f4f6; // @todo: replace to koobiq token
+        }
+
+        &-name {
+            width: 300px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        &-count {
+            width: 24px;
+            margin: 0 24px 0 8px;
+            text-align: right;
+        }
+    }
+
+    &-table {
+        margin-top: 8px;
+        padding: 0 16px;
+
+        span:last-child {
+            width: 150px;
+            margin-right: 24px;
+            text-align: right;
+        }
+    }
+
+    &-code {
+        height: calc(100vh - 160px);
+        min-height: 350px;
+        margin-top: 24px;
+    }
+}
+
+::ng-deep .inventory-feature-sidepanel-node {
+    .kbq-sidepanel-container.kbq-sidepanel_medium {
+        width: 475px;
+    }
+
+    .kbq-sidepanel-content {
+        box-shadow: var(--kbq-sidepanel-container-shadow);
+    }
+}

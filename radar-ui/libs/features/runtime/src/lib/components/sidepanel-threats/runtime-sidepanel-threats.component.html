@@ -10,13 +10,15 @@
         }
 
         @if (props.threats.length) {
-            <h4 class="kbq-subheading layout-margin-top-xxl layout-margin-no-bottom">
+            <h4 class="kbq-subheading layout-margin-no-top layout-margin-no-bottom">
                 {{ tRuntime('Runtime.ThreatsSidepanel.Title.Threat') }}
             </h4>
             @for (threat of props.threats; track i; let i = $index) {
                 <article class="runtime-feature-sidepanel-threats-item">
                     <div class="kbq-text-compact cs-text-gray layout-margin-bottom-xxs">{{ threat.detector.id }}</div>
-                    <div class="kbq-text-compact cs-text-gray layout-margin-bottom-xxs">{{ tRuntime('Runtime.ThreatsSidepanel.Label.DetectorVersion') }}: {{ threat.detector.version }}</div>
+                    <div class="kbq-text-compact cs-text-gray layout-margin-bottom-xxs">
+                        {{ tRuntime('Runtime.ThreatsSidepanel.Label.DetectorVersion') }}: {{ threat.detector.version }}
+                    </div>
                     <h4 class="kbq-subheading layout-margin-no-top">{{ threat.detector.name }}</h4>
                     <cs-severity-label-component [severity]="threat.severity"></cs-severity-label-component>
                     <section class="runtime-feature-sidepanel-threats-item-info">
@@ -28,13 +30,13 @@
         }
 
         @if (props.errors.length) {
-            <h4 class="kbq-subheading layout-margin-top-xxl layout-margin-no-bottom">
+            <h4 class="kbq-subheading layout-margin-no-top layout-margin-no-bottom" [ngClass]="{ 'layout-margin-top-xxl': props.threats.length }">
                 {{ tRuntime('Runtime.ThreatsSidepanel.Title.Error') }}
                 <i kbq-icon="kbq-question-circle_16"
                    class="cs-help-hover"
                    kbqTooltip="{{ tRuntime('Runtime.ThreatsSidepanel.Title.Hint') }}"
                    kbqTooltipClass="runtime-feature-sidepanel-threats-tooltip"
-                   [kbqPlacement]="tooltipPlacement.RightTop"></i>
+                   [kbqPlacement]="tooltipPlacements.RightTop"></i>
             </h4>
             @for (error of props.errors; track i; let i = $index) {
                 <kbq-alert

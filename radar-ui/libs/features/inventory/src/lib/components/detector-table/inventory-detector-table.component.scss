@@ -1,0 +1,52 @@
+:host {
+    display: block;
+}
+
+.inventory-feature-detector-table {
+    width: 100%;
+    max-width: 430px;
+
+    .align-right {
+        text-align: right;
+    }
+
+    .text-overflow {
+        display: block;
+        max-width: 195px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    &-loader {
+        min-height: 135px;
+    }
+
+    &-header {
+        padding: 24px;
+        background-color: #f3f4f6; // @todo: replace to koobiq token
+        border-radius: 12px;
+
+        &-counter {
+            margin: 0 24px 0 0;
+            line-height: 1em;
+        }
+
+        &-title {
+            margin: 16px 0 0 0;
+        }
+
+        &-icon {
+            width: 20px;
+            height: 20px;
+            max-height: 20px !important;
+            padding: 12px;
+            font-size: 20px;
+            line-height: 20px;
+            border-radius: 12px;
+            background-color: #21222c; // @todo: replace to koobiq token
+            color: var(--kbq-background-bg);
+            text-align: center;
+        }
+    }
+}

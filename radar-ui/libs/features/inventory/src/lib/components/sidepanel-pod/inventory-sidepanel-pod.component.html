@@ -1,0 +1,89 @@
+<ng-container *transloco="let tInventory; prefix: 'inventory'">
+    <kbq-sidepanel-header [closeable]="true">
+        <span class="cs-text-gray">{{ tInventory('Inventory.EntitySidepanel.Title.Pod') }}</span>
+        {{ props.pod.name }}
+    </kbq-sidepanel-header>
+    <kbq-sidepanel-body class="inventory-feature-sidepanel-pod">
+        <kbq-tab-group underlined>
+            <kbq-tab>
+                <ng-template kbq-tab-label>
+                    <i kbq-icon="kbq-rectangles-o_16"></i>
+                    {{ tInventory('Inventory.EntitySidepanel.Tab.Structure') }}
+                </ng-template>
+
+                <kbq-dl [vertical]="true" class="inventory-feature-sidepanel-pod-containers">
+                    <kbq-dt>{{ tInventory('Inventory.EntitySidepanel.Label.Status') }}</kbq-dt>
+                    <kbq-dd>
+                        <kbq-badge [badgeColor]="badgeColors.FadeContrast"
+                                   [ngClass]="{ 'inventory-abstract-feature-header-unavailable': props.pod.phase === podPhase.PENDING }">
+                            <i kbq-icon="{{ props.pod.phase === podPhase.PENDING ? 'kbq-ban_16' : 'kbq-check-circle_16' }}"></i>
+                            <span>{{ tInventory(props.pod.phase === podPhase.PENDING ? 'Inventory.EntitySidepanel.Text.Unbind' : 'Inventory.EntitySidepanel.Text.Bind') }}</span>
+                        </kbq-badge>
+                    </kbq-dd>
+                    <kbq-dt>{{ tInventory('Inventory.EntitySidepanel.Label.Node') }}</kbq-dt>
+                    <kbq-dd>{{ props.pod.node_name || '—' }}</kbq-dd>
+                    <kbq-dt>{{ tInventory('Inventory.EntitySidepanel.Label.Namespace') }}</kbq-dt>
+                    <kbq-dd>{{ props.pod.namespace }}</kbq-dd>
+                </kbq-dl>
+
+                <section class="inventory-feature-sidepanel-pod-containers">
+                    <section class="kbq-text-compact cs-text-gray inventory-feature-sidepanel-pod-containers-header">
+                        <span>{{ tInventory('Inventory.EntitySidepanel.Label.Containers') }}</span>
+                    </section>
+
+                    @for (container of props.pod.containers; track container) {
+                        <article [id]="container"
+                                 class="layout-row layout-align-start-center inventory-abstract-feature-header inventory-feature-sidepanel-pod-container"
+                                 (click)="props.containerHandler({ container, pod: props.pod })"
+                                 data-testid="inventory-container-open-button">
+                            <i kbq-icon="kbq-bucket-s3_16"></i>
+                            <span class="kbq-mono-normal-strong inventory-feature-sidepanel-pod-container-name">{{ container }}</span>
+                        </article>
+                    }
+                </section>
+            </kbq-tab>
+
+            <kbq-tab>
+                <ng-template kbq-tab-label>
+                    <i kbq-icon="kbq-hourglass-end_16"></i>
+                    {{ tInventory('Inventory.EntitySidepanel.Tab.Rating') }}
+                </ng-template>
+
+                <ng-container *ngrxLet="props.detectors$ as detectors">
+                    <cs-inventory-feature-detector-table-component
+                            class="layout-margin-top-xxl"
+                            [detectors]="detectors"></cs-inventory-feature-detector-table-component>
+
+                    @if (detectors?.length) {
+                        <footer class="layout-row layout-align-end-center layout-margin-top-l">
+                            <a kbq-link (click)="goToRuntimeEventPage()" class="kbq-link_external" data-testid="inventory-runtime-event-link">
+                                <span class="kbq-link__text">{{ tInventory('Inventory.EntitySidepanel.Link.Runtime') }}</span>
+                                <i kbq-icon="kbq-chevron-right_16"></i>
+                            </a>
+                        </footer>
+                    }
+                </ng-container>
+            </kbq-tab>
+
+            <kbq-tab>
+                <ng-template kbq-tab-label>
+                    <i kbq-icon="kbq-code_16"></i>
+                    {{ tInventory('Inventory.EntitySidepanel.Tab.Config') }}
+                </ng-template>
+
+                @if (codeConfigFiles$ | async; as codeConfigFiles) {
+                    <kbq-code-block
+                            class="inventory-feature-sidepanel-pod-code"
+                            canCopy
+                            canDownload
+                            canToggleSoftWrap
+                            [lineNumbers]="true"
+                            [softWrap]="false"
+                            [filled]="false"
+                            [files]="codeConfigFiles">
+                    </kbq-code-block>
+                }
+            </kbq-tab>
+        </kbq-tab-group>
+    </kbq-sidepanel-body>
+</ng-container>

@@ -1,0 +1,31 @@
+<kbq-form-field class="kbq-form__control"
+                [ngClass]="{ 'ng-invalid': control.invalid && control.value.length }"
+                *transloco="let tCommon; prefix: 'common'">
+    <kbq-tag-list #tagList [editable]="editable" [attr.data-testid]="testLocator + '-list'">
+        @for (tag of control.value; track i; let i = $index) {
+            <kbq-tag [value]="tag"
+                     (editChange)="editTag($event, i)"
+                     (removed)="removeTag(i)">
+                {{ tag }}
+                <input kbqInput kbqTagEditInput [(ngModel)]="editInputModel">
+                @if (!editInputModel().length) {
+                    <i kbq-icon-button="kbq-xmark-s_16" kbqTagEditSubmit [attr.data-testid]="tag + '-submit-remove'"></i>
+                } @else {
+                    <i kbq-icon-button="kbq-check-s_16" kbqTagEditSubmit [attr.data-testid]="tag + '-submit'"></i>
+                }
+                <i kbq-icon="kbq-xmark-s_16" kbqTagRemove [attr.data-testid]="tag"></i>
+            </kbq-tag>
+        }
+
+        <input kbqTagInput
+               [attr.id]="id"
+               [kbqTagInputFor]="tagList"
+               [kbqTagInputSeparatorKeyCodes]="separatorKeyCodes"
+               (kbqTagInputTokenEnd)="addTag($event)"
+               placeholder="{{ !control.value.length && placeholder ? placeholder : '' }}"
+               [attr.data-testid]="testLocator + '-input'">
+    </kbq-tag-list>
+    @if (control.invalid && control.value.length) {
+        <kbq-hint color="error">{{ hintText || tCommon('Common.Form.Error.Format') }}</kbq-hint>
+    }
+</kbq-form-field>
