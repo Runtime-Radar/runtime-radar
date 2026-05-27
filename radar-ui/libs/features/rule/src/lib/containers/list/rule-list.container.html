@@ -44,13 +44,13 @@
                     <h4 class="kbq-subheading rule-feature-list-card-title">{{ rule.name }}</h4>
                     <ul class="layout-row rule-feature-list-card-list" *transloco="let tCommon; prefix: 'common'">
                         <li>
-                            <div class="kbq-text-compact cs-text-gray rule-feature-list-card-list-label">
+                            <div class="layout-margin-bottom-xxs kbq-text-compact cs-text-gray">
                                 {{ tRule('Rule.ListPage.Table.Type') }}
                             </div>
                             <span>{{ tCommon(rule.type | ruleTypeLocalization) }}</span>
                         </li>
                         <li>
-                            <div class="kbq-text-compact cs-text-gray rule-feature-list-card-list-label">
+                            <div class="layout-margin-bottom-xxs kbq-text-compact cs-text-gray">
                                 {{ tRule('Rule.ListPage.Table.NotifySeverity') }}
                             </div>
                             <cs-severity-label-component

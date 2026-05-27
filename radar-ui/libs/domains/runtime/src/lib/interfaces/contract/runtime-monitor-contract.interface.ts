@@ -36,6 +36,13 @@ export interface RuntimeMonitorConfig {
     aggregation_options?: RuntimeMonitorAggregationOptions;
 }
 
+export interface RuntimeMonitorConfigStatus {
+    default: boolean;
+    default_tracing_policies: boolean;
+    last_init_error: string;
+    node_name: string;
+}
+
 export interface RuntimeMonitorConfigExtended extends RuntimeMonitorConfig {
     historyControl: RuntimeEventProcessorHistoryControl;
 }

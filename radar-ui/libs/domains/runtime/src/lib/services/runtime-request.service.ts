@@ -7,6 +7,7 @@ import {
     CreateRuntimeEventProcessorRequest,
     CreateRuntimeMonitorRequest,
     EmptyRuntimeResponse,
+    GetGrafanaUrlResponse,
     GetRuntimeEventCountResponse,
     GetRuntimeEventsByFilterRequest,
     GetRuntimeEventsRequest,
@@ -17,7 +18,8 @@ import {
     RuntimeEventProcessorConfig,
     RuntimeEventProcessorHistoryControl,
     RuntimeMonitor,
-    RuntimeMonitorConfig
+    RuntimeMonitorConfig,
+    RuntimeMonitorConfigStatus
 } from '../interfaces';
 
 @Injectable({
@@ -25,6 +27,18 @@ import {
 })
 export class RuntimeRequestService {
     constructor(private readonly apiService: ApiService) {}
+
+    getGrafanaUrl(): Observable<string> {
+        return this.apiService
+            .get<ApiEmptyRequest, GetGrafanaUrlResponse>('info/grafana-url')
+            .pipe(map((response) => response.url));
+    }
+
+    resetConfigToDefault(): Observable<boolean> {
+        return this.apiService
+            .get<ApiEmptyRequest, EmptyRuntimeResponse>('config/runtime-monitor/reset-to-default')
+            .pipe(map((response) => response && !Object.keys(response).length));
+    }
 
     /** @external */
     getEventCount(from: string, to: string): Observable<number> {
@@ -38,6 +52,10 @@ export class RuntimeRequestService {
 
     getRuntimeMonitor(): Observable<RuntimeMonitor> {
         return this.apiService.get<ApiEmptyRequest, RuntimeMonitor>('config/runtime-monitor');
+    }
+
+    getRuntimeMonitorStatus(): Observable<RuntimeMonitorConfigStatus> {
+        return this.apiService.get<ApiEmptyRequest, RuntimeMonitorConfigStatus>('config/runtime-monitor/status');
     }
 
     getEventProcessor(): Observable<RuntimeEventProcessor> {

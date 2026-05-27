@@ -5,7 +5,7 @@ export const RUNTIME_FILTER_POPOVER_VISIBLE_CONTROL_KEYS: RuntimeEventFilterKey[
     RuntimeEventFilterKey.POD
 ];
 
-export const RUNTIME_FILTER_POPOVER_CONTROL_LABELS: Map<RuntimeEventFilterKey, string> = new Map([
+export const RUNTIME_FILTER_POPOVER_CONTROL_LABELS = new Map<RuntimeEventFilterKey, string>([
     [RuntimeEventFilterKey.TYPE, 'Runtime.EventsPage.Filter.FilterPopover.Label.Type'],
     [RuntimeEventFilterKey.ARGUMENT, 'Runtime.EventsPage.Filter.FilterPopover.Label.Argument'],
     [RuntimeEventFilterKey.BINARY, 'Runtime.EventsPage.Filter.FilterPopover.Label.Binary'],
@@ -17,7 +17,7 @@ export const RUNTIME_FILTER_POPOVER_CONTROL_LABELS: Map<RuntimeEventFilterKey, s
     [RuntimeEventFilterKey.PERIOD, 'Runtime.EventsPage.Filter.FilterPopover.Label.Period']
 ]);
 
-export const RUNTIME_FILTER_POPOVER_CONTROL_PLACEHOLDERS: Map<RuntimeEventFilterKey, string> = new Map([
+export const RUNTIME_FILTER_POPOVER_CONTROL_PLACEHOLDERS = new Map<RuntimeEventFilterKey, string>([
     [RuntimeEventFilterKey.TYPE, 'Runtime.EventsPage.Filter.FilterPopover.Placeholder.Type'],
     [RuntimeEventFilterKey.ARGUMENT, 'Runtime.EventsPage.Filter.FilterPopover.Placeholder.Argument'],
     [RuntimeEventFilterKey.BINARY, 'Runtime.EventsPage.Filter.FilterPopover.Placeholder.Binary'],

@@ -3,9 +3,9 @@ import { ActivatedRouteSnapshot, ResolveFn, Router } from '@angular/router';
 import { EMPTY, catchError, of, switchMap } from 'rxjs';
 
 import { RouterName } from '@cs/core';
-import { Cluster, ClusterRequestService, ClusterStoreService } from '@cs/domains/cluster';
+import { Cluster, ClusterRequestService, ClusterStoreService, GetClusterResponse } from '@cs/domains/cluster';
 
-export const clusterFeatureDetailsResolver: ResolveFn<Cluster> = (route: ActivatedRouteSnapshot) => {
+export const clusterFeatureDetailsResolver: ResolveFn<GetClusterResponse> = (route: ActivatedRouteSnapshot) => {
     const clusterRequestService = inject(ClusterRequestService);
     const clusterStoreService = inject(ClusterStoreService);
     const router = inject(Router);
@@ -24,7 +24,10 @@ export const clusterFeatureDetailsResolver: ResolveFn<Cluster> = (route: Activat
     return clusterStoreService.cluster$(clusterId).pipe(
         switchMap((cluster: Cluster | undefined) => {
             if (cluster && cluster.id) {
-                return of(cluster);
+                return of({
+                    cluster,
+                    deleted: false
+                });
             }
 
             return clusterRequestService.getCluster(clusterId).pipe(catchError(() => catchErrorHandler()));

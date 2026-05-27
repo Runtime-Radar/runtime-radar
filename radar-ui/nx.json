@@ -5,51 +5,35 @@
         "default": {
             "runner": "@nx/workspace/tasks-runners/default",
             "options": {
-                "cacheableOperations": [
-                    "build",
-                    "lint",
-                    "test",
-                    "e2e"
-                ],
                 "accessToken": "ZTY4ZjQ2M2MtMThkNS00YTMxLTlmYWEtMGViYTI5YTc0ODBifHJlYWQtd3JpdGU="
             }
         }
     },
     "targetDefaults": {
         "build": {
-            "dependsOn": [
-                "^build"
-            ],
-            "inputs": [
-                "production",
-                "^production"
-            ]
+            "dependsOn": ["^build"],
+            "inputs": ["production", "^production"],
+            "cache": false
         },
         "test": {
-            "inputs": [
-                "default",
-                "^production",
-                "{workspaceRoot}/jest.preset.js"
-            ]
+            "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+            "executor": "@nx/jest:jest",
+            "options": {
+                "maxWorkers": 4
+            },
+            "cache": true
         },
         "e2e": {
-            "inputs": [
-                "default",
-                "^production"
-            ]
+            "inputs": ["default", "^production"],
+            "cache": false
         },
         "lint": {
-            "inputs": [
-                "default",
-                "{workspaceRoot}/.eslintrc.json"
-            ]
+            "inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
+            "cache": false
         }
     },
     "namedInputs": {
-        "default": [
-            "{projectRoot}/**/*",
-            "sharedGlobals"
-        ],
+        "default": ["{projectRoot}/**/*", "sharedGlobals"],
         "production": [
             "default",
             "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",

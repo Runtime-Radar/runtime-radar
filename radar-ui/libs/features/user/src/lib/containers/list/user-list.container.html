@@ -42,7 +42,7 @@
                                 [disabled]="!permissions[permissionName.USERS].has(permissionType.UPDATE)"
                                 (click)="openEditSidepanel(user)"
                                 data-testid="user-update-button">
-                            <i class="kbq kbq-pencil_16"></i>
+                            <i kbq-icon="kbq-pencil_16"></i>
                         </button>
                         <button kbq-button
                                 kbqStyle="transparent"
@@ -52,7 +52,7 @@
                                 [disabled]="!permissions[permissionName.USERS].has(permissionType.DELETE)"
                                 (click)="openDeleteModal(user.id)"
                                 data-testid="user-delete-button">
-                            <i class="kbq kbq-trash_16"></i>
+                            <i kbq-icon="kbq-trash_16"></i>
                         </button>
                     </td>
                 </tr>

@@ -1,5 +1,3 @@
-import { NotificationEventType } from '@cs/domains/notification';
-
 export interface IntegrationRecipientTemplateHeaderForm {
     key: string;
     value: string;
@@ -12,7 +10,7 @@ export type IntegrationRecipientTemplateRecord = {
 export interface IntegrationRecipientForm {
     name: string;
     recipients: string[];
-    eventType: NotificationEventType;
+    eventType: string;
     clusterId: string;
     clusterUrl: string;
     clusterName: string;

@@ -1,7 +1,7 @@
 {
     "name": "feature-error",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/features/error",
     "sourceRoot": "libs/features/error/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/features/error"],
+            "outputs": ["{workspaceRoot}/coverage/libs/features/error"],
             "options": {
                 "jestConfig": "libs/features/error/jest.config.ts",
                 "passWithNoTests": true

@@ -46,26 +46,12 @@
                     <label for="recipients" class="kbq-form__label">
                         {{ tIntegration('Integration.RecipientForm.Label.Recipients') }}
                     </label>
-                    <kbq-form-field
-                            class="kbq-form__control"
-                            [ngClass]="{ 'ng-invalid': form.get('recipients')?.invalid && form.value.recipients?.length }">
-                        <kbq-tag-list #recipientRef data-testid="integration-recipient-recipients-tag-list">
-                            @for (recipient of form.value.recipients; track i; let i = $index) {
-                                <kbq-tag [value]="recipient"
-                                         (removed)="removeRecipient(i)">
-                                    {{ recipient }} <i kbq-icon="kbq-xmark-s_16" kbqTagRemove [attr.data-testid]="recipient"></i>
-                                </kbq-tag>
-                            }
-                            <input id="recipients"
-                                   [kbqTagInputFor]="recipientRef"
-                                   [kbqTagInputSeparatorKeyCodes]="separatorKeyCodes"
-                                   (kbqTagInputTokenEnd)="addRecipient($event)"
-                                   data-testid="integration-recipient-recipients-input">
-                        </kbq-tag-list>
-                        @if (form.get('recipients')?.invalid && form.value.recipients?.length) {
-                            <kbq-hint color="error">{{ tCommon('Common.Form.Error.Format') }}</kbq-hint>
-                        }
-                    </kbq-form-field>
+                    <cs-tag-input-component
+                            formControlName="recipients"
+                            id="recipients"
+                            editable
+                            testLocator="integration-recipient-recipients-tag"
+                            [validators]="[validators.email]"></cs-tag-input-component>
                 </section>
             }
 

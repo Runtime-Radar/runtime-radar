@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 
 import { ClusterIngress, CreateClusterRequest } from '@cs/domains/cluster';
 
-import { ClusterDataBaseForm } from '../interfaces/cluster-form.interface';
 import { ClusterFormState } from '../interfaces/cluster-form-state.interface';
+import { ClusterDataBaseForm, ClusterMetricForm } from '../interfaces/cluster-form.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -28,6 +28,18 @@ export class ClusterFeatureRequestUtilsService {
             address: !values.isInternalCluster ? values.address : undefined
         });
 
+        const grafana = (values: ClusterMetricForm) => ({
+            user: values.isInternalCluster ? values.user : undefined,
+            password: values.isInternalCluster ? values.password : undefined,
+            address: !values.isInternalCluster ? values.address : undefined
+        });
+
+        const prometheus = (values: ClusterMetricForm) => ({
+            deploy: values.isInternalCluster,
+            persistence: values.isInternalCluster ? values.isPersistence : false,
+            storage_class: values.isInternalCluster && values.isPersistence ? values.storageClass : undefined
+        });
+
         return {
             name: state.access.name,
             config: {
@@ -45,6 +57,9 @@ export class ClusterFeatureRequestUtilsService {
                     database: state.clickhouse.database
                 },
                 redis: database(state.redis),
+                enable_metrics: state.metric.isMetricEnabled,
+                grafana: state.metric.isMetricEnabled ? grafana(state.metric) : undefined,
+                prometheus: state.metric.isMetricEnabled ? prometheus(state.metric) : undefined,
                 rabbit: {
                     user: state.rabbit.user,
                     password: state.rabbit.password,
