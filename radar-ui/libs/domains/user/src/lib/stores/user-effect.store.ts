@@ -1,8 +1,8 @@
+import { Action } from '@ngrx/store';
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, of } from 'rxjs';
@@ -15,10 +15,8 @@ import { AuthStoreService, GetTokenResponse } from '@cs/domains/auth';
 
 import { User } from '../interfaces';
 import { UserRequestService } from '../services/user-request.service';
-import { getUsers } from './user-selector.store';
 import {
     CREATE_USER_ENTITY_TODO_ACTION,
-    DELETE_USER_ENTITIES_DOC_ACTION,
     DELETE_USER_ENTITY_DOC_ACTION,
     DELETE_USER_ENTITY_TODO_ACTION,
     LOAD_USER_ENTITIES_TODO_ACTION,

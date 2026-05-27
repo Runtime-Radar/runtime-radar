@@ -2,6 +2,10 @@ import { RuntimeEvent } from './runtime-event-contract.interface';
 import { RuntimeEventProcessorConfig } from './runtime-event-processor-contract.interface';
 import { RuntimeMonitorConfig } from './runtime-monitor-contract.interface';
 
+export interface GetGrafanaUrlResponse {
+    url: string;
+}
+
 export interface RuntimeDateTimeRange {
     from: string | null; // RFC3339
     to: string | null; // RFC3339

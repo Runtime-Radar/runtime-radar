@@ -1,0 +1,23 @@
+{
+    "name": "feature-inventory",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/features/inventory/src",
+    "prefix": "runtime-radar",
+    "targets": {
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/features/inventory/src/**/*.ts", "libs/features/inventory/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/features/inventory"],
+            "options": {
+                "jestConfig": "libs/features/inventory/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

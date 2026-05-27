@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Observable, map, of, switchMap } from 'rxjs';
 
 import { RouterName } from '@cs/core';
-import { CLUSTER_CREATE_FRAGMENT, Cluster, ClusterRequestService, ClusterStatus } from '@cs/domains/cluster';
+import { CLUSTER_CREATE_FRAGMENT, ClusterRequestService, ClusterStatus, GetClusterResponse } from '@cs/domains/cluster';
 
 @Component({
     templateUrl: './cluster-details.container.html',
@@ -15,7 +15,7 @@ import { CLUSTER_CREATE_FRAGMENT, Cluster, ClusterRequestService, ClusterStatus 
 })
 export class ClusterFeatureDetailsContainer implements OnInit {
     /* eslint @typescript-eslint/dot-notation: "off" */
-    readonly cluster = this.route.snapshot.data['cluster'] as Cluster;
+    readonly clusterResponse = this.route.snapshot.data['cluster'] as GetClusterResponse;
 
     readonly installCommandFiles$: Observable<KbqCodeBlockFile[]> = this.route.params.pipe(
         map((params) => params['clusterId']),
@@ -33,8 +33,8 @@ export class ClusterFeatureDetailsContainer implements OnInit {
         map((yaml) => (yaml ? `data:text/yaml,${encodeURI(yaml)}` : ''))
     );
 
-    readonly yamlFileName$: Observable<string> = of(this.cluster).pipe(
-        map((cluster) => this.getClusterYamlFileName(cluster.name))
+    readonly yamlFileName$: Observable<string> = of(this.clusterResponse).pipe(
+        map((response) => this.getClusterYamlFileName(response.cluster.name))
     );
 
     readonly routerName = RouterName;
@@ -66,7 +66,7 @@ export class ClusterFeatureDetailsContainer implements OnInit {
         return this.clusterRequestService.getInstallClusterCommand(id, isYaml).pipe(
             map((cmd) => [
                 {
-                    content: cmd.replace('values.yaml', this.getClusterYamlFileName(this.cluster.name)),
+                    content: cmd.replace('values.yaml', this.getClusterYamlFileName(this.clusterResponse.cluster.name)),
                     language: 'bash'
                 }
             ])

@@ -3,27 +3,33 @@
         <a kbq-link [routerLink]="'..'" [noUnderline]="true" class="layout-margin-right-l" data-testid="cluster-details-back-link">
             <i kbq-icon="kbq-chevron-left_16"></i>
         </a>
-        <h1 class="kbq-display-compact cluster-feature-details-header-title">{{ cluster.name }}</h1>
+        <h1 class="kbq-display-compact cluster-feature-details-header-title">{{ clusterResponse.cluster.name }}</h1>
     </header>
 
     <kbq-dl class="cluster-feature-details-meta" *transloco="let tCommon; prefix: 'common'">
         @if (!isCurrentlyCreated) {
             <kbq-dt>{{ tCluster('Cluster.DetailsPage.Label.Date') }}</kbq-dt>
-            <kbq-dd>{{ cluster.created_at | dateFormatter: dateShortFormat }}</kbq-dd>
+            <kbq-dd>{{ clusterResponse.cluster.created_at | dateFormatter: dateShortFormat }}</kbq-dd>
         }
         <kbq-dt class="cluster-feature-details-meta-badgeline">{{ tCluster('Cluster.DetailsPage.Label.Status') }}</kbq-dt>
         <kbq-dd>
-            <kbq-badge [badgeColor]="cluster.status === clusterStatus.REGISTERED ? badgeColors.FadeSuccess : badgeColors.FadeError" [outline]="true">
-                {{ tCommon(cluster.status | clusterStatusLocalization) }}
-            </kbq-badge>
+            @if (clusterResponse.deleted) {
+                <kbq-badge [badgeColor]="badgeColors.FadeWarning" [outline]="true">
+                    {{ tCommon('Common.Pseudo.ClusterStatus.Deleted') }}
+                </kbq-badge>
+            } @else {
+                <kbq-badge [badgeColor]="clusterResponse.cluster.status === clusterStatus.REGISTERED ? badgeColors.FadeSuccess : badgeColors.FadeError" [outline]="true">
+                    {{ tCommon(clusterResponse.cluster.status | clusterStatusLocalization) }}
+                </kbq-badge>
+            }
         </kbq-dd>
         <kbq-dt>{{ tCluster('Cluster.DetailsPage.Label.Type') }}</kbq-dt>
         <kbq-dd>{{ tCluster('Cluster.Pseudo.Type.Parent') }}</kbq-dd>
         <kbq-dt>{{ tCluster('Cluster.DetailsPage.Label.Url') }}</kbq-dt>
         <kbq-dd>
-            @if (cluster.config.own_cs_url) {
-                <a class="kbq-link" href="{{ cluster.config.own_cs_url }}" target="_blank">
-                    {{ cluster.config.own_cs_url || '—' }}
+            @if (clusterResponse.cluster.config.own_cs_url) {
+                <a class="kbq-link" href="{{ clusterResponse.cluster.config.own_cs_url }}" target="_blank">
+                    {{ clusterResponse.cluster.config.own_cs_url || '—' }}
                 </a>
             } @else {
                 —

@@ -291,7 +291,7 @@ export class SharedDetectorTreeSelectComponent implements ControlValueAccessor, 
             return [];
         }
 
-        const dtctrs: Map<string, DetectorExtended> = new Map();
+        const dtctrs = new Map<string, DetectorExtended>();
         detectors.forEach((item) => {
             const obj = dtctrs.get(item.key);
             if (!obj || obj.version < item.version) {

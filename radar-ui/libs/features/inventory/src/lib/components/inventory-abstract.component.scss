@@ -1,0 +1,39 @@
+.inventory-abstract-feature-header {
+    position: relative;
+
+    &::after {
+        width: 0;
+        height: 0;
+        position: absolute;
+        right: 6px;
+        bottom: 4px;
+        border-left: 4px solid #21222c; // @todo: replace to koobiq token
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+        border-radius: 4px;
+        transform: rotate(45deg);
+        content: '';
+    }
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+        color: var(--kbq-foreground-on-contrast) !important;
+        border-color: var(--kbq-background-contrast) !important;
+        background: var(--kbq-background-contrast) !important;
+
+        &::after {
+            border-left-color: var(--kbq-foreground-on-contrast);
+        }
+    }
+
+    &:active {
+        border-color: var(--kbq-states-background-contrast-hover) !important;
+        background: var(--kbq-states-background-contrast-hover) !important;
+    }
+
+    &-unavailable {
+        background: repeating-linear-gradient(-45deg, #e9eaec 0, #e9eaec 6px, #f3f4f6 6px, #f3f4f6 12px) !important;
+    }
+}

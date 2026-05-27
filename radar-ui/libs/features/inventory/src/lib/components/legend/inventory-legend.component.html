@@ -1,0 +1,36 @@
+<ng-container *transloco="let tInventory; prefix: 'inventory'">
+    @if (isCollapsed) {
+        <ul class="inventory-feature-legend">
+            <li class="inventory-feature-legend-item inventory-feature-legend-item--header">
+                <strong class="kbq-text-normal-strong">{{ tInventory('Inventory.Legend.Label.Header') }}</strong>
+            </li>
+            @for (node of nodes; track node.id; let i = $index) {
+                <li class="inventory-feature-legend-item">
+                    <i class="inventory-feature-legend-item-node" [ngStyle]="{ 'background-color': nodeBgColors[i] }"></i>
+                    <span class="text-overflow" title="{{ node.node_name }}">{{ node.node_name }}</span>
+                </li>
+            }
+            <li class="inventory-feature-legend-item">
+                <i class="inventory-feature-legend-item-node inventory-abstract-feature-header-unavailable"></i>
+                <span>{{ tInventory('Inventory.Legend.Label.UnavailablePods') }}</span>
+            </li>
+            <li class="inventory-feature-legend-item">
+                <i kbq-icon="kbq-circle-o_16"></i>
+                <span>{{ tInventory('Inventory.Legend.Label.Namespaces') }}</span>
+            </li>
+            <li class="inventory-feature-legend-item">
+                <i kbq-icon="kbq-bucket-s3_16"></i>
+                <span>{{ tInventory('Inventory.Legend.Label.Containers') }}</span>
+            </li>
+        </ul>
+    }
+
+    <button kbq-button
+            kbqStyle="outline"
+            type="button"
+            class="kbq-button-icon inventory-feature-legend-toggle-button"
+            (click)="collapse()"
+            data-testid="inventory-legend-toggle-button">
+        <i kbq-icon="kbq-diamond-info_16"></i>
+    </button>
+</ng-container>

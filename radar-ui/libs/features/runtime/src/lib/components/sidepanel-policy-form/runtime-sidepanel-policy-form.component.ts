@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelRef } from '@koobiq/components/sidepanel';
 import { Observable, debounceTime, distinctUntilChanged, map, startWith } from 'rxjs';
 
-import { RuntimeStoreService } from '@cs/domains/runtime';
 import { FormScheme, CoreUtilsService as utils } from '@cs/core';
 
 import { RuntimeFeaturePolicyNameService } from '../../services/runtime-policy-name.service';
@@ -28,13 +27,7 @@ export class RuntimeFeatureSidepanelPolicyFormComponent implements AfterViewInit
         name: [
             '',
             [Validators.required],
-            [
-                RuntimeFeaturePolicyNameValidator.isNameUnique(
-                    this.runtimeStoreService,
-                    this.runtimeFeaturePolicyNameService,
-                    this.props.name
-                )
-            ]
+            [RuntimeFeaturePolicyNameValidator.isNameUnique(this.runtimeFeaturePolicyNameService, this.props.name)]
         ],
         description: ['', Validators.required],
         yaml: [DEFAULT_RUNTIME_POLICY_YAML, [Validators.required, RuntimeFeatureYamlValidator.isYamlCodeValid()]]
@@ -51,7 +44,6 @@ export class RuntimeFeatureSidepanelPolicyFormComponent implements AfterViewInit
     constructor(
         private readonly formBuilder: FormBuilder,
         private readonly sidepanelRef: KbqSidepanelRef,
-        private readonly runtimeStoreService: RuntimeStoreService,
         private readonly runtimeFeaturePolicyNameService: RuntimeFeaturePolicyNameService,
         @Inject(KBQ_SIDEPANEL_DATA) public readonly props: Partial<RuntimeSidepanelPolicyFormProps>
     ) {}

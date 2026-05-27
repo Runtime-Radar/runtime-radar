@@ -180,7 +180,6 @@
                                         (click)="changePage(runtimeEventCursorDirection.LEFT, eventsResponse.left_cursor)"
                                         data-testid="runtime-paginator-prev-button">
                                     <i kbq-icon="kbq-chevron-left_16"></i>
-                                    {{ tRuntime('Runtime.EventsPage.Paginator.Button.Next') }}
                                 </button>
                                 <button kbq-button
                                         kbqStyle="transparent"
@@ -189,7 +188,6 @@
                                         [disabled]="!eventsResponse.right_cursor"
                                         (click)="changePage(runtimeEventCursorDirection.RIGHT, eventsResponse.right_cursor)"
                                         data-testid="runtime-paginator-next-button">
-                                    {{ tRuntime('Runtime.EventsPage.Paginator.Button.Prev') }}
                                     <i kbq-icon="kbq-chevron-right_16"></i>
                                 </button>
                                 <button kbq-button

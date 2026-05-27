@@ -27,6 +27,16 @@ export interface ClusterRabbitForm {
     address: string; // external
 }
 
+export interface ClusterMetricForm {
+    isMetricEnabled: boolean;
+    isInternalCluster: boolean;
+    user: string; // internal
+    password: string; // internal
+    isPersistence: boolean; // internal
+    storageClass: string; // internal && isPersistence
+    address: string; // external
+}
+
 export interface ClusterIngressForm {
     isIngressEnabled: boolean;
     ingressClass: string;

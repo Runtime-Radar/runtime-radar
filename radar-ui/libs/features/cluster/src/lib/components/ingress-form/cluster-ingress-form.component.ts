@@ -75,7 +75,7 @@ export class ClusterFeatureIngressFormComponent implements AfterViewInit, OnInit
         })
     );
 
-    readonly tooltipPlacement = PopUpPlacements;
+    readonly tooltipPlacements = PopUpPlacements;
 
     constructor(
         private readonly destroyRef: DestroyRef,

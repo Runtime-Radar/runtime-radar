@@ -1,0 +1,57 @@
+.inventory-feature-legend {
+    display: block;
+    width: 180px;
+    margin: 0;
+    padding: 12px 14px;
+    list-style: none;
+    background-color: var(--kbq-background-bg);
+    border: 1px solid #d7dee4; // @todo: replace to koobiq token
+    border-radius: 8px;
+
+    &-item {
+        display: flex;
+        flex-direction: row;
+        align-items: start;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 0;
+
+        .kbq-icon {
+            transform: translateY(2px);
+        }
+
+        .text-overflow {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        &--header {
+            justify-content: space-between;
+            margin: 0 0 12px 0;
+        }
+
+        &-node {
+            display: inline-block;
+            width: 16px;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            transform: translateY(2px);
+        }
+    }
+
+    &-toggle-button {
+        position: relative;
+        margin-top: 8px;
+
+        &::after {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background-color: var(--kbq-background-bg);
+            border-radius: 8px;
+            content: '';
+        }
+    }
+}

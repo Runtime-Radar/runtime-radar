@@ -10,6 +10,8 @@
     "Common.Pseudo.Notification.TokenExpired": "Your session is over. Please sign in again.",
     "Common.Pseudo.Notification.PasswordExpired": "The password was changed by the administrator. Log in again.",
     "Common.Pseudo.Notification.ChunkLoadFailed": "Failed to load the page",
+    "Common.Pseudo.Notification.NewVersionAvailable": "New version is available: <<<version>>>",
+    "Common.Pseudo.Notification.ChildClusterUnregistered": "Failed to obtain the license. The child cluster is not initialized yet.",
     "Common.Pseudo.Notification.UpdatePage": "Reload the page",
     "Common.Pseudo.Notification.ClusterSwitched": "The cluster is switched",
     "Common.Pseudo.Notification.HostValidationFailed": "The selected cluster is unavailable. Contact the administrator.",
@@ -19,11 +21,11 @@
     "Common.Pseudo.Notification.CertAuthorityInvalid.Open": "Open",
     "Common.Pseudo.Notification.CertAuthorityInvalid.TryAgain": "Try again",
 
+    "Common.Pseudo.Alert.Title.DifferentVersions": "The system version in the central cluster is <<<hostVersion>>>, while the child cluster has version <<<appVersion>>>.",
+    "Common.Pseudo.Alert.Description.VersionWarning": "We recommend that you install the same versions to avoid any errors.",
+
     "Common.Pseudo.Label.Cluster": "Cluster",
     "Common.Pseudo.Label.CentralCluster": "Central",
-
-    "Common.Pseudo.EventAction.Block": "Block",
-    "Common.Pseudo.EventAction.Notify": "Notify",
 
     "Common.Form.Label.SelectAll": "Select all",
     "Common.Form.Placeholder.Datepicker": "yyyy-mm-dd",
@@ -38,15 +40,19 @@
 
     "Common.Pseudo.Locale.En": "English",
 
+    "Common.NavBar.Button.SignOut": "Sign out",
+
     "Common.Pseudo.Menu.Management": "Management",
+    "Common.Pseudo.Menu.Inventory": "Cluster map",
     "Common.Pseudo.Menu.Cluster": "Clusters",
     "Common.Pseudo.Menu.Runtime": "Runtime",
     "Common.Pseudo.Menu.Rule": "Rules",
     "Common.Pseudo.Menu.Integration": "Notification services",
     "Common.Pseudo.Menu.User": "Users",
+    "Common.Pseudo.Menu.System": "Settings",
     "Common.Pseudo.Menu.Token": "Access tokens",
     "Common.Pseudo.Menu.Password": "Change password",
-    "Common.Pseudo.Menu.Label.AppVersion": "System version: <<<version>>>",
+    "Common.Pseudo.Menu.Version": "System version: <<<version>>>",
 
     "Common.Pseudo.Severity.Undefined": "None",
     "Common.Pseudo.Severity.None": "Not assigned",
@@ -63,8 +69,12 @@
 
     "Common.Pseudo.ClusterStatus.Registered": "Connected",
     "Common.Pseudo.ClusterStatus.Unregistered": "Not connected",
+    "Common.Pseudo.ClusterStatus.Deleted": "Deleted",
 
     "Common.Pseudo.DetectorType.Runtime": "Runtime",
+
+    "Common.Pseudo.EventAction.Block": "Block",
+    "Common.Pseudo.EventAction.Notify": "Notify",
 
     "Common.Pseudo.ScanType.Runtime": "Runtime",
 
@@ -80,7 +90,8 @@
     "Common.ChangePasswordModal.Button.Cancel": "Cancel",
 
     "Common.RuleSidepanel.Alert.Text.DeletedRule": "The response rule was deleted from the system and is no longer in use",
-    "Common.RuleSidepanel.SubTitle.ImageNames": "Images from the specified repositories",
+    "Common.RuleSidepanel.Text.Clipboard": "To scan an image using this rule, run the following command in the console:",
+    "Common.RuleSidepanel.SubTitle.ImageNames": "Image",
     "Common.RuleSidepanel.SubTitle.Registries": "Repositories",
     "Common.RuleSidepanel.SubTitle.Namespaces": "Namespaces",
     "Common.RuleSidepanel.SubTitle.Pods": "Pods",

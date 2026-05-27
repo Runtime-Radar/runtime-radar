@@ -12,19 +12,45 @@
             [tabs]="runtimeNavigationTabs"
             [localizationFn]="tRuntime"
             (tabChange)="tabChange($event)"
-            testId="runtime-navigation-tab-group"></cs-tabs-component>
+            testId="runtime-navigation-tab-group">
+        @if ((runtimeIsExpertMode$ | async) === true && !(configStatus$ | async)?.default) {
+            <button kbq-button
+                    kbqStyle="transparent"
+                    color="contrast"
+                    type="button"
+                    (click)="resetConfig()"
+                    data-testid="runtime-expert-mode-reset-config-button">
+                <i kbq-icon="kbq-undo_16"></i>
+                {{ tRuntime('Runtime.SettingsPage.Button.ResetConfig') }}
+            </button>
+        }
+    </cs-tabs-component>
 
     <div class="layout-row layout-align-space-between runtime-feature-settings-row">
         <form [formGroup]="form" class="flex kbq-form-vertical runtime-feature-settings-form"
+              [ngClass]="{
+                'runtime-feature-settings-form--fixed': (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE),
+                'runtime-feature-settings-form--fixed-expert-mode': (runtimeHasPoliciesChanges$ | async) && (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE)
+              }"
               *ngrxLet="{
+                configStatus: (configStatus$ | async),
                 isAdminRole: (isAdminRole$ | async),
                 runtimeIsExpertMode: (runtimeIsExpertMode$ | async),
-                runtimeHasPoliciesChanges: (runtimeHasPoliciesChanges$ | async)
+                runtimeHasPoliciesChanges: (runtimeHasPoliciesChanges$ | async),
+                runtimeGrafanaUrl: (runtimeGrafanaUrl$ | async)
               } as rxlet">
             <section class="layout-row layout-align-start-center runtime-feature-settings-headline">
                 <h3 class="kbq-title layout-margin-no-top layout-margin-no-bottom">
                     {{ tRuntime('Runtime.SettingsPage.SubTitle.Policies') }}
                 </h3>
+
+                @if (rxlet.isAdminRole) {
+                    <form [formGroup]="expertModeForm" class="layout-margin-left-xxl runtime-feature-settings-row-expert-toggle">
+                        <kbq-toggle formControlName="isExpert" data-testid="runtime-expert-mode-toggle">
+                            {{ tRuntime('Runtime.SettingsPage.Text.ExpertMode') }}
+                        </kbq-toggle>
+                    </form>
+                }
 
                 @if (rxlet.runtimeIsExpertMode) {
                     <button kbq-button
@@ -41,7 +67,7 @@
             @if (rxlet.runtimeIsExpertMode) {
                 <kbq-alert class="layout-margin-bottom-xxl"
                            [alertStyle]="'colored'"
-                           [alertColor]="alertColors.Success"
+                           [alertColor]="alertColors.Warning"
                            [compact]="true">
                     <i kbq-icon="kbq-exclamation-triangle_16"></i>
                     <div kbq-alert-title>{{ tRuntime('Runtime.SettingsPage.Text.ExpertMode') }}</div>
@@ -49,8 +75,24 @@
                 </kbq-alert>
             }
 
+            @if (rxlet.runtimeIsExpertMode && rxlet.configStatus?.last_init_error) {
+                <kbq-alert class="layout-margin-bottom-xxl"
+                           [alertStyle]="'colored'"
+                           [alertColor]="alertColors.Error"
+                           [compact]="true">
+                    <i kbq-icon="kbq-exclamation-triangle_16"></i>
+                    <div kbq-alert-title>{{ tRuntime('Runtime.SettingsPage.Text.ExpertModeError') }}</div>
+                    <section class="layout-column">
+                        <span>{{ tRuntime('Runtime.SettingsPage.Text.ExpertModeErrorDescriptionMessage') }}: {{ rxlet.configStatus?.last_init_error || '—' }}</span>
+                        <span>{{ tRuntime('Runtime.SettingsPage.Text.ExpertModeErrorDescriptionNode') }}: {{ rxlet.configStatus?.node_name || '—' }}</span>
+                        <span>{{ tRuntime(rxlet.isAdminRole ? 'Runtime.SettingsPage.Text.ExpertModeErrorDescriptionHelpAdmin' : 'Runtime.SettingsPage.Text.ExpertModeErrorDescriptionHelpUser') }}</span>
+                    </section>
+                </kbq-alert>
+            }
+
             <form class="layout-column runtime-feature-settings-policy"
                   [formGroup]="policiesFormGroup"
+                  [ngClass]="{ 'has-footer': rxlet.runtimeIsExpertMode && !rxlet.configStatus?.default_tracing_policies && rxlet.runtimeGrafanaUrl }"
                   data-testid="runtime-policies-checkbox-group">
                 @for (control of policiesFormGroup.controls | keyvalue; track control.key) {
                     <form class="layout-row layout-align-start-center runtime-feature-settings-policy-item"
@@ -88,19 +130,21 @@
                 }
             </form>
 
-            <footer class="layout-row layout-align-start-center runtime-feature-settings-policy-footer">
-                <i kbq-icon="kbq-question-circle_16" class="layout-margin-right-s"></i>
-                <transloco key="runtime.Runtime.SettingsPage.Policies.Text.HasChanges" [params]="{ template: runtimeGrafanaLink }"></transloco>
-                <ng-template #runtimeGrafanaLink>
-                    <a kbq-link
-                       href="#"
-                       class="kbq-link_external"
-                       target="_blank">
-                        <span id="cs-transloco-template" class="kbq-link__text"></span>
-                        <i kbq-icon="kbq-north-east_16"></i>
-                    </a>
-                </ng-template>
-            </footer>
+            @if (rxlet.runtimeIsExpertMode && !rxlet.configStatus?.default_tracing_policies && rxlet.runtimeGrafanaUrl) {
+                <footer class="layout-row layout-align-start-center runtime-feature-settings-policy-footer">
+                    <i kbq-icon="kbq-question-circle_16" class="layout-margin-right-s"></i>
+                    <transloco key="runtime.Runtime.SettingsPage.Policies.Text.HasChanges" [params]="{ template: runtimeGrafanaLink }"></transloco>
+                    <ng-template #runtimeGrafanaLink>
+                        <a kbq-link
+                           [href]="rxlet.runtimeGrafanaUrl"
+                           class="kbq-link_external"
+                           target="_blank">
+                            <span id="cs-transloco-template" class="kbq-link__text"></span>
+                            <i kbq-icon="kbq-north-east_16"></i>
+                        </a>
+                    </ng-template>
+                </footer>
+            }
 
             <kbq-divider></kbq-divider>
 
@@ -183,16 +227,28 @@
                                     data-testid="runtime-permissions-update-button">
                                 <i kbq-icon="kbq-pencil_16"></i>
                             </button>
-                            <button kbq-button
-                                    kbqStyle="transparent"
-                                    color="contrast"
-                                    type="button"
-                                    class="kbq-button-icon"
-                                    [disabled]="!permissions[permissionName.SYSTEM].has(permissionType.DELETE) || permissionCounter.allow + permissionCounter.deny <= 1"
-                                    (click)="removePermissionEntity(group.key)"
-                                    data-testid="runtime-permissions-delete-button">
-                                <i kbq-icon="kbq-trash_16"></i>
-                            </button>
+
+                            @if (permissionCounter.allow + permissionCounter.deny > 1) {
+                                <ng-container *ngTemplateOutlet="deletePermissionButton"></ng-container>
+                            } @else {
+                                <span kbqTooltip="{{ tRuntime('Runtime.SettingsPage.Permissions.Hint.DeletePermission') }}"
+                                      [kbqPlacement]="tooltipPlacements.Right">
+                                    <ng-container *ngTemplateOutlet="deletePermissionButton"></ng-container>
+                                </span>
+                            }
+
+                            <ng-template #deletePermissionButton>
+                                <button kbq-button
+                                        kbqStyle="transparent"
+                                        color="contrast"
+                                        type="button"
+                                        class="kbq-button-icon"
+                                        [disabled]="!permissions[permissionName.SYSTEM].has(permissionType.DELETE) || permissionCounter.allow + permissionCounter.deny <= 1"
+                                        (click)="removePermissionEntity(group.key)"
+                                        data-testid="runtime-permissions-delete-button">
+                                    <i kbq-icon="kbq-trash_16"></i>
+                                </button>
+                            </ng-template>
                         </div>
                     </article>
                 }
@@ -300,7 +356,7 @@
             </section>
 
             <section class="runtime-feature-settings-confirm-drawer"
-                     [ngClass]="{ 'runtime-feature-settings-confirm-drawer--sticky': (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE) }"
+                     [ngClass]="{ 'runtime-feature-settings-confirm-drawer--fixed': (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE) }"
                      *ngrxLet="runtimeIsOverlayed$ as isOverlayed"
                      [isOverlayed]="isOverlayed"
                      overlay>
@@ -334,10 +390,10 @@
                     </div>
                 </div>
 
-                @if (rxlet.runtimeHasPoliciesChanges) {
+                @if (rxlet.runtimeIsExpertMode && rxlet.runtimeHasPoliciesChanges) {
                     <kbq-alert class="layout-margin-top-m"
                                [alertStyle]="'colored'"
-                               [alertColor]="alertColors.Success"
+                               [alertColor]="alertColors.Warning"
                                [compact]="true">
                         <i kbq-icon="kbq-exclamation-triangle_16"></i>
                         {{ tRuntime('Runtime.SettingsPage.Text.ExpertWarning') }}

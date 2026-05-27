@@ -4,7 +4,14 @@ import { Observable, map } from 'rxjs';
 import { GetTokenResponse } from '@cs/domains/auth';
 import { ApiEmptyRequest, ApiService } from '@cs/api';
 
-import { CreateUserRequest, DeleteUserResponse, GetUsersResponse, UpdatePasswordRequest, UpdateUserRequest, User } from '../interfaces';
+import {
+    CreateUserRequest,
+    DeleteUserResponse,
+    GetUsersResponse,
+    UpdatePasswordRequest,
+    UpdateUserRequest,
+    User
+} from '../interfaces';
 
 @Injectable({
     providedIn: 'root'
@@ -13,9 +20,7 @@ export class UserRequestService {
     constructor(private readonly apiService: ApiService) {}
 
     getUsers(): Observable<User[]> {
-        return this.apiService.get<ApiEmptyRequest, GetUsersResponse>('user').pipe(
-            map((response) => response.users)
-        );
+        return this.apiService.get<ApiEmptyRequest, GetUsersResponse>('user').pipe(map((response) => response.users));
     }
 
     createUser(request: CreateUserRequest): Observable<User> {

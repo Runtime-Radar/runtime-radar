@@ -8,11 +8,7 @@
         margin: 0;
     }
 
-    &-section {
-        gap: 32px;
-
-        & > *:first-child {
-            margin-top: 32px;
-        }
+    &-card {
+        margin-top: 32px;
     }
 }

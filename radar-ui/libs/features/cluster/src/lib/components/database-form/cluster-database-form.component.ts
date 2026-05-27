@@ -116,7 +116,7 @@ export class ClusterFeatureDataBaseFormComponent implements AfterViewInit, OnIni
         })
     );
 
-    readonly tooltipPlacement = PopUpPlacements;
+    readonly tooltipPlacements = PopUpPlacements;
 
     isDatabaseControlEnable = false;
 

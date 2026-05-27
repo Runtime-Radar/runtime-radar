@@ -18,7 +18,7 @@
                        class="cs-help-hover"
                        kbqTooltip="{{ tCluster('Cluster.CreatePage.IngressForm.Hint.IngressClass') }}"
                        kbqTooltipClass="cluster-abstract-feature-form-tooltip"
-                       [kbqPlacement]="tooltipPlacement.RightTop"></i>
+                       [kbqPlacement]="tooltipPlacements.RightTop"></i>
                 </label>
                 <kbq-form-field class="kbq-form__control" *transloco="let tCommon; prefix: 'common'">
                     <input kbqInput
@@ -38,7 +38,7 @@
                        class="cs-help-hover"
                        kbqTooltip="{{ tCluster('Cluster.CreatePage.IngressForm.Hint.Hostname') }}"
                        kbqTooltipClass="cluster-abstract-feature-form-tooltip"
-                       [kbqPlacement]="tooltipPlacement.RightTop"></i>
+                       [kbqPlacement]="tooltipPlacements.RightTop"></i>
                 </label>
                 <kbq-form-field class="kbq-form__control" *transloco="let tCommon; prefix: 'common'">
                     <input kbqInput
@@ -90,7 +90,7 @@
             {{ tCluster('Cluster.CreatePage.IngressForm.SubHeading.NodePort') }}
         </h2>
 
-        <section class="kbq-form__row kbq-form-row_margin">
+        <section class="kbq-form__row" [ngClass]="{ 'kbq-form-row_margin': isNodePortEnabled$ | async }">
             <kbq-toggle formControlName="isNodePortEnabled" data-testid="cluster-ingress-node-port-enabled-toggle">
                 {{ tCluster('Cluster.CreatePage.IngressForm.Label.NodePortEnabled') }}
                 <span class="kbq-text-compact cs-text-gray cluster-abstract-feature-form-toggle-hint">
@@ -100,7 +100,7 @@
         </section>
 
         @if (isNodePortEnabled$ | async) {
-            <section class="kbq-form__row kbq-form-row_margin">
+            <section class="kbq-form__row">
                 <label for="port" class="kbq-form__label">
                     {{ tCluster('Cluster.CreatePage.IngressForm.Label.Port') }}
                 </label>

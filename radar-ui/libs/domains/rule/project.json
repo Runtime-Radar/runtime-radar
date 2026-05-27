@@ -1,7 +1,7 @@
 {
     "name": "domain-rule",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/domains/rule",
     "sourceRoot": "libs/domains/rule/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/domains/rule"],
+            "outputs": ["{workspaceRoot}/coverage/libs/domains/rule"],
             "options": {
                 "jestConfig": "libs/domains/rule/jest.config.ts",
                 "passWithNoTests": true

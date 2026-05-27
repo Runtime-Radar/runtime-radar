@@ -1,0 +1,23 @@
+{
+    "name": "domain-kube-manager",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/domains/kube-manager/src",
+    "prefix": "runtime-radar",
+    "targets": {
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/domains/kube-manager/src/**/*.ts", "libs/domains/kube-manager/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/domains/kube-manager"],
+            "options": {
+                "jestConfig": "libs/domains/kube-manager/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

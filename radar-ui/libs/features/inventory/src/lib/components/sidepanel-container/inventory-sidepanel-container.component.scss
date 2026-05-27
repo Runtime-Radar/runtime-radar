@@ -1,0 +1,16 @@
+:host {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+}
+
+::ng-deep .inventory-feature-sidepanel-container {
+    .kbq-sidepanel-container.kbq-sidepanel_medium {
+        width: 475px;
+    }
+
+    .kbq-sidepanel-content {
+        box-shadow: var(--kbq-sidepanel-container-shadow);
+    }
+}

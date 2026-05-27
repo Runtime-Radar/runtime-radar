@@ -1,7 +1,7 @@
 {
     "name": "feature-user",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/features/user",
     "sourceRoot": "libs/features/user/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/features/user"],
+            "outputs": ["{workspaceRoot}/coverage/libs/features/user"],
             "options": {
                 "jestConfig": "libs/features/user/jest.config.ts",
                 "passWithNoTests": true

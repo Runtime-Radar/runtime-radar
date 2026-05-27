@@ -17,9 +17,7 @@ const INITIAL_STATE_CREDENTIALS: AuthCredentials = {
 
 const INITIAL_STATE_CONFIG: Omit<AuthState, keyof AuthCredentials> = {
     loadStatus: LoadStatus.INIT,
-    originPath: AUTH_DEFAULT_ORIGIN_PATH,
-    appVersion: '',
-    centralUrl: ''
+    originPath: AUTH_DEFAULT_ORIGIN_PATH
 };
 
 const reducer: ActionReducer<AuthState, Action> = createReducer(

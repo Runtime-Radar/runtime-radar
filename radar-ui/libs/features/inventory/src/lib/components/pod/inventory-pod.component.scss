@@ -1,0 +1,78 @@
+.inventory-feature-pod {
+    min-width: (48px * 2) + 2px;
+    max-width: (48px * 5) + 2px;
+    position: relative;
+
+    @for $i from 1 through 4 {
+        &.width-#{$i} {
+            width: (48px * $i) + 2px;
+        }
+    }
+
+    &.hidden {
+        opacity: 0.35;
+    }
+
+    &-header {
+        box-sizing: border-box;
+        position: relative;
+        margin-bottom: 4px;
+        padding: 4px 28px 4px 16px;
+        line-height: 24px;
+        background-color: #f3f4f6; // @todo: replace to koobiq token
+        border-radius: 8px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    &-containers {
+        max-width: 48px * 5;
+        min-height: 48px;
+        position: relative;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border: 1px solid #c4c7d4; // @todo: replace to koobiq token
+        border-radius: 8px;
+        overflow: hidden;
+
+        &-bg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background-color: #f3f4f6; // @todo: replace to koobiq token
+            opacity: 0.35;
+        }
+
+        &-item {
+            margin: 0 8px 8px 8px;
+
+            &:nth-child(-n+5) {
+                margin-top: 8px;
+            }
+        }
+
+        &-button {
+            box-sizing: border-box;
+            border-radius: 50%;
+
+            &.kbq-contrast-fade {
+                background-color: var(--kbq-background-bg);
+                border-color: transparent;
+
+                &.active {
+                    background-color: var(--kbq-background-contrast) !important;
+
+                    .kbq-icon {
+                        color: var(--kbq-foreground-on-contrast) !important;
+                    }
+                }
+            }
+        }
+    }
+}

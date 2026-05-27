@@ -14,6 +14,7 @@ import { ClusterFeatureDetailsContainer } from './containers/details/cluster-det
 import { ClusterFeatureEditPopoverComponent } from './components/edit-popover/cluster-edit-popover.component';
 import { ClusterFeatureIngressFormComponent } from './components/ingress-form/cluster-ingress-form.component';
 import { ClusterFeatureListContainer } from './containers/list/cluster-list.container';
+import { ClusterFeatureMetricFormComponent } from './components/metric-form/cluster-metric-form.component';
 import { ClusterFeatureRabbitFormComponent } from './components/rabbit-form/cluster-rabbit-form.component';
 import { ClusterFeatureRegistryFormComponent } from './components/registry-form/cluster-registry-form.component';
 import { ClusterFeatureRoutingModule } from './cluster-routing.module';
@@ -34,6 +35,7 @@ import { ClusterFeatureStepperComponent } from './components/stepper/cluster-ste
         ClusterFeatureDataBaseFormComponent,
         ClusterFeatureDeleteUnregisteredModalContainer,
         ClusterFeatureIngressFormComponent,
+        ClusterFeatureMetricFormComponent,
         ClusterFeatureRegistryFormComponent,
         ClusterFeatureRabbitFormComponent,
         ClusterFeatureEditPopoverComponent,

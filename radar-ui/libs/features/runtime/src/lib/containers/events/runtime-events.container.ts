@@ -97,7 +97,7 @@ export class RuntimeFeatureEventsContainer implements OnInit {
         this.activeClusterHost$
     ]).pipe(
         tap(() => this.loadStatus$.next(LoadStatus.IN_PROGRESS)),
-        switchMap(([pagination, host]) =>
+        switchMap(([pagination]) =>
             combineLatest([
                 this.runtimeFeatureEventFilterComponentStore.filters$,
                 this.runtimeFeatureEventFilterComponentStore.context$

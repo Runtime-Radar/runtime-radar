@@ -69,6 +69,7 @@ import { SharedSeverityLabelComponent } from './components/severity-label/shared
 import { SharedSeverityLocalizationPipe } from './pipes/severity/shared-severity.pipe';
 import { SharedSeverityRadioComponent } from './components/severity-radio/shared-severity-radio.component';
 import { SharedTabsComponent } from './components/tabs/shared-tabs.component';
+import { SharedTagInputComponent } from './components/tag-input/shared-tag-input.component';
 import { SharedVerdictLocalizationPipe } from './pipes/verdict/shared-verdict.pipe';
 import { sharedCodeBlockLocalizationProvider } from './providers/shared-code-block-localization.provider';
 
@@ -139,8 +140,8 @@ const koobiqImports = [
     KbqProgressBarModule,
     KbqSidepanelModule,
     KbqSelectModule,
-    KbqTagsModule,
     KbqTabsModule,
+    KbqTagsModule,
     KbqTimepickerModule,
     KbqToolTipModule,
     KbqTreeModule,
@@ -170,7 +171,8 @@ const appDeclarations = [
     SharedSeverityLocalizationPipe,
     SharedSeverityLabelComponent,
     SharedVerdictLocalizationPipe,
-    SharedTabsComponent
+    SharedTabsComponent,
+    SharedTagInputComponent
 ];
 
 @NgModule({

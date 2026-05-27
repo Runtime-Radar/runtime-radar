@@ -4,6 +4,7 @@ import { NgModule, Optional, SkipSelf } from '@angular/core';
 
 import { AuthDomainModule } from '@cs/domains/auth';
 import { ClusterDomainModule } from '@cs/domains/cluster';
+import { LicenseDomainModule } from '@cs/domains/license';
 import { RoleDomainModule } from '@cs/domains/role';
 import { UserDomainModule } from '@cs/domains/user';
 
@@ -13,6 +14,7 @@ import { coreNavigationReducer } from './stores/navigation/core-navigation-selec
 @NgModule({
     imports: [
         AuthDomainModule,
+        LicenseDomainModule,
         RoleDomainModule,
         ClusterDomainModule,
         UserDomainModule,

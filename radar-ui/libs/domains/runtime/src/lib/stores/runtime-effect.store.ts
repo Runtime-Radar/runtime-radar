@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
-import { Observable, combineLatest, forkJoin, of } from 'rxjs';
-import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
+import { NEVER, Observable, combineLatest, forkJoin, of } from 'rxjs';
+import { catchError, concatMap, debounceTime, filter, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
 
 import { I18nService } from '@cs/i18n';
 import { SIGN_OUT_EVENT_ACTION } from '@cs/domains/auth';
@@ -14,14 +14,22 @@ import { RuntimeRequestService } from '../services/runtime-request.service';
 import { RuntimeHelperService as runtimeHelper } from '../services/runtime-helper.service';
 import {
     CHECK_RUNTIME_CHANGES_TODO_ACTION,
+    CREATE_RUNTIME_CONFIG_NOTIFICATION_TODO_ACTION,
     CREATE_RUNTIME_CONFIG_TODO_ACTION,
     DEACTIVATE_RUNTIME_CONFIG_TODO_ACTION,
+    GET_RUNTIME_CONFIG_STATUS_TODO_ACTION,
     HIDE_RUNTIME_OVERLAY_TODO_ACTION,
     LOAD_RUNTIME_CONFIG_TODO_ACTION,
+    RESET_RUNTIME_CONFIG_TODO_ACTION,
     SWITCH_RUNTIME_EXPERT_MODE_TODO_ACTION,
     UPDATE_RUNTIME_STATE_DOC_ACTION
 } from './runtime-action.store';
-import { RuntimeConfigStatus, RuntimeState } from '../interfaces';
+import {
+    RuntimeConfigStatus,
+    RuntimeEventProcessorHistoryControl,
+    RuntimeMonitorConfig,
+    RuntimeState
+} from '../interfaces';
 import {
     getRuntimeEventProcessorHistoryControl,
     getRuntimeIsExpertMode,
@@ -44,6 +52,22 @@ export class RuntimeEffectStore {
                     isExpertMode: value ? value === 'true' : false
                 })
             )
+        )
+    );
+
+    readonly getConfigStatus$: Observable<Action> = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LOAD_RUNTIME_CONFIG_TODO_ACTION, GET_RUNTIME_CONFIG_STATUS_TODO_ACTION),
+            switchMap(() => this.runtimeRequestService.getRuntimeMonitorStatus()),
+            map((status) => UPDATE_RUNTIME_STATE_DOC_ACTION({ status }))
+        )
+    );
+
+    readonly loadGrafanaUrl$: Observable<Action> = createEffect(() =>
+        this.actions$.pipe(
+            ofType(LOAD_RUNTIME_CONFIG_TODO_ACTION),
+            switchMap(() => this.runtimeRequestService.getGrafanaUrl()),
+            map((grafanaUrl) => UPDATE_RUNTIME_STATE_DOC_ACTION({ grafanaUrl }))
         )
     );
 
@@ -87,6 +111,43 @@ export class RuntimeEffectStore {
         )
     );
 
+    readonly resetConfig$: Observable<Action> = createEffect(() =>
+        this.actions$.pipe(
+            ofType(RESET_RUNTIME_CONFIG_TODO_ACTION),
+            switchMap(() => this.runtimeRequestService.resetConfigToDefault().pipe(take(1))),
+            mergeMap((isConfigReseted) => {
+                if (!isConfigReseted) {
+                    return of(undefined);
+                }
+
+                return this.runtimeRequestService.getRuntimeMonitor().pipe(
+                    map((response) => response.config),
+                    catchError(() => of(undefined))
+                );
+            }),
+            tap((config) => {
+                this.toastService.show({
+                    style: config === undefined ? KbqToastStyle.Warning : KbqToastStyle.Success,
+                    title: this.i18nService.translate(
+                        config === undefined
+                            ? 'Runtime.Pseudo.Notification.ResetFailed'
+                            : 'Runtime.Pseudo.Notification.Reseted'
+                    )
+                });
+            }),
+            filter((config) => config !== undefined),
+            switchMap((config) => [
+                UPDATE_RUNTIME_STATE_DOC_ACTION({
+                    config,
+                    hasChanges: false,
+                    hasPoliciesChanges: false,
+                    configStatus: RuntimeConfigStatus.STAY
+                }),
+                GET_RUNTIME_CONFIG_STATUS_TODO_ACTION()
+            ])
+        )
+    );
+
     readonly deactivateState$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(DEACTIVATE_RUNTIME_CONFIG_TODO_ACTION),
@@ -102,24 +163,32 @@ export class RuntimeEffectStore {
         this.actions$.pipe(
             ofType(CREATE_RUNTIME_CONFIG_TODO_ACTION),
             switchMap((action) =>
-                this.runtimeRequestService.createRuntimeMonitor(action.config).pipe(
+                this.store.select(getRuntimeMonitorConfig).pipe(
+                    take(1),
+                    map((config: RuntimeMonitorConfig) => {
+                        const previous = runtimeHelper.convertConfigToDiffValues(config);
+                        const current = { ...action.config, historyControl: RuntimeEventProcessorHistoryControl.NONE };
+
+                        return !utils.isEqual(previous, current) ? action.config : undefined;
+                    })
+                )
+            ),
+            filter((config) => !!config),
+            switchMap((config) =>
+                this.runtimeRequestService.createRuntimeMonitor(config).pipe(
                     take(1),
                     map((response) => response.config)
                 )
             ),
             filter((config) => config && !!Object.keys(config).length),
-            map((config) =>
+            switchMap((config) => [
+                GET_RUNTIME_CONFIG_STATUS_TODO_ACTION(),
+                CREATE_RUNTIME_CONFIG_NOTIFICATION_TODO_ACTION(),
                 UPDATE_RUNTIME_STATE_DOC_ACTION({
                     config,
                     configStatus: RuntimeConfigStatus.STAY
                 })
-            ),
-            tap(() => {
-                this.toastService.show({
-                    style: KbqToastStyle.Success,
-                    title: this.i18nService.translate('Runtime.Pseudo.Notification.Created')
-                });
-            })
+            ])
         )
     );
 
@@ -127,14 +196,42 @@ export class RuntimeEffectStore {
         this.actions$.pipe(
             ofType(CREATE_RUNTIME_CONFIG_TODO_ACTION),
             switchMap((action) =>
-                this.runtimeRequestService.createEventProcessor(action.historyControl).pipe(
+                this.store.select(getRuntimeEventProcessorHistoryControl).pipe(
+                    take(1),
+                    map((historyControl) =>
+                        historyControl !== action.historyControl ? action.historyControl : undefined
+                    )
+                )
+            ),
+            filter((historyControl) => !!historyControl),
+            switchMap((historyControl) =>
+                this.runtimeRequestService.createEventProcessor(historyControl).pipe(
                     take(1),
                     map((response) => response.config.history_control)
                 )
             ),
             filter((historyControl) => !!historyControl),
-            map((historyControl) => UPDATE_RUNTIME_STATE_DOC_ACTION({ historyControl }))
+            switchMap((historyControl) => [
+                CREATE_RUNTIME_CONFIG_NOTIFICATION_TODO_ACTION(),
+                UPDATE_RUNTIME_STATE_DOC_ACTION({ historyControl })
+            ])
         )
+    );
+
+    readonly showCreateNotification$: Observable<Action> = createEffect(
+        () =>
+            this.actions$.pipe(
+                ofType(CREATE_RUNTIME_CONFIG_NOTIFICATION_TODO_ACTION),
+                debounceTime(1000),
+                tap(() => {
+                    this.toastService.show({
+                        style: KbqToastStyle.Success,
+                        title: this.i18nService.translate('Runtime.Pseudo.Notification.Created')
+                    });
+                }),
+                concatMap(() => NEVER)
+            ),
+        { dispatch: false }
     );
 
     readonly checkChanges$: Observable<Action> = createEffect(() =>
@@ -142,10 +239,9 @@ export class RuntimeEffectStore {
             ofType(CHECK_RUNTIME_CHANGES_TODO_ACTION),
             switchMap((action) =>
                 combineLatest([
-                    this.store.select(getRuntimeEventProcessorHistoryControl),
-                    this.store.select(getRuntimeMonitorConfig)
+                    this.store.select(getRuntimeEventProcessorHistoryControl).pipe(take(1)),
+                    this.store.select(getRuntimeMonitorConfig).pipe(take(1))
                 ]).pipe(
-                    take(1),
                     map(([historyControl, config]) => ({
                         previous: runtimeHelper.convertConfigToDiffValues(config, historyControl),
                         current: action.config
@@ -207,7 +303,7 @@ export class RuntimeEffectStore {
         private readonly i18nService: I18nService,
         private readonly coreWindowService: CoreWindowService,
         private readonly runtimeRequestService: RuntimeRequestService,
-        private readonly toastService: KbqToastService,
-        private readonly store: Store<RuntimeState>
+        private readonly store: Store<RuntimeState>,
+        private readonly toastService: KbqToastService
     ) {}
 }

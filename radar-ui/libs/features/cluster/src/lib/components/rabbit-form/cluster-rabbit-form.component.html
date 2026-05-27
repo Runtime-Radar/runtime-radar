@@ -32,7 +32,7 @@
                            class="cs-help-hover"
                            kbqTooltip="{{ tCluster('Cluster.CreatePage.RabbitForm.Hint.Address') }}"
                            kbqTooltipClass="cluster-abstract-feature-form-tooltip"
-                           [kbqPlacement]="tooltipPlacement.RightTop"></i>
+                           [kbqPlacement]="tooltipPlacements.RightTop"></i>
                     </label>
                     <kbq-form-field class="kbq-form__control" *transloco="let tCommon; prefix: 'common'">
                         <input kbqInput
@@ -96,7 +96,7 @@
                                    class="cs-help-hover"
                                    kbqTooltip="{{ tCluster('Cluster.CreatePage.RabbitForm.Hint.StorageClass') }}"
                                    kbqTooltipClass="cluster-abstract-feature-form-tooltip"
-                                   [kbqPlacement]="tooltipPlacement.RightTop"></i>
+                                   [kbqPlacement]="tooltipPlacements.RightTop"></i>
                             </label>
                             <kbq-form-field class="kbq-form__control" *transloco="let tCommon; prefix: 'common'">
                                 <input kbqInput
@@ -104,7 +104,7 @@
                                        id="storageClass"
                                        formControlName="storageClass"
                                        placeholder="{{ tCluster('Cluster.CreatePage.RabbitForm.Placeholder.StorageClass') }}"
-                                       data-testid="cluster-rabbit-storage-class-input">
+                                       data-testid="cluster-rabbit-storage-сlass-input">
                                 <kbq-hint>{{ tCommon('Common.Form.Hint.Optional') }}</kbq-hint>
                                 @if (form.get('storageClass')?.hasError('pattern')) {
                                     <kbq-hint color="error">{{ tCommon('Common.Form.Error.Format') }}</kbq-hint>

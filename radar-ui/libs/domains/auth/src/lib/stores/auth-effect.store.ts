@@ -10,7 +10,6 @@ import { catchError, concatMap, filter, map, switchMap, take, tap } from 'rxjs/o
 
 import { I18nService } from '@cs/i18n';
 import { ROLE_LOAD_DONE_EVENT_ACTION } from '@cs/domains/role';
-import { SWITCH_CLUSTER_EVENT_ACTION } from '@cs/domains/cluster';
 import { UPDATE_USER_PASSWORD_EVENT_ACTION } from '@cs/domains/user';
 import { ApiErrorCode, ApiUtilsService as apiUtils } from '@cs/api';
 import { LoadStatus, RouterName } from '@cs/core';
@@ -84,7 +83,7 @@ export class AuthEffectStore {
         { dispatch: false }
     );
 
-    readonly signInProgressStart$: Observable<Action> = createEffect(() =>
+    readonly setInProgressStatus$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(SIGN_IN_TODO_ACTION),
             map(() =>
@@ -223,40 +222,6 @@ export class AuthEffectStore {
             tap(() => {
                 this.router.navigate([RouterName.SWITCH]);
             })
-        )
-    );
-
-    readonly loadAppVersion$: Observable<Action> = createEffect(() =>
-        this.actions$.pipe(
-            ofType(ROLE_LOAD_DONE_EVENT_ACTION),
-            switchMap(() =>
-                this.authRequestService.getAppVersion().pipe(
-                    take(1),
-                    catchError((error: HttpErrorResponse) => {
-                        if (apiUtils.getReasonCode(error) === ApiErrorCode.STATE_CHILD_UNREGISTERED) {
-                            this.toastService.show({
-                                style: KbqToastStyle.Warning,
-                                title: this.i18nService.translate('')
-                            });
-                        }
-
-                        return of('');
-                    })
-                )
-            ),
-            map((appVersion) =>
-                UPDATE_AUTH_STATE_DOC_ACTION({
-                    appVersion
-                })
-            )
-        )
-    );
-
-    readonly loadCentralUrl$: Observable<Action> = createEffect(() =>
-        this.actions$.pipe(
-            ofType(ROLE_LOAD_DONE_EVENT_ACTION, SWITCH_CLUSTER_EVENT_ACTION),
-            switchMap(() => this.authRequestService.getCentralUrl().pipe(take(1))),
-            map((centralUrl) => UPDATE_AUTH_STATE_DOC_ACTION({ centralUrl }))
         )
     );
 

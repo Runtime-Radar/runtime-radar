@@ -1,12 +1,17 @@
 <kbq-empty-state class="layout-margin-no-bottom">
     @if (imageUrl) {
-        <div kbq-empty-state-icon class="shared-empty-screen-image">
+        <div kbq-empty-state-icon class="shared-empty-screen-image"
+             [ngClass]="{ 'shared-empty-screen-image--small': size === 'small' }">
             <img [ngSrc]="imageUrl" width="256" height="256" alt="{{ title }}" priority>
         </div>
     }
     <div kbq-empty-state-title>{{ title }}</div>
-    <div kbq-empty-state-text>{{ description }}</div>
-    <div kbq-empty-state-actions class="shared-empty-screen-actions">
+    @if (!isCustomDescription) {
+        <div kbq-empty-state-text>{{ description }}</div>
+    }
+    <div kbq-empty-state-actions
+         class="shared-empty-screen-actions"
+         [ngClass]="{ 'layout-margin-no-top': isCustomDescription }">
         <ng-content></ng-content>
     </div>
 </kbq-empty-state>

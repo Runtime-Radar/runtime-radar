@@ -102,7 +102,9 @@ export class CoreUtilsService {
             } else if (Object.getPrototypeOf(value) === Object.prototype && !!Object.keys(value as object).length) {
                 (value as object) = this.getTrimmedFormValues(value as object);
             } else if (Array.isArray(value) && !!(value as unknown[]).length) {
-                (value as unknown[]).forEach((item) => (typeof value === 'string' ? (item as string).trim() : item));
+                (value as unknown[]) = (value as unknown[]).map((item) =>
+                    typeof item === 'string' ? item.trim() : item
+                );
             }
 
             return {

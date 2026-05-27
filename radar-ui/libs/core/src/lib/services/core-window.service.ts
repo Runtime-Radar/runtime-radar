@@ -1,6 +1,11 @@
 import { DOCUMENT } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 
+export interface CoreWindowInnerScreen {
+    width: number;
+    height: number;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -27,6 +32,13 @@ export class CoreWindowService {
 
     get isSecureContext(): boolean {
         return this.window.isSecureContext;
+    }
+
+    get innerScreen(): CoreWindowInnerScreen {
+        return {
+            width: this.window.innerWidth,
+            height: this.window.innerHeight
+        };
     }
 
     constructor(@Inject(DOCUMENT) private readonly nativeDocument: Document) {

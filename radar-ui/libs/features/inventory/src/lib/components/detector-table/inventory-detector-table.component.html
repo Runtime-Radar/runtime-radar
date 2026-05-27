@@ -1,0 +1,53 @@
+<ng-container *transloco="let tInventory; prefix: 'inventory'">
+    @if (detectors) {
+        @if (detectors.length) {
+            <header class="layout-margin-bottom-xxl inventory-feature-detector-table-header">
+                <header class="layout-row layout-align-space-between-center">
+                    <h2 class="kbq-display-normal-strong inventory-feature-detector-table-header-counter">{{ detectors.length }}</h2>
+                    <i kbq-icon="kbq-hourglass-start_16" class="inventory-feature-detector-table-header-icon"></i>
+                </header>
+                <h3 class="kbq-title inventory-feature-detector-table-header-title">
+                    {{ tInventory('Inventory.DetectorTable.Text.Rating', { count: detectors.length }) }}
+                </h3>
+            </header>
+
+            <table kbq-table class="inventory-feature-detector-table">
+                <thead>
+                    <tr>
+                        <th>{{ tInventory('Inventory.DetectorTable.Table.Detector') }}</th>
+                        <th class="align-right">{{ tInventory('Inventory.DetectorTable.Table.Severity') }}</th>
+                        <th class="align-right">{{ tInventory('Inventory.DetectorTable.Table.Quantity') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (detector of detectors; track $index) {
+                        <tr>
+                            <td><span class="text-overflow">{{ detector.detector_id }}</span></td>
+                            <td class="align-right">
+                                <cs-severity-component
+                                        *transloco="let tCommon; prefix: 'common'"
+                                        [kbqTooltip]="tCommon(detector.severity | severityLocalization)"
+                                        [kbqPlacement]="tooltipPlacements.Right"
+                                        [severity]="detector.severity"></cs-severity-component>
+                            </td>
+                            <td class="align-right">{{ detector.count }}</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        } @else {
+            <cs-empty-screen-component
+                    size="small"
+                    imageUrl="/assets/koobiq/light/empty_256@2x.png"
+                    [title]="tInventory('Inventory.DetectorTable.SubHeading.EmptyResult')"
+                    [description]="tInventory('Inventory.DetectorTable.Text.EmptyResult')">
+                <a kbq-link [noUnderline]="true" [routerLink]="[routerName.DEFAULT, routerName.RUNTIME]" (click)="closeSidepanel()">
+                    <span class="kbq-link__text">{{ tInventory('Inventory.DetectorTable.Link.GoToRuntime') }}</span>
+                    <i kbq-icon="kbq-chevron-right_16"></i>
+                </a>
+            </cs-empty-screen-component>
+        }
+    } @else {
+        <kbq-loader-overlay class="inventory-feature-detector-table-loader" [transparent]="true"></kbq-loader-overlay>
+    }
+</ng-container>

@@ -13,7 +13,7 @@ import {
     SIGN_OUT_TODO_ACTION
 } from '../stores/auth-action.store';
 import { AuthCredentials, AuthState } from '../interfaces';
-import { getAppVersion, getAuthCredentials, getAuthLoadStatus, getCentralUrl } from '../stores/auth-selector.store';
+import { getAuthCredentials, getAuthLoadStatus } from '../stores/auth-selector.store';
 
 @Injectable({
     providedIn: 'root'
@@ -22,10 +22,6 @@ export class AuthStoreService {
     readonly credentials$: Observable<AuthCredentials> = this.store.select(getAuthCredentials);
 
     readonly loadStatus$: Observable<LoadStatus> = this.store.select(getAuthLoadStatus);
-
-    readonly appVersion$: Observable<string> = this.store.select(getAppVersion);
-
-    readonly centralUrl$: Observable<string> = this.store.select(getCentralUrl);
 
     constructor(private readonly store: Store<AuthState>) {}
 

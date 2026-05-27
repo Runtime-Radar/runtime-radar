@@ -2,7 +2,7 @@
     position: relative;
 
     &-tab {
-        padding: 16px 16px 16px 56px;
+        padding: 16px 16px 16px 50px;
         position: relative;
 
         &::after {
@@ -11,8 +11,8 @@
             flex-shrink: 0;
             justify-content: center;
             align-items: center;
-            width: 40px;
-            height: 40px;
+            width: 34px;
+            height: 34px;
             position: absolute;
             left: 0;
             border-radius: 50%;
@@ -41,7 +41,7 @@
     }
 
     &-action {
-        max-width: 560px;
+        max-width: 570px;
         margin-top: 32px;
     }
 }

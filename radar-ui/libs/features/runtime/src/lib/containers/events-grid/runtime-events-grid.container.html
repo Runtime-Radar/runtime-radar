@@ -198,7 +198,7 @@
                 <kbq-dropdown #dropdownContextMenu="kbqDropdown">
                     @for (option of runtimeContextOptions; track option.id) {
                         <button kbq-dropdown-item
-                                [disabled]="entity.parent === null && (option.id === runtimeContext.PARENT || option.id === runtimeContext.SIBLING)"
+                                [disabled]="entity.parent === null && entity.process.parent_exec_id === null && (option.id === runtimeContext.PARENT || option.id === runtimeContext.SIBLING)"
                                 (click)="setContextId(item.id, option.id, entity.process.exec_id, entity.process.parent_exec_id)"
                                 [attr.data-testid]="tRuntime(option.localizationKey)">
                             {{ tRuntime(option.localizationKey) }}

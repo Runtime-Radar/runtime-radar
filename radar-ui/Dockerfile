@@ -1,4 +1,4 @@
-FROM node:18.20.4-alpine3.20 AS builder
+FROM node:20.18.0-alpine3.20 AS builder
 
 RUN --mount=type=cache,target=/var/cache/apk \
     apk update && \

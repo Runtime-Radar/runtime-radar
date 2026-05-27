@@ -12,6 +12,11 @@ export const CLUSTER_STEPPER_TABS: ClusterStepperTab[] = [
         description: 'Cluster.CreatePage.Tab.Hint.Database'
     },
     {
+        id: ClusterStepName.METRIC,
+        title: 'Cluster.CreatePage.Tab.Label.Metric',
+        description: 'Cluster.CreatePage.Tab.Hint.Metric'
+    },
+    {
         id: ClusterStepName.INGRESS,
         title: 'Cluster.CreatePage.Tab.Label.Ingress',
         description: 'Cluster.CreatePage.Tab.Hint.Ingress'

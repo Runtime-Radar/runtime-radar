@@ -1,7 +1,7 @@
 {
     "name": "feature-forbidden",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/features/forbidden",
     "sourceRoot": "libs/features/forbidden/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/features/forbidden"],
+            "outputs": ["{workspaceRoot}/coverage/libs/features/forbidden"],
             "options": {
                 "jestConfig": "libs/features/forbidden/jest.config.ts",
                 "passWithNoTests": true

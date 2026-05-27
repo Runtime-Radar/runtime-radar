@@ -17,7 +17,7 @@ export class RuntimeFeatureSidepanelThreatsComponent {
 
     readonly alertColors = KbqAlertColors;
 
-    readonly tooltipPlacement = PopUpPlacements;
+    readonly tooltipPlacements = PopUpPlacements;
 
     constructor(@Inject(KBQ_SIDEPANEL_DATA) public readonly props: RuntimeSidepanelThreatsProps) {}
 }

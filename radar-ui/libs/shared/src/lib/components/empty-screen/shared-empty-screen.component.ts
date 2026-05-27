@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, booleanAttribute } from '@angular/core';
 
 @Component({
     selector: 'cs-empty-screen-component',
@@ -10,6 +10,10 @@ export class SharedEmptyScreenComponent {
     @Input({ required: true }) title!: string;
 
     @Input({ required: true }) description!: string;
+
+    @Input({ transform: booleanAttribute }) isCustomDescription = false;
+
+    @Input() size?: string; // small
 
     @Input() imageUrl?: string;
 }

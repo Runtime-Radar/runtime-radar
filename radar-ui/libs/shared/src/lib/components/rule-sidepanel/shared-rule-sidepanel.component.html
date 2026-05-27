@@ -217,7 +217,6 @@
                         @if (props.deleteHandler !== undefined) {
                             <button kbq-button
                                     kbqStyle="transparent"
-                                    color="error"
                                     type="button"
                                     [disabled]="!props.permissions?.has(permissionType.DELETE)"
                                     (click)="deleteRule(rule.id)"

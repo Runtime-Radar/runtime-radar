@@ -1,6 +1,6 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 import { RUNTIME_FILTER_DATETIME_PERIOD_SEPARATOR } from '../../constants/runtime-filter.constant';
 import { RuntimeEventFilters } from '../../interfaces/runtime-filter.interface';
@@ -10,10 +10,10 @@ import { RuntimeEventFilters } from '../../interfaces/runtime-filter.interface';
     templateUrl: './runtime-preset-dropdown.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RuntimeFeaturePresetDropdownComponent {
+export class RuntimeFeaturePresetDropdownComponent implements OnInit {
     @Output() presetChange = new EventEmitter<RuntimeEventFilters>();
 
-    presetDropdownFiltersCollection: Map<RuntimeEventFilters, string> = new Map();
+    readonly presetDropdownFiltersCollection = new Map<RuntimeEventFilters, string>();
 
     constructor(private readonly dateAdapter: DateAdapter<DateTime>) {}
 
@@ -21,43 +21,42 @@ export class RuntimeFeaturePresetDropdownComponent {
         this.presetChange.emit(filters);
     }
 
-    applyItems() {
+    ngOnInit() {
         const today = this.dateAdapter.today().startOf('second');
 
-        this.presetDropdownFiltersCollection = new Map([
-            [
+        this.presetDropdownFiltersCollection
+            .set(
                 this.getFilterSettings(today.minus({ minute: 1 }), today, true),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneMinuteWithThreats'
-            ],
-            [
+            )
+            .set(
                 this.getFilterSettings(today.minus({ hour: 1 }), today, true),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneHourWithThreats'
-            ],
-            [
+            )
+            .set(
                 this.getFilterSettings(today.minus({ day: 1 }), today, true),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneDayWithThreats'
-            ],
-            [
+            )
+            .set(
                 this.getFilterSettings(today.minus({ week: 1 }), today, true),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneWeekWithThreats'
-            ],
-            [
+            )
+            .set(
                 this.getFilterSettings(today.minus({ minute: 1 }), today),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneMinute'
-            ],
-            [
+            )
+            .set(
                 this.getFilterSettings(today.minus({ hour: 1 }), today),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneHour'
-            ],
-            [
+            )
+            .set(
                 this.getFilterSettings(today.minus({ day: 1 }), today),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneDay'
-            ],
-            [
+            )
+            .set(
                 this.getFilterSettings(today.minus({ week: 1 }), today),
                 'Runtime.EventsPage.Filter.PresetDrowdown.Option.OneWeek'
-            ]
-        ]);
+            );
     }
 
     private getFilterSettings(from: DateTime, to: DateTime, hasThreats = false): RuntimeEventFilters {

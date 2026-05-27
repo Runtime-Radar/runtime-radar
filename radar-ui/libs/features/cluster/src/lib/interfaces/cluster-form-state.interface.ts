@@ -3,6 +3,7 @@ import {
     ClusterAccessForm,
     ClusterDataBaseForm,
     ClusterIngressForm,
+    ClusterMetricForm,
     ClusterRabbitForm,
     ClusterRegistryForm
 } from './cluster-form.interface';
@@ -15,6 +16,7 @@ export interface ClusterFormState {
     postgres: ClusterDataBaseForm;
     redis: ClusterDataBaseForm;
     rabbit: ClusterRabbitForm;
+    metric: ClusterMetricForm;
     ingress: ClusterIngressForm;
     access: ClusterAccessForm;
 }

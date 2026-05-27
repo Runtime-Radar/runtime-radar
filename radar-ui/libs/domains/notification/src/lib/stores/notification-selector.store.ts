@@ -2,7 +2,7 @@ import { ActionReducerMap, createFeatureSelector, createSelector } from '@ngrx/s
 
 import { RuleType } from '@cs/domains/rule';
 
-import { Notification, NotificationEventType } from '../interfaces/contract/notification-contract.interface';
+import { Notification } from '../interfaces/contract/notification-contract.interface';
 import { NotificationEntityState, NotificationState } from '../interfaces/state/notification-state.interface';
 import { notificationEntitySelector, notificationReducer } from './notification-reducer.store';
 
@@ -12,9 +12,7 @@ export interface NotificationDomainState {
     readonly domain: NotificationState;
 }
 
-const RULE_EVENT_TYPE_RELATIONS: Map<RuleType, string> = new Map([
-    [RuleType.TYPE_RUNTIME, NotificationEventType.RUNTIME] // @todo: clarify RuntimeEventType status
-]);
+const RULE_EVENT_TYPE_RELATIONS = new Map<RuleType, string>([[RuleType.TYPE_RUNTIME, 'runtime_event']]);
 
 const selectNotificationDomainState = createFeatureSelector<NotificationDomainState>(NOTIFICATION_DOMAIN_KEY);
 const selectNotificationState = createSelector(

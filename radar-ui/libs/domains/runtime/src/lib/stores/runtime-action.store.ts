@@ -16,10 +16,16 @@ export const CREATE_RUNTIME_CONFIG_TODO_ACTION = createAction(
     props<{ config: RuntimeMonitorConfig; historyControl: RuntimeEventProcessorHistoryControl }>()
 );
 
+export const CREATE_RUNTIME_CONFIG_NOTIFICATION_TODO_ACTION = createAction('[Runtime] Create Notification');
+
+export const RESET_RUNTIME_CONFIG_TODO_ACTION = createAction('[Runtime] Reset Config');
+
 export const CHECK_RUNTIME_CHANGES_TODO_ACTION = createAction(
     '[Runtime] Check Changes',
     props<{ config: RuntimeMonitorConfigExtended }>()
 );
+
+export const GET_RUNTIME_CONFIG_STATUS_TODO_ACTION = createAction('[Runtime] Get Config Status');
 
 export const SWITCH_RUNTIME_EXPERT_MODE_TODO_ACTION = createAction('[Runtime] Switch Expert Mode');
 

@@ -1,0 +1,49 @@
+<section class="kbq-text-normal inventory-feature-pod"
+         [class]="'width-' + pod.containers.length"
+         [ngClass]="{ 'hidden': pod.isVisible === false }"
+         *transloco="let tInventory; prefix: 'inventory'">
+    <!-- @todo: add a11y support for header button -->
+    <header class="dragIgnore kbq-mono-normal-strong inventory-abstract-feature-header inventory-feature-pod-header"
+            [ngClass]="{
+                'active': context.type === sidepanelContextType.POD && context.id === pod.uid,
+                'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING
+            }"
+            [ngStyle]="{ 'background-color': pod.bgColor, 'color': pod.textColor }"
+            [kbqExtendedTooltip]="podTooltip"
+            [kbqPlacement]="tooltipPlacements.Top"
+            (click)="headerClick.emit({ pod })"
+            data-testid="inventory-pod-open-button">
+        {{ pod.name }}
+    </header>
+    <ul class="layout-row layout-align-start-center layout-wrap inventory-feature-pod-containers">
+        @for (container of pod.containers; track container) {
+            <li class="inventory-feature-pod-containers-item">
+                <button kbq-button
+                        kbqStyle="outline"
+                        color="contrast-fade"
+                        type="button"
+                        [id]="container"
+                        class="dragIgnore kbq-button-icon inventory-feature-pod-containers-button"
+                        [ngClass]="{ 'active': context.type === sidepanelContextType.CONTAINER && context.id === pod.name + '' + container }"
+                        [kbqExtendedTooltip]="containerTooltip"
+                        [kbqPlacement]="tooltipPlacements.Bottom"
+                        (click)="bucketClick.emit({ container, pod })"
+                        data-testid="inventory-container-open-button">
+                    <i kbq-icon="kbq-bucket-s3_16"></i>
+                </button>
+            </li>
+
+            <ng-template #containerTooltip>
+                <p class="layout-margin-no-top layout-margin-bottom-xxs cs-text-gray">{{ tInventory('Inventory.MapPage.Hint.Container') }}</p>
+                <p class="layout-margin-no-top layout-margin-no-bottom">{{ container }}</p>
+            </ng-template>
+        }
+
+        <span class="inventory-feature-pod-containers-bg" [ngStyle]="{ 'background-color': pod.bgColor }"></span>
+    </ul>
+
+    <ng-template #podTooltip>
+        <p class="layout-margin-no-top layout-margin-bottom-xxs cs-text-gray">{{ tInventory('Inventory.MapPage.Hint.Pod') }}</p>
+        <p class="layout-margin-no-top layout-margin-no-bottom">{{ pod.name }}</p>
+    </ng-template>
+</section>

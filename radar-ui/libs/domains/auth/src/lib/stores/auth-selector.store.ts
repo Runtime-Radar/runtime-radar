@@ -28,10 +28,6 @@ export const getAuthLoadStatus = createSelector(selectAuthState, (state: AuthSta
 
 export const getAuthOriginPath = createSelector(selectAuthState, (state: AuthState) => state.originPath);
 
-export const getAppVersion = createSelector(selectAuthState, (state: AuthState) => state.appVersion);
-
-export const getCentralUrl = createSelector(selectAuthState, (state: AuthState) => state.centralUrl);
-
 export const authDomainReducer: ActionReducerMap<AuthDomainState> = {
     domain: authReducer
 };

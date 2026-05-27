@@ -1,0 +1,59 @@
+:host {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+}
+
+.inventory-feature-sidepanel-pod {
+    position: relative;
+
+    &-containers {
+        margin-top: 24px;
+
+        &-header {
+            padding: 0 16px 0 40px;
+        }
+    }
+
+    &-container {
+        gap: 8px;
+        position: relative;
+        margin-top: 8px;
+        padding: 8px 16px;
+        background-color: #f3f4f6; // @todo: replace to koobiq token
+        border: 1px solid #d7dee4; // @todo: replace to koobiq token
+        border-radius: 8px;
+        cursor: pointer;
+
+        &-name {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        &:hover,
+        &:focus,
+        &:active {
+            .kbq-icon {
+                color: var(--kbq-foreground-on-contrast) !important;
+            }
+        }
+    }
+
+    &-code {
+        height: calc(100vh - 160px);
+        min-height: 350px;
+        margin-top: 24px;
+    }
+}
+
+::ng-deep .inventory-feature-sidepanel-pod {
+    .kbq-sidepanel-container.kbq-sidepanel_medium {
+        width: 475px;
+    }
+
+    .kbq-sidepanel-content {
+        box-shadow: var(--kbq-sidepanel-container-shadow);
+    }
+}

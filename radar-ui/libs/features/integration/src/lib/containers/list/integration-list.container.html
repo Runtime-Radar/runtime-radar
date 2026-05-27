@@ -30,9 +30,10 @@
             </section>
         </header>
 
-        <section class="layout-column integration-feature-list-section">
+        <section class="layout-column">
             @if (rxlet.emailIntegrations?.length) {
                 <cs-integration-feature-collapse-card-container
+                        class="integration-feature-list-card"
                         [type]="integrationType.EMAIL"
                         [list]="rxlet.emailIntegrations"
                         [permissions]="permissions"></cs-integration-feature-collapse-card-container>
@@ -40,6 +41,7 @@
 
             @if (rxlet.syslogIntegrations?.length) {
                 <cs-integration-feature-collapse-card-container
+                        class="integration-feature-list-card"
                         [type]="integrationType.SYSLOG"
                         [list]="rxlet.syslogIntegrations"
                         [permissions]="permissions"></cs-integration-feature-collapse-card-container>
@@ -47,6 +49,7 @@
 
             @if (rxlet.webhookIntegrations?.length) {
                 <cs-integration-feature-collapse-card-container
+                        class="integration-feature-list-card"
                         [type]="integrationType.WEBHOOK"
                         [list]="rxlet.webhookIntegrations"
                         [permissions]="permissions"></cs-integration-feature-collapse-card-container>

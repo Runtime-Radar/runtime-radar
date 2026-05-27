@@ -1,8 +1,8 @@
 import { KbqBadgeColors } from '@koobiq/components/badge';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
-import { AuthRequestService } from '@cs/domains/auth';
+import { LicenseRequestService } from '@cs/domains/license';
 import { Cluster, ClusterStatus } from '@cs/domains/cluster';
 
 @Component({
@@ -11,9 +11,7 @@ import { Cluster, ClusterStatus } from '@cs/domains/cluster';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SwitchFeaturePageContainer {
-    private readonly authRequestService = inject(AuthRequestService);
-
-    readonly url$: Observable<string> = this.authRequestService.getCentralUrl().pipe(
+    readonly url$: Observable<string> = this.licenseRequestService.getCentralUrl().pipe(
         tap((url) => {
             if (!url) {
                 console.warn('url must be provided');
@@ -26,4 +24,6 @@ export class SwitchFeaturePageContainer {
     readonly clusterStatus = ClusterStatus;
 
     readonly badgeColors = KbqBadgeColors;
+
+    constructor(private readonly licenseRequestService: LicenseRequestService) {}
 }

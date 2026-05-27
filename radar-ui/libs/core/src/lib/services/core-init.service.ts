@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@angular/core';
 import { ApiPathService } from '@cs/api';
 import { AuthStoreService } from '@cs/domains/auth';
 import { CoreWindowService, IS_CHILD_CLUSTER } from '@cs/core';
-import { I18N_DEFAULT_LOCALE, I18N_LOCAL_STORAGE_KEY, I18nLocale, I18nService } from '@cs/i18n';
+import { I18N_DEFAULT_LOCALE, I18N_LOCAL_STORAGE_KEY, I18nService } from '@cs/i18n';
 
 import { CoreMetaService } from './core-meta.service';
 import { DEFAULT_TRANSLATION_DICTS } from '../constants';
@@ -44,8 +44,6 @@ export class CoreInitService {
     }
 
     private getLocaleFromStorage(): string {
-        const value = this.coreWindowService.localStorage.getItem(I18N_LOCAL_STORAGE_KEY);
-
-        return value || I18N_DEFAULT_LOCALE;
+        return this.coreWindowService.localStorage.getItem(I18N_LOCAL_STORAGE_KEY) || I18N_DEFAULT_LOCALE;
     }
 }

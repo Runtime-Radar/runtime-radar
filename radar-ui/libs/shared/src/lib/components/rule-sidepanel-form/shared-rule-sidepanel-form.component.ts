@@ -136,13 +136,29 @@ export class SharedRuleSidepanelFormComponent implements AfterViewInit, OnInit {
             });
         }
 
-        utils.setArrayControlValue(this.imageNamesControl, this.props.rule?.scope?.image_names, this.formBuilder);
-        utils.setArrayControlValue(this.registriesControl, this.props.rule?.scope?.registries, this.formBuilder);
+        const registriesSub: string[] = [];
+        const imageNamesSub: string[] = [];
+        this.props.rule?.scope?.image_names.forEach((item) => {
+            if (item.indexOf('/') !== -1) {
+                const [r, i] = item.split('/');
+                registriesSub.push(r);
+                imageNamesSub.push(i);
+            } else {
+                imageNamesSub.push(item);
+            }
+        });
+
         utils.setArrayControlValue(this.namespacesControl, this.props.rule?.scope?.namespaces, this.formBuilder);
         utils.setArrayControlValue(this.podsControl, this.props.rule?.scope?.pods, this.formBuilder);
         utils.setArrayControlValue(this.nodesControl, this.props.rule?.scope?.nodes, this.formBuilder);
         utils.setArrayControlValue(this.containersControl, this.props.rule?.scope?.containers, this.formBuilder);
         utils.setArrayControlValue(this.binariesControl, this.props.rule?.rule?.whitelist?.binaries, this.formBuilder);
+        utils.setArrayControlValue(this.imageNamesControl, imageNamesSub, this.formBuilder);
+        utils.setArrayControlValue(
+            this.registriesControl,
+            registriesSub.concat(this.props.rule?.scope?.registries || []),
+            this.formBuilder
+        );
 
         if (this.props.isEdit) {
             this.form.get('blockSeverity')?.disable({ onlySelf: true });

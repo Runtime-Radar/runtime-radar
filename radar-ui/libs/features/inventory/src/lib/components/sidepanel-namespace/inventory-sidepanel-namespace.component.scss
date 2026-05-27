@@ -1,0 +1,57 @@
+:host {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+}
+
+.inventory-feature-sidepanel-namespace {
+    position: relative;
+
+    &-pods {
+        margin-top: 24px;
+
+        &-header {
+            padding: 0 16px;
+
+            span:last-child {
+                width: 150px;
+                margin-right: 24px;
+                text-align: right;
+            }
+        }
+    }
+
+    &-pod {
+        position: relative;
+        margin-top: 8px;
+        padding: 8px 16px;
+        background-color: #f3f4f6; // @todo: replace to koobiq token
+        border: 1px solid #d7dee4; // @todo: replace to koobiq token
+        border-radius: 8px;
+        cursor: pointer;
+
+        &-name {
+            width: 300px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        &-count {
+            width: 24px;
+            margin: 0 24px 0 8px;
+            text-align: right;
+        }
+    }
+}
+
+::ng-deep .inventory-feature-sidepanel-namespace {
+    .kbq-sidepanel-container.kbq-sidepanel_medium {
+        width: 475px;
+    }
+
+    .kbq-sidepanel-content {
+        box-shadow: var(--kbq-sidepanel-container-shadow);
+    }
+}

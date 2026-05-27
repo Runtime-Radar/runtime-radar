@@ -1,0 +1,122 @@
+<ng-container *transloco="let tInventory; prefix: 'inventory'">
+    <header class="layout-row layout-align-space-between-center">
+        <h1 class="kbq-display-compact inventory-feature-map-title">
+            {{ tInventory('Inventory.MapPage.Header.Title') }}
+        </h1>
+        <section class="layout-row">
+            <cs-cluster-select-component
+                    [clusters]="clusters$ | async"
+                    [activeClusterHost]="activeClusterHost$ | async"
+                    (selectClusterId)="switchCluster($event)"
+                    testLocator="inventory-cluster-select"></cs-cluster-select-component>
+        </section>
+    </header>
+
+    <ng-container *ngrxLet="{
+        nodes: (nodes$ | async)!,
+        sidepanelContext: (sidepanelContext$ | async)!,
+        selectedNode: (selectedNode$ | async)!
+    } as rxlet">
+        <section class="inventory-feature-map-area">
+            <section class="inventory-feature-map-area-drag grab"
+                     dragArea
+                     dragIgnoreClassName=".dragIgnore"
+                     [dragContent]="dragContentRef"
+                     (scaleChange)="zoomChange($event)">
+                @if ((loadStatus$ | async) === loadStatus.IN_PROGRESS) {
+                    <kbq-loader-overlay [transparent]="true"></kbq-loader-overlay>
+                }
+
+                <section class="layout-row inventory-feature-map-area-drag-content" #dragContentRef>
+                    <section class="layout-row inventory-feature-map-area-drag-nodes">
+                        @for (node of rxlet.nodes; track node.id) {
+                            @let pairId = nodeColorPairCollection.get(node.node_name) || 0;
+
+                            <!-- @todo: add a11y support for header button -->
+                            <span class="dragIgnore kbq-mono-normal-strong cs-text-overflow inventory-abstract-feature-header inventory-feature-map-area-drag-nodes-header"
+                                  [ngClass]="{
+                                    'hidden': rxlet.selectedNode && rxlet.selectedNode !== node.node_name,
+                                    'active': rxlet.sidepanelContext.type === sidepanelContextType.NODE && rxlet.sidepanelContext.id === node.node_name
+                                  }"
+                                  [ngStyle]="{ 'background-color': nodeBgColors[pairId], 'color': nodeTextColors[pairId] }"
+                                  [kbqExtendedTooltip]="nodeTooltip"
+                                  [kbqPlacement]="tooltipPlacements.Top"
+                                  (click)="openViewNodeSidepanel(node)"
+                                  data-testid="inventory-node-open-button">
+                                {{ node.node_name }}
+                            </span>
+
+                            <ng-template #nodeTooltip>
+                                <p class="layout-margin-no-top layout-margin-bottom-xxs cs-text-gray">{{ tInventory('Inventory.MapPage.Hint.Node') }}</p>
+                                <p class="layout-margin-no-top layout-margin-no-bottom">{{ node.node_name }}</p>
+                            </ng-template>
+                        }
+                    </section>
+
+                    <ng-container *ngrxLet="groupNamespaces$(rxlet.selectedNode) as groupNamespaces">
+                        @for (group of groupNamespaces | kubeManagerGroupNamespacesSort; track group.id) {
+                            <section class="layout-column layout-align-start-start inventory-feature-map-area-drag-groups" [id]="group.id">
+                                @for (namespace of group.namespaces; track namespace.id) {
+                                    @let pods = (pods$(namespace.namespace, rxlet.selectedNode) | async)!;
+
+                                    <cs-inventory-feature-namespace-component
+                                            [id]="namespace.id"
+                                            [namespace]="namespace"
+                                            [pods]="pods"
+                                            [context]="rxlet.sidepanelContext"
+                                            (headerClick)="openViewNamespaceSidepanel($event)">
+                                        @for (pod of pods; track pod.uid) {
+                                            <cs-inventory-feature-pod-component
+                                                    [id]="pod.uid"
+                                                    [pod]="pod"
+                                                    [context]="rxlet.sidepanelContext"
+                                                    (headerClick)="openViewPodSidepanel($event)"
+                                                    (bucketClick)="openViewContainerSidepanel($event)"></cs-inventory-feature-pod-component>
+                                        }
+                                    </cs-inventory-feature-namespace-component>
+                                }
+                            </section>
+                        }
+                    </ng-container>
+                </section>
+            </section>
+
+            <div class="layout-row inventory-feature-map-area-action"
+                 *ngrxLet="scaleValue$ as scale">
+                <button kbq-button
+                        kbqStyle="outline"
+                        type="button"
+                        class="kbq-button-icon layout-margin-right-s"
+                        [disabled]="scale < 0.35"
+                        (click)="zoomIn()"
+                        data-testid="inventory-zoomout-button">
+                    <i kbq-icon="kbq-minus_16"></i>
+                </button>
+                <button kbq-button
+                        kbqStyle="outline"
+                        type="button"
+                        class="kbq-button-icon layout-margin-right-s"
+                        [disabled]="scale > 0.9"
+                        (click)="zoomOut()"
+                        data-testid="inventory-zoomin-button">
+                    <i kbq-icon="kbq-plus_16"></i>
+                </button>
+                <button kbq-button
+                        kbqStyle="outline"
+                        type="button"
+                        class="kbq-button-icon"
+                        (click)="zoomFit()"
+                        data-testid="inventory-zoomfit-button">
+                    <i kbq-icon="kbq-chevrons-expand_16"></i>
+                </button>
+                <cs-inventory-feature-filter-popover-component
+                        class="layout-margin-left-xxl"
+                        (filterChange)="filterChange($event)"></cs-inventory-feature-filter-popover-component>
+            </div>
+
+            <cs-inventory-feature-legend-component
+                    class="inventory-feature-map-area-legend"
+                    [nodes]="rxlet.nodes"></cs-inventory-feature-legend-component>
+        </section>
+    </ng-container>
+</ng-container>

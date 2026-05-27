@@ -58,24 +58,32 @@ export class ClusterRequestService {
             .pipe(map((response) => response.yaml));
     }
 
-    getCluster(id: string): Observable<Cluster> {
-        return this.apiService
-            .get<ApiEmptyRequest, GetClusterResponse>(`cluster/${id}`)
-            .pipe(map((response) => response.cluster));
+    getCluster(id: string): Observable<GetClusterResponse> {
+        return this.apiService.get<ApiEmptyRequest, GetClusterResponse>(`cluster/${id}`);
     }
 
     createCluster(request: CreateClusterRequest): Observable<Cluster> {
         return this.apiService.post<CreateClusterRequest, CreateClusterResponse>('cluster', request).pipe(
             map((response) => response.id),
             filter((id) => !!id),
-            switchMap((id) => this.getCluster(id).pipe(take(1)))
+            switchMap((id) =>
+                this.getCluster(id).pipe(
+                    take(1),
+                    map((response) => response.cluster)
+                )
+            )
         );
     }
 
     updateCluster(id: string, request: UpdateClusterRequest): Observable<Cluster> {
         return this.apiService.patch<UpdateClusterRequest, EmptyClusterResponse>(`cluster/${id}`, request).pipe(
             filter((response) => response && !Object.keys(response).length),
-            switchMap(() => this.getCluster(id).pipe(take(1)))
+            switchMap(() =>
+                this.getCluster(id).pipe(
+                    take(1),
+                    map((response) => response.cluster)
+                )
+            )
         );
     }
 

@@ -17,6 +17,9 @@
                                id="username"
                                formControlName="username"
                                data-testid="user-username-input">
+                        @if (form.get('username')?.invalid) {
+                            <kbq-hint color="error">{{ tCommon('Common.Form.Error.Format') }}</kbq-hint>
+                        }
                     </kbq-form-field>
                 </section>
             }

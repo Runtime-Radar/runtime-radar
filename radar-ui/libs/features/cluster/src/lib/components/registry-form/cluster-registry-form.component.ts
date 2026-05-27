@@ -55,7 +55,7 @@ export class ClusterFeatureRegistryFormComponent implements AfterViewInit, OnIni
         })
     );
 
-    readonly tooltipPlacement = PopUpPlacements;
+    readonly tooltipPlacements = PopUpPlacements;
 
     constructor(
         private readonly destroyRef: DestroyRef,

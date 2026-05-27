@@ -1,0 +1,23 @@
+{
+    "name": "domain-license",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/domains/license/src",
+    "prefix": "runtime-radar",
+    "targets": {
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "options": {
+                "lintFilePatterns": ["libs/domains/license/src/**/*.ts", "libs/domains/license/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/domains/license"],
+            "options": {
+                "jestConfig": "libs/domains/license/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

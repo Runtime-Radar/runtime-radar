@@ -14,7 +14,18 @@ const selectRuntimeState = createSelector(selectRuntimeDomainState, (state: Runt
 
 export const getRuntimeLoadStatus = createSelector(selectRuntimeState, (state: RuntimeState) => state.loadStatus);
 
+export const getRuntimeConfigStatus = createSelector(selectRuntimeState, (state: RuntimeState) => state.configStatus);
+
+export const getRuntimeGrafanaUrl = createSelector(selectRuntimeState, (state: RuntimeState) => state.grafanaUrl);
+
 export const getRuntimeMonitorConfig = createSelector(selectRuntimeState, (state: RuntimeState) => state.config);
+
+export const getRuntimeMonitorConfigStatus = createSelector(selectRuntimeState, (state: RuntimeState) => state.status);
+
+export const getRuntimeEventProcessorHistoryControl = createSelector(
+    selectRuntimeState,
+    (state: RuntimeState) => state.historyControl
+);
 
 export const getRuntimeHasChanges = createSelector(selectRuntimeState, (state: RuntimeState) => state.hasChanges);
 
@@ -23,16 +34,9 @@ export const getRuntimeHasPoliciesChanges = createSelector(
     (state: RuntimeState) => state.hasPoliciesChanges
 );
 
-export const getRuntimeEventProcessorHistoryControl = createSelector(
-    selectRuntimeState,
-    (state: RuntimeState) => state.historyControl
-);
-
 export const getRuntimeIsExpertMode = createSelector(selectRuntimeState, (state: RuntimeState) => state.isExpertMode);
 
 export const getRuntimeIsOverlayed = createSelector(selectRuntimeState, (state: RuntimeState) => state.isOverlayed);
-
-export const getRuntimeConfigStatus = createSelector(selectRuntimeState, (state: RuntimeState) => state.configStatus);
 
 export const runtimeDomainReducer: ActionReducerMap<RuntimeDomainState> = {
     domain: runtimeReducer
