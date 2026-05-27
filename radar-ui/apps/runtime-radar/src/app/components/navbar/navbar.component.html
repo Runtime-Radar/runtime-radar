@@ -71,10 +71,10 @@
         @if (credentials.email) {
             <span class="layout-margin-top-s">{{ credentials.email }}</span>
         }
-        <div class="kbq-text-compact cs-text-gray navbar-profile-info-version"
+        <div class="layout-margin-top-s kbq-text-compact cs-text-gray"
              *transloco="let tCommon; read: 'common'"
              data-testid="navbar-app-version-text">
-            {{ version ? tCommon('Common.Pseudo.Menu.Label.AppVersion', { version }) : '—' }}
+            {{ version ? tCommon('Common.Pseudo.Menu.Version', { version }) : '—' }}
         </div>
     </div>
 

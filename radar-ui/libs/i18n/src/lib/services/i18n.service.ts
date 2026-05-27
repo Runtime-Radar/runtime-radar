@@ -70,7 +70,7 @@ export class I18nService {
         this.dateFormatter.setLocale(this.locale);
         this.dateFormats.dateInput = I18N_DATE_LOCALE_FORMATS[this.locale as I18nLocale];
         this.translocoService.setActiveLang(this.locale);
-        this.setLocaleToLocalStorage(this.locale);
+        this.coreWindowService.localStorage.setItem(I18N_LOCAL_STORAGE_KEY, this.locale);
         Settings.defaultLocale = this.locale.split('-')[0];
     }
 
@@ -84,9 +84,5 @@ export class I18nService {
         return (
             I18N_AVAILABLE_LOCALES.find((availableLocale) => availableLocale === (locale as I18nLocale)) !== undefined
         );
-    }
-
-    private setLocaleToLocalStorage(locale: string) {
-        this.coreWindowService.localStorage.setItem(I18N_LOCAL_STORAGE_KEY, locale);
     }
 }

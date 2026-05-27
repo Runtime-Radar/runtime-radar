@@ -2,6 +2,7 @@ import {
     ClusterAccessForm,
     ClusterDataBaseForm,
     ClusterIngressForm,
+    ClusterMetricForm,
     ClusterRabbitForm,
     ClusterRegistryForm
 } from '../interfaces/cluster-form.interface';
@@ -33,6 +34,16 @@ export const CLUSTER_REDIS_FORM_INITIAL_STATE: ClusterDataBaseForm = {
 };
 
 export const CLUSTER_RABBIT_FORM_INITIAL_STATE: ClusterRabbitForm = {
+    isInternalCluster: true,
+    user: 'runtime-radar',
+    password: '',
+    isPersistence: true,
+    storageClass: '',
+    address: ''
+};
+
+export const CLUSTER_METRIC_FORM_INITIAL_STATE: ClusterMetricForm = {
+    isMetricEnabled: false,
     isInternalCluster: true,
     user: 'runtime-radar',
     password: '',

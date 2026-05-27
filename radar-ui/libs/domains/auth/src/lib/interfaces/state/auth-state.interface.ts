@@ -17,6 +17,4 @@ export interface AuthCredentials {
 export interface AuthState extends AuthCredentials {
     loadStatus: LoadStatus;
     originPath: string;
-    appVersion: string;
-    centralUrl: string;
 }

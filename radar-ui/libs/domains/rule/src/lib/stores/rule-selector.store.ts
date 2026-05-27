@@ -26,12 +26,12 @@ export const getRule = (id: string) =>
     createSelector(selectRuleEntityState, (state: RuleEntityState) => state.entities[id]);
 
 /* eslint @typescript-eslint/no-unnecessary-type-assertion: "off" */
-export const getRulesByNotificationId = (notificatioId: string) =>
+export const getRulesByNotificationId = (notificationId: string) =>
     createSelector(
         selectRuleEntityState,
         (state: RuleEntityState) =>
             Object.values(state.entities).filter(
-                (item) => item !== undefined && item.rule.notify?.targets.includes(notificatioId)
+                (item) => item !== undefined && item.rule.notify?.targets.includes(notificationId)
             ) as Rule[]
     );
 

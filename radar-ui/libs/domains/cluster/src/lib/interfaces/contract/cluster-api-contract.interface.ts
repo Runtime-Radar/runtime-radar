@@ -19,6 +19,7 @@ export interface GetClusterYamlResponse {
 
 export interface GetClusterResponse {
     cluster: Cluster;
+    deleted: boolean;
 }
 
 export type CreateClusterRequest = Pick<Cluster, 'name' | 'config'>;

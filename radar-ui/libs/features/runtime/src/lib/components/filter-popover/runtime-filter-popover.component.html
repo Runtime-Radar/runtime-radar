@@ -64,8 +64,9 @@
                                     formControlName="rules"
                                     data-testid="runtime-filter-popover-rules-select">
                             @for (node of ruleNodes$ | async; track node.id) {
-                                <kbq-option [value]="node.id"
-                                            [attr.data-testid]="node.id">
+                                <kbq-option
+                                        [value]="node.id"
+                                        [attr.data-testid]="node.id">
                                     <span [ngClass]="{ 'cs-text-gray runtime-feature-filter-popover-row-field-removed': !!node.isExtra }">
                                         {{ node.name }}
                                     </span>

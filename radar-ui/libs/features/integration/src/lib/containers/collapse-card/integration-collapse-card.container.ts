@@ -4,9 +4,9 @@ import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@
 import { Observable, filter, map, of, switchMap, take } from 'rxjs';
 
 import { ApiPathService } from '@cs/api';
-import { AuthStoreService } from '@cs/domains/auth';
 import { DetectorStoreService } from '@cs/domains/detector';
 import { I18nService } from '@cs/i18n';
+import { LicenseStoreService } from '@cs/domains/license';
 import { CoreUtilsService as utils } from '@cs/core';
 import { ClusterStoreService, RegisteredCluster } from '@cs/domains/cluster';
 import { Integration, IntegrationStoreService, IntegrationType } from '@cs/domains/integration';
@@ -55,7 +55,7 @@ export class IntegrationFeatureCollapseCardContainer implements OnInit {
             )
         );
 
-    readonly expandedCollection: Map<string, boolean> = new Map();
+    readonly expandedCollection = new Map<string, boolean>();
 
     readonly permissionType = PermissionType;
 
@@ -70,7 +70,7 @@ export class IntegrationFeatureCollapseCardContainer implements OnInit {
         private readonly clusterStoreService: ClusterStoreService,
         private readonly detectorStoreService: DetectorStoreService,
         private readonly i18nService: I18nService,
-        private readonly authStoreService: AuthStoreService,
+        private readonly licenseStoreService: LicenseStoreService,
         private readonly integrationStoreService: IntegrationStoreService,
         private readonly notificationStoreService: NotificationStoreService,
         private readonly ruleStoreService: RuleStoreService,
@@ -93,7 +93,7 @@ export class IntegrationFeatureCollapseCardContainer implements OnInit {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {
-                centralUrl$: this.authStoreService.centralUrl$,
+                centralUrl$: this.licenseStoreService.centralUrl$,
                 activeRegisteredCluster$: this.activeRegisteredCluster$,
                 integration
             }
@@ -164,7 +164,7 @@ export class IntegrationFeatureCollapseCardContainer implements OnInit {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {
-                centralUrl$: this.authStoreService.centralUrl$,
+                centralUrl$: this.licenseStoreService.centralUrl$,
                 activeRegisteredCluster$: this.activeRegisteredCluster$,
                 integration,
                 notification,
