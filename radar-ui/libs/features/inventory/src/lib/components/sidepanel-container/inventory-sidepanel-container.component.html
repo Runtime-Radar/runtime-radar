@@ -1,0 +1,10 @@
+<ng-container *transloco="let tInventory; prefix: 'inventory'">
+    <kbq-sidepanel-header [closeable]="true">
+        <span class="cs-text-gray">{{ tInventory('Inventory.EntitySidepanel.Title.Container') }}</span>
+        {{ props.container }}
+    </kbq-sidepanel-header>
+    <kbq-sidepanel-body class="inventory-feature-sidepanel-container">
+        <cs-inventory-feature-detector-table-component
+                [detectors]="props.detectors$ | async"></cs-inventory-feature-detector-table-component>
+    </kbq-sidepanel-body>
+</ng-container>

@@ -6,28 +6,37 @@ import {
     CHECK_RUNTIME_CHANGES_TODO_ACTION,
     CREATE_RUNTIME_CONFIG_TODO_ACTION,
     HIDE_RUNTIME_OVERLAY_TODO_ACTION,
+    RESET_RUNTIME_CONFIG_TODO_ACTION,
     SWITCH_RUNTIME_EXPERT_MODE_TODO_ACTION
 } from '../stores/runtime-action.store';
 import {
     RuntimeEventProcessorHistoryControl,
     RuntimeMonitorConfig,
     RuntimeMonitorConfigExtended,
+    RuntimeMonitorConfigStatus,
     RuntimeState
 } from '../interfaces';
 import {
     getRuntimeEventProcessorHistoryControl,
+    getRuntimeGrafanaUrl,
     getRuntimeHasChanges,
     getRuntimeHasPoliciesChanges,
     getRuntimeIsExpertMode,
     getRuntimeIsOverlayed,
-    getRuntimeMonitorConfig
+    getRuntimeMonitorConfig,
+    getRuntimeMonitorConfigStatus
 } from '../stores/runtime-selector.store';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RuntimeStoreService {
+    readonly runtimeGrafanaUrl$: Observable<string> = this.store.select(getRuntimeGrafanaUrl);
+
     readonly runtimeMonitorConfig$: Observable<RuntimeMonitorConfig> = this.store.select(getRuntimeMonitorConfig);
+
+    readonly runtimeMonitorConfigStatus$: Observable<RuntimeMonitorConfigStatus | undefined> =
+        this.store.select(getRuntimeMonitorConfigStatus);
 
     readonly eventProcessorHistoryControl$: Observable<RuntimeEventProcessorHistoryControl | undefined> =
         this.store.select(getRuntimeEventProcessorHistoryControl);
@@ -49,6 +58,10 @@ export class RuntimeStoreService {
                 historyControl
             })
         );
+    }
+
+    resetConfig() {
+        this.store.dispatch(RESET_RUNTIME_CONFIG_TODO_ACTION());
     }
 
     checkChanges(config: RuntimeMonitorConfigExtended) {

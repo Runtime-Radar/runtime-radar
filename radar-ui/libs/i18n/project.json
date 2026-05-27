@@ -1,7 +1,7 @@
 {
     "name": "i18n",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/i18n",
     "sourceRoot": "libs/i18n/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/i18n"],
+            "outputs": ["{workspaceRoot}/coverage/libs/i18n"],
             "options": {
                 "jestConfig": "libs/i18n/jest.config.ts",
                 "passWithNoTests": true

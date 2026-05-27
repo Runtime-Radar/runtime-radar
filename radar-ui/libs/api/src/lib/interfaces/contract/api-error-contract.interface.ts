@@ -51,7 +51,7 @@ export enum ApiErrorCode {
 export interface ApiDetails {
     reason: ApiErrorCode;
     domain: string;
-    metadata: unknown; // @todo: update type when an example will be provided
+    metadata: unknown;
 }
 
 export interface ApiErrorResponse {

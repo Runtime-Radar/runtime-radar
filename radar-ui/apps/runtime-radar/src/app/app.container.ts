@@ -4,6 +4,7 @@ import { Observable, bufferWhen, delay, distinctUntilChanged, map, switchMap } f
 
 import { ApiPathService } from '@cs/api';
 import { I18nService } from '@cs/i18n';
+import { LicenseStoreService } from '@cs/domains/license';
 import { AuthCredentials, AuthStoreService } from '@cs/domains/auth';
 import { CoreNavigationStoreService, CoreWindowService, LoadStatus, RouterName } from '@cs/core';
 import { Role, RoleStoreService } from '@cs/domains/role';
@@ -25,6 +26,16 @@ export class AppContainer implements OnInit {
 
     readonly routerName$: Observable<RouterName> = this.coreNavigationStoreService.routerName$;
 
+    readonly appVersion$: Observable<string> = this.licenseStoreService.appVersion$;
+
+    readonly hostAppVersion$: Observable<string> = this.licenseStoreService.hostAppVersion$;
+
+    readonly isVersionDiff$: Observable<boolean> = this.licenseStoreService.appVersion$.pipe(
+        switchMap((appVersion) =>
+            this.licenseStoreService.hostAppVersion$.pipe(map((hostVersion) => hostVersion !== appVersion))
+        )
+    );
+
     readonly role$: Observable<Role | undefined> = this.credentials$.pipe(
         map((credentials) => credentials.roleId),
         distinctUntilChanged(),
@@ -40,6 +51,7 @@ export class AppContainer implements OnInit {
         private readonly authStoreService: AuthStoreService,
         private readonly coreNavigationStoreService: CoreNavigationStoreService,
         private readonly i18nService: I18nService,
+        private readonly licenseStoreService: LicenseStoreService,
         private readonly roleStoreService: RoleStoreService,
         private readonly toastService: KbqToastService,
         private readonly coreWindowService: CoreWindowService

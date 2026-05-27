@@ -14,11 +14,3 @@ export interface GetTokenResponse {
     refresh_token: string;
     token_type: string;
 }
-
-export interface GetAppVersionResponse {
-    version: string;
-}
-
-export interface GetCentralUrlResponse {
-    url: string;
-}

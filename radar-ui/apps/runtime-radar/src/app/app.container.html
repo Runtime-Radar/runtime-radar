@@ -3,7 +3,10 @@
         loadStatus: (loadStatus$ | async),
         routerName: (routerName$ | async),
         role: (role$ | async),
-        credentials: (credentials$ | async)!
+        credentials: (credentials$ | async)!,
+        appVersion: (appVersion$ | async),
+        hostAppVersion: (hostAppVersion$ | async),
+        isVersionDiff: (isVersionDiff$ | async)
     } as rxlet">
         @if (rxlet.loadStatus === loadStatus.LOADED) {
             <cs-navbar-component
@@ -13,6 +16,22 @@
         }
 
         <section class="app-router">
+            @if (rxlet.loadStatus === loadStatus.LOADED &&
+                 rxlet.routerName !== routerName.FORBIDDEN &&
+                 rxlet.routerName !== routerName.ERROR &&
+                 rxlet.isVersionDiff) {
+                <kbq-alert
+                        [alertStyle]="'colored'"
+                        [alertColor]="'warning'"
+                        [compact]="true"
+                        class="layout-row app-license-alert"
+                        *transloco="let tCommon; prefix: 'common'">
+                    <header class="kbq-text-normal-strong" data-testid="license-alert-title-text">
+                        {{ tCommon('Common.Pseudo.Alert.Title.DifferentVersions', { appVersion: rxlet.appVersion, hostVersion: rxlet.hostAppVersion }) }}
+                    </header>
+                    {{ tCommon('Common.Pseudo.Alert.Description.VersionWarning') }}
+                </kbq-alert>
+            }
             <router-outlet></router-outlet>
         </section>
 

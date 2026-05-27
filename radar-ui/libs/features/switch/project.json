@@ -1,7 +1,7 @@
 {
     "name": "feature-switch",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/features/switch",
     "sourceRoot": "libs/features/switch/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/features/switch"],
+            "outputs": ["{workspaceRoot}/coverage/libs/features/switch"],
             "options": {
                 "jestConfig": "libs/features/switch/jest.config.ts",
                 "passWithNoTests": true

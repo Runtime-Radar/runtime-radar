@@ -1,7 +1,7 @@
 {
     "name": "runtime-radar",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
     "projectType": "application",
-    "root": "apps/runtime-radar",
     "sourceRoot": "apps/runtime-radar/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -14,11 +14,7 @@
                 "polyfills": "apps/runtime-radar/src/polyfills.ts",
                 "tsConfig": "apps/runtime-radar/tsconfig.app.json",
                 "inlineStyleLanguage": "scss",
-                "allowedCommonJsDependencies": [
-                    "@messageformat/core",
-                    "luxon",
-                    "flat"
-                ],
+                "allowedCommonJsDependencies": ["@messageformat/core", "luxon", "flat"],
                 "assets": [
                     {
                         "glob": "favicon.ico",
@@ -56,9 +52,7 @@
                         "output": "./assets/i18n"
                     }
                 ],
-                "styles": [
-                    "apps/runtime-radar/src/styles.scss"
-                ],
+                "styles": ["apps/runtime-radar/src/styles.scss"],
                 "scripts": [],
                 "vendorChunk": true,
                 "extractLicenses": false,
@@ -126,15 +120,12 @@
         "lint": {
             "executor": "@nx/linter:eslint",
             "options": {
-                "lintFilePatterns": [
-                    "apps/runtime-radar/src/**/*.ts",
-                    "apps/runtime-radar/src/**/*.html"
-                ]
+                "lintFilePatterns": ["apps/runtime-radar/src/**/*.ts", "apps/runtime-radar/src/**/*.html"]
             }
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/apps/runtime-radar"],
+            "outputs": ["{workspaceRoot}/coverage/apps/runtime-radar"],
             "options": {
                 "jestConfig": "apps/runtime-radar/jest.config.ts",
                 "passWithNoTests": true

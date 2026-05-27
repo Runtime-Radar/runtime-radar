@@ -1,7 +1,7 @@
 {
     "name": "feature-runtime",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/features/runtime",
     "sourceRoot": "libs/features/runtime/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/features/runtime"],
+            "outputs": ["{workspaceRoot}/coverage/libs/features/runtime"],
             "options": {
                 "jestConfig": "libs/features/runtime/jest.config.ts",
                 "passWithNoTests": true
