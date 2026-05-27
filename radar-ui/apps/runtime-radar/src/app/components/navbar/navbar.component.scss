@@ -1,4 +1,4 @@
-$menu-height: 1 * 60px + 5 * 35px + 90px + 50px; // title + children + logo + userbar
+$menu-height: 1 * 60px + 6 * 35px + 90px + 50px; // title + children + logo + userbar
 
 :host {
     display: block;
@@ -112,7 +112,7 @@ $menu-height: 1 * 60px + 5 * 35px + 90px + 50px; // title + children + logo + us
             min-height: 40px;
             margin: 8px;
             padding: 4px 4px 4px 12px;
-            border: 0;
+            border: none;
         }
 
         &-info {
@@ -131,11 +131,6 @@ $menu-height: 1 * 60px + 5 * 35px + 90px + 50px; // title + children + logo + us
             &-icon {
                 padding: 8px;
                 color: #0066ff; // @todo: replace to koobiq token
-            }
-
-            &-version {
-                max-width: 190px;
-                margin-top: 8px;
             }
         }
 

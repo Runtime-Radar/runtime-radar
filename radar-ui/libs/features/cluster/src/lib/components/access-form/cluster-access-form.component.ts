@@ -59,7 +59,7 @@ export class ClusterFeatureAccessFormComponent implements AfterViewInit, OnInit 
         })
     );
 
-    readonly tooltipPlacement = PopUpPlacements;
+    readonly tooltipPlacements = PopUpPlacements;
 
     readonly separatorKeyCodes = FORM_SEPARATOR_KEY_CODES;
 

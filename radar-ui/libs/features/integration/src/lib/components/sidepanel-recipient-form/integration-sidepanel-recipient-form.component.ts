@@ -1,7 +1,6 @@
-import { KbqTagInputEvent } from '@koobiq/components/tags';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, Inject, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, FormRecord, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormRecord, Validators } from '@angular/forms';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelRef } from '@koobiq/components/sidepanel';
 import {
     Observable,
@@ -20,11 +19,7 @@ import { I18nService } from '@cs/i18n';
 import { IntegrationType } from '@cs/domains/integration';
 import { RegisteredCluster } from '@cs/domains/cluster';
 import { FORM_SEPARATOR_KEY_CODES, FORM_VALIDATION_REG_EXP, FormScheme, CoreUtilsService as utils } from '@cs/core';
-import {
-    NotificationEventType,
-    NotificationRequestService,
-    NotificationWebhookHeadersList
-} from '@cs/domains/notification';
+import { NotificationRequestService, NotificationWebhookHeadersList } from '@cs/domains/notification';
 
 import { IntegrationSidepanelRecipientFormProps } from '../../interfaces/integration-sidepanel.interface';
 import { IntegrationFeatureHelperService as integrationHelper } from '../../services/integration-helper.service';
@@ -38,8 +33,8 @@ const DEFAULT_WEBHOOK_HEADERS: NotificationWebhookHeadersList = {
     ['Content-type']: 'application/json'
 };
 
-const INTEGRATION_SUBJECT_TEMPLATES: Map<string, string> = new Map([
-    [NotificationEventType.RUNTIME, 'Integration.RecipientForm.Value.Subject.Runtime']
+const INTEGRATION_SUBJECT_TEMPLATES = new Map<string, string>([
+    ['runtime_event', 'Integration.RecipientForm.Value.Subject.Runtime']
 ]);
 
 @Component({
@@ -48,10 +43,10 @@ const INTEGRATION_SUBJECT_TEMPLATES: Map<string, string> = new Map([
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IntegrationFeatureSidepanelRecipientFormComponent implements OnInit, AfterViewInit {
-    readonly form: FormGroup<FormScheme<IntegrationRecipientForm, 'header', 'recipients'>> = this.formBuilder.group({
+    readonly form: FormGroup<FormScheme<IntegrationRecipientForm, 'header'>> = this.formBuilder.group({
         name: ['', Validators.required],
-        recipients: this.formBuilder.array<string>([]),
-        eventType: [NotificationEventType.RUNTIME],
+        recipients: [[] as string[]],
+        eventType: ['runtime_event'],
         clusterId: [''],
         clusterUrl: [''],
         clusterName: [{ value: '', disabled: true }, Validators.required],
@@ -149,11 +144,9 @@ export class IntegrationFeatureSidepanelRecipientFormComponent implements OnInit
 
     readonly integrationType = IntegrationType;
 
-    readonly separatorKeyCodes = FORM_SEPARATOR_KEY_CODES;
+    readonly validators = Validators;
 
-    get recipientsControl(): FormArray {
-        return this.form.get('recipients') as FormArray;
-    }
+    readonly separatorKeyCodes = FORM_SEPARATOR_KEY_CODES;
 
     get headerFormGroup(): FormRecord {
         return this.form.get('header') as FormRecord;
@@ -187,10 +180,6 @@ export class IntegrationFeatureSidepanelRecipientFormComponent implements OnInit
         if (this.props.notification && this.props.isEdit) {
             this.form.get('eventType')?.disable({ onlySelf: true });
 
-            this.props.notification.recipients.forEach((value) => {
-                this.recipientsControl.push(this.formBuilder.control(value, Validators.email));
-            });
-
             this.form.patchValue({
                 name: this.props.notification.name,
                 eventType: this.props.notification.event_type,
@@ -200,6 +189,7 @@ export class IntegrationFeatureSidepanelRecipientFormComponent implements OnInit
                 centralUrl: this.props.notification.central_cs_url,
                 template: this.props.notification.template,
                 isTemplateDefault: !this.props.notification.template,
+                recipients: this.props.notification.recipients,
                 subjectTemplate:
                     this.props.notification.integration_type === IntegrationType.EMAIL
                         ? this.props.notification.email.subject_template
@@ -214,19 +204,6 @@ export class IntegrationFeatureSidepanelRecipientFormComponent implements OnInit
                 this.setHeaderForm(this.props.notification.webhook.headers);
             }
         }
-    }
-
-    addRecipient(event: KbqTagInputEvent) {
-        const value = event.value.trim();
-
-        if (value) {
-            this.recipientsControl.push(this.formBuilder.control(value, Validators.email));
-            event.input.value = '';
-        }
-    }
-
-    removeRecipient(id: number) {
-        this.recipientsControl.removeAt(id);
     }
 
     addHeaderItem() {

@@ -44,6 +44,13 @@
         </ng-template>
 
         <ng-template #step>
+            <cs-cluster-feature-metric-form-component
+                    class="cluster-feature-create-form"
+                    [values]="metricForm$ | async"
+                    (formChange)="changeMetricForm($event)"></cs-cluster-feature-metric-form-component>
+        </ng-template>
+
+        <ng-template #step>
             <cs-cluster-feature-ingress-form-component
                     class="cluster-feature-create-form"
                     [values]="ingressForm$ | async"

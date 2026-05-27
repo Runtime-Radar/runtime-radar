@@ -7,11 +7,12 @@ import { RuntimeConfigStatus, RuntimeState } from '../interfaces';
 
 const INITIAL_STATE: RuntimeState = {
     loadStatus: LoadStatus.INIT,
+    configStatus: RuntimeConfigStatus.INIT,
     hasChanges: false,
     hasPoliciesChanges: false,
     isExpertMode: false,
     isOverlayed: false,
-    configStatus: RuntimeConfigStatus.INIT,
+    grafanaUrl: '',
     config: {
         version: '',
         tracing_policies: {},

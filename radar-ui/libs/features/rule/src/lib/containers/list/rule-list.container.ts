@@ -180,7 +180,8 @@ export class RuleFeatureListContainer {
 
     openDeleteModal(id: string) {
         this.sharedModalService.delete({
-            content: this.i18nService.translate('Rule.DeleteModal.Title.Text'),
+            title: this.i18nService.translate('Rule.DeleteModal.Title.Text'),
+            content: this.i18nService.translate('Rule.DeleteModal.Content.Text'),
             confirmText: this.i18nService.translate('Rule.DeleteModal.Button.Confirm'),
             cancelText: this.i18nService.translate('Rule.DeleteModal.Button.Cancel'),
             confirmHandler: () => {

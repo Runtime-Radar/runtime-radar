@@ -13,7 +13,7 @@ import {
     UPDATE_RULE_STATE_DOC_ACTION
 } from './rule-action.store';
 
-const adapter = createEntityAdapter<Rule>();
+export const adapter = createEntityAdapter<Rule>();
 
 const INITIAL_STATE: RuleState = {
     loadStatus: LoadStatus.INIT,

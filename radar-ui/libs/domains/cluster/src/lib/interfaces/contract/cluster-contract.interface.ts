@@ -29,6 +29,18 @@ export interface ClusterRegistry {
     chart_version?: string;
 }
 
+export interface ClusterGrafana {
+    address?: string;
+    user?: string;
+    password?: string;
+}
+
+export interface ClusterPrometheus {
+    deploy: boolean;
+    persistence: boolean;
+    storage_class?: string;
+}
+
 export interface ClusterIngress {
     ingress_class: string;
     hostname: string;
@@ -59,6 +71,9 @@ export interface ClusterConfig {
     redis: ClusterRedis;
     rabbit: ClusterRabbit;
     registry: ClusterRegistry;
+    enable_metrics: boolean;
+    grafana?: ClusterGrafana;
+    prometheus?: ClusterPrometheus;
     ingress?: ClusterIngress;
     node_port?: ClusterNodePort;
 }

@@ -14,6 +14,11 @@ export class RuntimeFeaturePolicyNameService {
         this.names.push(key);
     }
 
+    setAll(keys: string[]) {
+        this.clear();
+        this.names.push(...keys);
+    }
+
     clear() {
         this.names.splice(0, this.names.length);
     }

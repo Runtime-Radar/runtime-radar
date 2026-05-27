@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { ApiEmptyRequest, ApiService } from '@cs/api';
 
@@ -12,8 +12,6 @@ export class RoleRequestService {
     constructor(private readonly apiService: ApiService) {}
 
     getRoles(): Observable<Role[]> {
-        return this.apiService.get<ApiEmptyRequest, GetRolesResponse>('role').pipe(
-            map((response) => response.roles)
-        );
+        return this.apiService.get<ApiEmptyRequest, GetRolesResponse>('role').pipe(map((response) => response.roles));
     }
 }
