@@ -1,6 +1,7 @@
 export enum ClusterStepName {
     REGISTRY = 'registry',
     DATABASE = 'database',
+    METRIC = 'metric',
     INGRESS = 'ingress',
     ACCESS = 'access'
 }

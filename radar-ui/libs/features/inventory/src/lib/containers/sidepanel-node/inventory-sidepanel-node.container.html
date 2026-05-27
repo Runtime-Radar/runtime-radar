@@ -1,0 +1,81 @@
+<ng-container *transloco="let tInventory; prefix: 'inventory'">
+    <kbq-sidepanel-header [closeable]="true">
+        <span class="cs-text-gray">{{ tInventory('Inventory.EntitySidepanel.Title.Node') }}</span>
+        {{ props.node.node_name }}
+    </kbq-sidepanel-header>
+    <kbq-sidepanel-body class="inventory-feature-sidepanel-node">
+        <kbq-tab-group underlined>
+            <kbq-tab>
+                <ng-template kbq-tab-label>
+                    <i kbq-icon="kbq-rectangles-o_16"></i>
+                    {{ tInventory('Inventory.EntitySidepanel.Tab.Structure') }}
+                </ng-template>
+
+                <ng-container *ngrxLet="groupNamespaces$(props.node.node_name) as groupNamespaces">
+                    @for (group of groupNamespaces | kubeManagerGroupNamespacesSort; track group.id) {
+                        @for (namespace of group.namespaces; track namespace.id) {
+                            @let pods = (pods$(namespace.namespace, props.node.node_name) | async)!;
+
+                            @if (namespace.nodes.includes(props.node.node_name)) {
+                                <section class="layout-margin-top-xxl">
+                                    <section class="layout-row layout-align-space-between-center kbq-text-compact cs-text-gray inventory-feature-sidepanel-node-table">
+                                        <span>{{ tInventory('Inventory.EntitySidepanel.Label.Namespace') }}</span>
+                                        <span>&nbsp;</span>
+                                    </section>
+
+                                    <article [id]="namespace.id"
+                                             class="layout-row layout-align-space-between-center inventory-abstract-feature-header inventory-feature-sidepanel-node-header"
+                                             (click)="props.namespaceHandler({ namespace, pods })"
+                                             data-testid="inventory-namespace-open-button">
+                                        <span class="kbq-mono-normal-strong inventory-feature-sidepanel-node-header-name">{{ namespace.namespace }}</span>
+                                    </article>
+
+                                    @if (pods.length) {
+                                        <section class="layout-row layout-align-space-between-center kbq-text-compact cs-text-gray inventory-feature-sidepanel-node-table">
+                                            <span>{{ tInventory('Inventory.EntitySidepanel.Label.Pods') }}</span>
+                                            <span>{{ tInventory('Inventory.EntitySidepanel.Label.Containers') }}</span>
+                                        </section>
+                                    }
+
+                                    @for (pod of pods; track pod.uid) {
+                                        @if (pod.node_name === props.node.node_name) {
+                                            <article [id]="pod.uid"
+                                                     class="layout-row layout-align-space-between-center inventory-abstract-feature-header inventory-feature-sidepanel-node-header inventory-feature-sidepanel-node-header--colored"
+                                                     [ngClass]="{ 'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING }"
+                                                     [ngStyle]="{ 'background-color': pod.bgColor, 'color': pod.textColor }"
+                                                     (click)="props.podHandler({ pod })"
+                                                     data-testid="inventory-pod-open-button">
+                                                <span class="kbq-mono-normal-strong inventory-feature-sidepanel-node-header-name">{{ pod.name }}</span>
+                                                <span class="kbq-mono-normal inventory-feature-sidepanel-node-header-count">{{ pod.containers.length }}</span>
+                                            </article>
+                                        }
+                                    }
+                                </section>
+                            }
+                        }
+                    }
+                </ng-container>
+            </kbq-tab>
+
+            <kbq-tab>
+                <ng-template kbq-tab-label>
+                    <i kbq-icon="kbq-code_16"></i>
+                    {{ tInventory('Inventory.EntitySidepanel.Tab.Config') }}
+                </ng-template>
+
+                @if (codeConfigFiles$ | async; as codeConfigFiles) {
+                    <kbq-code-block
+                            class="inventory-feature-sidepanel-node-code"
+                            canCopy
+                            canDownload
+                            canToggleSoftWrap
+                            [lineNumbers]="true"
+                            [softWrap]="false"
+                            [filled]="false"
+                            [files]="codeConfigFiles">
+                    </kbq-code-block>
+                }
+            </kbq-tab>
+        </kbq-tab-group>
+    </kbq-sidepanel-body>
+</ng-container>

@@ -1,6 +1,5 @@
 import { RolePermission } from '@cs/domains/role';
 
-// should be the same names like PermissionName
 export enum TokenPermissionName {
     RULES = 'rules',
     EVENTS = 'events'

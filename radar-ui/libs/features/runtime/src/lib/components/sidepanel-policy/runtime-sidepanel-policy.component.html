@@ -2,31 +2,24 @@
     <kbq-sidepanel-header [closeable]="true">{{ tRuntime('Runtime.PolicySidepanel.Title.Policy') }}</kbq-sidepanel-header>
 
     <kbq-sidepanel-body>
-        <div class="runtime-feature-sidepanel-policy">
-            <section>
-                <span class="kbq-text-normal cs-text-gray runtime-feature-sidepanel-policy-label">
-                    {{ tRuntime('Runtime.PolicySidepanel.Label.Name') }}
-                </span>
-                <span>{{ props.name }}</span>
-            </section>
-            <section class="layout-margin-top-l">
-                <span class="kbq-text-normal cs-text-gray runtime-feature-sidepanel-policy-label">
-                    {{ tRuntime('Runtime.PolicySidepanel.Label.Description') }}
-                </span>
-                <span>{{ props.description || '—' }}</span>
-                @if (props.yaml) {
-                    <kbq-code-block
-                            canCopy
-                            canDownload
-                            canToggleSoftWrap
-                            [lineNumbers]="true"
-                            [softWrap]="false"
-                            [filled]="false"
-                            [files]="files"
-                            class="runtime-feature-sidepanel-policy-code">
-                    </kbq-code-block>
-                }
-            </section>
-        </div>
+        <kbq-dl [vertical]="true">
+            <kbq-dt>{{ tRuntime('Runtime.PolicySidepanel.Label.Name') }}</kbq-dt>
+            <kbq-dd>{{ props.name }}</kbq-dd>
+            <kbq-dt>{{ tRuntime('Runtime.PolicySidepanel.Label.Description') }}</kbq-dt>
+            <kbq-dd>{{ props.description || '—' }}</kbq-dd>
+        </kbq-dl>
+
+        @if (props.yaml) {
+            <kbq-code-block
+                    canCopy
+                    canDownload
+                    canToggleSoftWrap
+                    [lineNumbers]="true"
+                    [softWrap]="false"
+                    [filled]="false"
+                    [files]="files"
+                    class="layout-margin-top-m">
+            </kbq-code-block>
+        }
     </kbq-sidepanel-body>
 </ng-container>

@@ -12,7 +12,7 @@ const SEVERITY_ITERATION = {
     [RuleSeverity.CRITICAL]: 3
 };
 
-const VERDICT_SEVERITY_RELATIONS: Map<RuleVerdict, RuleSeverity> = new Map([
+const VERDICT_SEVERITY_RELATIONS = new Map<RuleVerdict, RuleSeverity>([
     [RuleVerdict.NONE, RuleSeverity.NONE],
     [RuleVerdict.CLEAN, RuleSeverity.LOW],
     [RuleVerdict.UNWANTED, RuleSeverity.MEDIUM],

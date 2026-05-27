@@ -8,7 +8,7 @@ import { RuntimeFeatureConfigUtilsService as runtimeConfigUtils } from '../servi
 
 const RUNTIME_HISTORY_SEPARATOR = ', ';
 
-const RUNTIME_HISTORY_LABELS: Map<string, string> = new Map([
+const RUNTIME_HISTORY_LABELS = new Map<string, string>([
     ['type', 'Runtime.EventsPage.Filter.FilterPopover.Label.Type'],
     ['argument', 'Runtime.EventsPage.Filter.FilterPopover.Label.Argument'],
     ['binary', 'Runtime.EventsPage.Filter.FilterPopover.Label.Binary'],

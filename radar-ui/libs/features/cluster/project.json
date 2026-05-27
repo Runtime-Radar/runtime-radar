@@ -1,7 +1,7 @@
 {
     "name": "feature-cluster",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "projectType": "library",
-    "root": "libs/features/cluster",
     "sourceRoot": "libs/features/cluster/src",
     "prefix": "runtime-radar",
     "targets": {
@@ -13,7 +13,7 @@
         },
         "test": {
             "executor": "@nx/jest:jest",
-            "outputs": ["coverage/libs/features/cluster"],
+            "outputs": ["{workspaceRoot}/coverage/libs/features/cluster"],
             "options": {
                 "jestConfig": "libs/features/cluster/jest.config.ts",
                 "passWithNoTests": true
