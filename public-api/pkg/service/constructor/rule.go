@@ -15,6 +15,17 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+// unmarshalOptions returns a protojson.UnmarshalOptions configuration
+// necessary for correctly parsing protojson and ignoring unknown fields.
+// It enables the DiscardUnknown option so that missing fields are simply
+// ignored during unmarshaling, ensuring that the parsing process does not
+// fail due to unexpected fields.
+func unmarshalOptions() protojson.UnmarshalOptions {
+	return protojson.UnmarshalOptions{
+		DiscardUnknown: true,
+	}
+}
+
 func RuleCreate(svc service.Rule) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -25,7 +36,7 @@ func RuleCreate(svc service.Rule) http.Handler {
 		}
 
 		req := &enf_api.Rule{}
-		if err = protojson.Unmarshal(body, req); err != nil {
+		if err = unmarshalOptions().Unmarshal(body, req); err != nil {
 			status := status.New(codes.InvalidArgument, err.Error())
 			handler.StatusJSONResp(w, status)
 			return
@@ -133,7 +144,7 @@ func RuleUpdate(svc service.Rule) http.Handler {
 		}
 
 		req := &enf_api.Rule{}
-		if err = protojson.Unmarshal(body, req); err != nil {
+		if err = unmarshalOptions().Unmarshal(body, req); err != nil {
 			handler.StatusJSONResp(w, status.New(codes.InvalidArgument, err.Error()))
 			return
 		}
