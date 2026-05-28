@@ -23,7 +23,7 @@ podSecurityContext:
   supplementalGroups: []
 env:
   - name: AUTH_API_URL
-    value: '{{ printf "%s://auth-api:9000" (include "common.cs.http-scheme" .) }}'
+    value: '{{ printf "%s://auth-center:9000" (include "common.cs.http-scheme" .) }}'
   - name: POLICY_ENFORCER_GRPC_ADDR
     value: "policy-enforcer:8000"
   - name: HISTORY_API_GRPC_ADDR
