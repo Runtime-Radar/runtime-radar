@@ -1,4 +1,4 @@
-﻿# Help
+# Help
 
 ## <a name="9815029643"></a>Installing and setting up RuntimeRadar
 
@@ -40,7 +40,7 @@ RAM
 HDD
 </td><td align="left">
 
-80 GB
+20 GB
 </td></tr></tbody></table>
 
 
@@ -111,14 +111,32 @@ RAM
 </td><td align="left">
 
 16 GB
-</td></tr><tr><td align="left">
-
-HDD
-</td><td align="left">
-
-500 GB
 </td></tr></tbody></table>
 
+
+The minimum disk size is calculated using different formulas depending on the stored data.
+
+The average size of a Tetragon event is 13 KB. You can calculate the minimum HDD size for a ClickHouse server depending on the average number of events per second within the calculated period (R) and the number of days to store events for (d) using the following formula: HDD = 13 × R × 86 400 × d.
+
+The calculateed HDD size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
+
+The minimum HDD size for a PostgreSQL server depends on the following:
+* Size of an image scan event (depends on the number of components and vulnerabilities), s. The average event size is 500 KB. For images with a large number of components, we recommend that you increase this value by 25-30%.
+* Number of images to scan during a scheduled scan, I.
+* Number of scans within the retention period, N<sub>d</sub>. For example, if one scheduled scan is performed per week, 52 scans will be performed per year and 4 scans—per month. If a scan is performed twice a day, 62 scans will be performed per month.
+
+You can calculate the minimum HDD disk size for a PostgreSQL server using the following formula: HDD = s × I × N<sub>d</sub>.
+
+The calculateed HDD size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
+
+The minimum HDD size for a server that stores admission controller check events and configuration scans depends on the following:
+* Kubernetes API server RPS to the admission controller module, N<sub>r</sub>. The RPS can be determined using [Grafana](#9502135051).
+* Scan event size, S<sub>s</sub>. As a rule, a scan event contains information about one component (except IaC) so the average event size is 50–60 KB.
+* Event retention period, d.
+
+You can calculate the minimum HDD disk size for the server to store admission controller check events and to scan configurations using the following formula: HDD = N<sub>r</sub> × S<sub>s</sub> × 86 400 × d.
+
+The calculateed HDD size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
 
 If you use PostgreSQL, RabbitMQ, ClickHouse, or Redis obtained from somewhere other than the Runtime Radar installation distribution package, ensure that the cluster is connected to the servers of the corresponding DBMSs.
 
@@ -208,11 +226,12 @@ Use an OS whose core meets the following requirements:
 
 ### Quick installation using Helm
 
-The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the [README.md](../../install/helm/README.md) file.
+The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the `README.md` file.
 
 To install Runtime Radar using Helm,
 
 1. Run the following command:
+
    ```bash
    helm install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.2.0 \
      --set-string 'global.ownCsUrl=https://<your domain address>:32000' \
@@ -220,17 +239,35 @@ To install Runtime Radar using Helm,
      --set-string 'global.keys.encryption=INIT-DO-NOT-USE' \
      --set-string 'auth-center.administrator.username=admin' \
      --set-string 'auth-center.administrator.password=Password' \
+     --set-string 'history-api.retentionInterval=8760h' \
+     --set-string 'postgresql.auth.username=admin' \
+     --set-string 'postgresql.auth.password=Password' \
+     --set-string 'postgresql.auth.database=rr_quickstart' \
+     --set 'postgresql.persistence.enabled=false' \
+     --set-string 'redis.auth.username=admin' \
+     --set-string 'redis.auth.password=Password' \
+     --set 'redis.persistence.enabled=false' \
+     --set-string 'rabbitmq.auth.username=admin' \
+     --set-string 'rabbitmq.auth.password=Password' \
+     --set 'rabbitmq.persistence.enabled=false' \
+     --set 'clickhouse.deploy=true' \
+     --set-string 'clickhouse.auth.username=admin' \
+     --set-string 'clickhouse.auth.password=Password' \
+     --set-string 'clickhouse.auth.database=rr_quickstart' \
+     --set 'clickhouse.persistence.enabled=false' \
      --set-string 'reverse-proxy.service.type=NodePort' \
      --set-string 'reverse-proxy.service.nodePorts.http=32000'
    ```
 
    ***Note.** In the command example, the username is `admin` and the password is `Password`. You can specify other values and later use them to connect to the Runtime Radar web interface.*
 
-   ***Note.** In the command example, access to the web interface is configured using the NodePort service on port 32000. You can use the Ingress controller instead or change the port number. To do this, you must specify the [corresponding settings](#9815029643). You can also change [other settings](#9815029643) in the installation command.*
+   ***Note.** In the command example, access to the web interface is configured using the NodePort service on port 32000. You can use the Ingress controller instead or change the port. To do this, you must specify the [corresponding settings](#9815029643). You can also change [other settings](#9815029643) in the installation command.*
 
 Now you can start setting up the runtime event monitoring.
 
 ### Setting up the Runtime Radar web interface connection
+
+You can set up access to the Runtime Radar web interface using the following methods:
 * Using port forwarding.
 * Using the Ingress controller. Runtime Radar supports two types of Ingress controllers: nginx and HAProxy. To use other Ingress controllers, you need to configure additional settings manually.
 * Using the NodePort service.
@@ -386,8 +423,6 @@ To set a network port for the runtime monitor service:
 
 1. Apply the changes and exit the edit mode.
 
-1. Restart the runtime monitor service by running the following command:
-
    ```
    kubectl rollout restart daemonset/<service name> -n <namespace where Runtime Radar is installed>
    ```
@@ -401,7 +436,7 @@ You can use Runtime Radar to protect multiple clusters. You must first install R
 
 The central cluster is a cluster to which child clusters are connected and through requests to which they are managed.
 
-The child cluster is a cluster with a deployed Runtime Radar instance and connected to the central cluster. The number of child clusters that you can connect is limited by the purchased license.
+The child cluster is a cluster with a deployed Runtime Radar instance and connected to the central cluster.
 
 The "auth API" and "cluster manager" modules are not installed in child clusters. This ensures high performance and reduces network load. The "auth API" module manages accounts used to manage all connected clusters. The "cluster manager" module manages connection and deletion of child clusters.
 
@@ -428,7 +463,7 @@ Each section with information about the connected cluster has the following elem
 * Cluster status.
 * Buttons to change the cluster name and delete the cluster. If the cluster is selected in the Runtime Radar web interface, the deletion button is inactive.
 
-### Connecting a child cluster to Runtime Radar
+### <a name="9839873547"></a>Connecting a child cluster to Runtime Radar
 
 To connect a child cluster, you must first add the child cluster in the Runtime Radar web interface and get the installation command. Run the received installation command in the child cluster. Then, the cluster will be automatically registered in Runtime Radar.
 
@@ -575,15 +610,15 @@ To add a notification service:
 
 1. Enter the LDAP server address and port in the following format: `<IP address or domain name>:<port>`.
 
-1. Enter the login and password of the account to be used for authentication on the server.
+1. Enter the account credentials to be used for authentication on the server.
 
 1. If necessary, specify a root certificate of the certification authority.
 
 1. Enter the email address of the sender on whose behalf notifications will be sent.
 
-1. If your SMTP server supports secure connections with the STARTTLS extension, select the **Use STARTTLS** check box.
+1. If your SMTP server supports secure connections with the STARTTLS extension, select the **Use STARTTLS** checkbox.
 
-1. If you need to verify that the server connection is secure using a self-signed certificate, select the **Verify connection security** check box.
+1. If you need to verify that the server connection is secure using a self-signed certificate, select the **Verify connection security** checkbox.
 
 1. Click **Connect**.
 
@@ -669,7 +704,7 @@ To add a notification service:
 
 1. If necessary, specify a root certificate of the certification authority.
 
-1. If you need to verify that the server connection is secure using a self-signed certificate, select the **Verify connection security** check box.
+1. If you need to verify that the server connection is secure using a self-signed certificate, select the **Verify connection security** checkbox.
 
 1. Click **Connect**.
 
@@ -963,7 +998,7 @@ Notification example:
     </ul>
     <p>
       To investigate, go to:
-      <a href="https://your-domain.com:32000/runtime/events">Runtime Radar console</a>
+      <a href="https://<your server address>:3200/runtime/events">`Runtime Radar` console</a>
     </p>
     <p>
       <a href="{{.centralCSURL}}/events/{{.event.GetEventId}}?clusterUrl={{.ownCSURL}}">Go to the event</a>
@@ -1040,13 +1075,17 @@ To create a rule for monitoring of and response to runtime events:
 
    ***Note.** In name templates, you can use an asterisk (`*`) for any number of any character and a question mark (`?`) for any single character. For example, the `default-*` template matches the namespaces whose names start with `default`. Templates are case-sensitive. Regular expressions are not supported.*
 
-1. Select the vulnerability severity that must be reached to send a notification.
+1. Select the threat severity that must be reached to block a runtime event.
+
+   ***Note.** An event is blocked by deleting the pod where the event occured.*
+
+1. Select the threat severity that must be reached to send a notification.
 
 1. Select a notification template.
 
    If **Do not notify** is selected under **Notify**, the templates are not available.
 
-   ***Note.** You can select a template if at least one notification template for the "Runtime" event type is created in Runtime Radar.*
+   ***Note.** You can select a template if at least one notification template is created in Runtime Radar.*
 
 1. If required, under **Exclusions**, select threats for the rule to skip.
 
@@ -1058,11 +1097,11 @@ To create a rule for monitoring of and response to runtime events:
 
 You can set up monitoring of and responding to runtime events. Monitoring of runtime events allows tracking of events at the level of individual pods or containers in Kubernetes clusters, including the start of processes, system calls, and requests to specific kernel functions. During monitoring of and responding to events, they are checked through a chain of detectors that detect threats in an event and assign a severity to them. Response rules created in Runtime Radar allow you to configure responses to be performed when a threat is detected.
 
-A detector is a program written in a Turing-complete programming language (for example, Go, Python, C, C++, Rust) and compiled in the WebAssembly (WASM) format; it can be dynamically loaded to the system and unloaded without restarting, and allows you to implement secure algorithms, which are close in speed to native code, for checks and analysis of incoming events.
+A detector is a program written in a Turing-complete programming language (for example, Go, Python, C, C++, Rust) and compiled in the WebAssembly (Wasm) format; it can be dynamically loaded to the system and unloaded without restarting, and allows you to implement secure algorithms, which are close in speed to native code, for checks and analysis of incoming events.
 
 You can configure tracking of runtime events from specific sources to get check results of only required events and reduce the flow of events processed by Runtime Radar.
 
-A source is a description of operation logic for eBPF programs in a special language (TracingPolicy). The programs are loaded to and executed in an OS kernel on a host and can track runtime events using the `kprobe`, `uprobe`, `tracepoint`, and `BPF-LSM` mechanisms of the Linux kernel. Sources use the mechanisms described above to track the activity of processes in containers (monitoring of system calls and requests to specific kernel functions) and detect threats. Events that start and stop processes in cluster containers are always tracked.
+A source is a description of operation logic for eBPF programs in a special language (TracingPolicy). The programs are loaded to and executed in an OS kernel on a host and can track runtime events using the `kprobe`, `uprobe`, `tracepoint`, and `BPF-LSM` mechanisms of the Linux kernel. Sources use the mechanisms described above to track the activity of processes in containers (monitoring of system calls and requests to specific kernel functions) and detect threats. Events that start and stop processes in cluster containers are always tracked. Using the expert mode, you can edit existing sources or add new sources.
 
 > **Warning.**[Configure sources and event filters](#7786230795) taking into account the actual load on protected clusters to avoid excessive load on Runtime Radar. If the load increases, consider scaling the system.
 
@@ -1086,7 +1125,7 @@ The page contains the following tabs:
 * **Events** to [view information about events](#5265696395) that were logged by Runtime Radar according to the values on the **Parameters** tab.
 * **Detectors** to view information about detectors, [add, and delete them](#7163413643).
 
-### <a name="5265694091"></a>Sources and types of runtime events that they track
+### <a name="9979340811"></a>Managing runtime event monitoring sources
 
 The Runtime Radar distribution kit includes a set of sources covered by the Runtime Radar license. The sources from the distribution kit and the types of events they track are described in the table below.
 
@@ -1108,15 +1147,6 @@ Privilege escalation
 </td><td align="left">
 
 This source tracks the `commit_creds` function allowing detection of privilege escalation, including superuser (root) privileges
-</td></tr><tr><td align="left">
-
-Access to important system files
-</td><td align="left">
-
-This source tracks the `security_file_permission`, `security_mmap_file`, and `security_path_truncate` calls to a number of files, such as `/boot`, `/root/.ssh`, `/etc/shadow`, `/etc/profile`, `/etc/sudoers`, and `/etc/pam.conf`.
-
-
-Files can be tracked for read, write, or both read and write
 </td></tr><tr><td align="left">
 
 Using tools for debugging and reverse engineering (`ptrace`)
@@ -1153,8 +1183,61 @@ Copying of file descriptors
 </td><td align="left">
 
 This source tracks calls to functions that copy file descriptors. The source tracks the copying of the standard input file descriptor (stdin), which may indicate an attempt to build a pipe required for various hacking tools
+</td></tr><tr><td align="left">
+
+Monitoring the `io_uring` interface
+</td><td align="left">
+
+The source tracks the `io_uring_setup()` and `io_uring_enter()` system calls, which indicate the use of the `io_uring` interface in the system
+</td></tr><tr><td align="left">
+
+Use of usermode helper API
+</td><td align="left">
+
+The source tracks calls of the Linux kernel functions `call_usermodehelper_setup()` and `call_usermodehelper_exec()`, which indicate process configuration and startup via the usermode helper API. This helps detect several different attacks that use the specified interface to run processes at the host OS level
+</td></tr><tr><td align="left">
+
+Rootkit upload monitoring
+</td><td align="left">
+
+The source tracks calls of the Linux kernel function `kallsyms_lookup_name()` to retrieve the address of a system call table, which may indicate rootkit activity in the target system. The source tracks if eBPF programs were loaded using the `bpf_check()` function, which may help search for rootkits that use eBPF
 </td></tr></tbody></table>
 
+
+**Managing sources**
+
+Using the expert mode, you can edit existing sources or add new sources. The expert mode is available only to users with the **Administrator** role.
+
+You can manage sources on the **Runtime** page on the **Parameters** tab under **Sources**. Under **Sources**, the **Expert mode** switch and a list of sources are displayed. For each source, a checkbox is displayed to enable or disable event tracking from this source. You can open a window with information about a source by clicking its line. The window displays the name, description, and source code. For source code, the following buttons are displayed:
+*  to enable word wrapping.
+*  to copy source code.
+*  to save code to a text file.
+
+In the expert mode, the **Add** button is available for adding a source. If a source is edited or added, the **Reset to default** button appears. It restores the original state of event sources and filters. If [Grafana integration and monitoring](#9502135051) of Runtime Radar components are set up, then, after you edit or add sources, you can view the metrics.
+
+To add a source for runtime event monitoring:
+
+1. On the main menu, select **Runtime**.
+
+1. In the top right corner of the page, select the cluster to add the source to.
+
+1. Enable the expert mode.
+
+1. Click **Add**.
+
+1. Enter the name, description, and source code.
+
+   ***Note.** Source code will be checked automatically. If an error is detected, a message with the number of the first line containing errors will appear.*
+
+1. Click **Add**.
+
+1. Click **Apply**.
+
+The added source will be the last in the list. To start monitoring events from a new source, you must enable it.
+
+***Note.** You cannot edit or disable the **Start and stop of processes** source. This source tracks the start and stop of processes in containers on nodes with installed runtime monitoring components and adds the process context to events of other types (for example, kprobe) from other sources.*
+
+You can delete the source by clicking , which appears when you hover over the source line.
 
 ### <a name="7786230795"></a>Managing tracking settings and event filters
 
@@ -1170,9 +1253,9 @@ To set up tracking of events:
 
    ***Note.** If during Runtime Radar deployment, a self-signed certificate was used, to access the child cluster, you may need to follow the child cluster URL by adding the URL to the security exceptions, ignore the warning about an insecure connection, or add the certificate to the trusted certificates and then try to select a child cluster again.*
 
-1. Select [the sources](#5265694091) of runtime events you want to track.
+1. Select [the sources](#9979340811) of runtime events you want to track.
 
-   ***Note.** You can view a detailed description of the source by hovering over ![pic](pics/9850073483.svg) in its row.*
+   ***Note.** You can view the detailed source description by clicking the line with its name.*
 
 1. Add allow and deny event filters.
 
@@ -1228,13 +1311,13 @@ To add an event filter:
 
 1. Click **Apply**.
 
-You can edit the filter by clicking ![pic](pics/9777620363.svg) and delete the filter by clicking ![pic](pics/9697536907.svg). After the filter is deleted, Runtime Radar will track events that match the filter, without using conditions.
+You can edit the filter by clicking ![pic](pics/9777620363.svg) and delete the filter by clicking ![pic](pics/9697536907.svg). At least one event filter is required. Without filters, too many events will be tracked. After the filter is deleted, Runtime Radar will track events that match the filter, without using conditions.
 
 ### <a name="7163413643"></a>Managing detectors
 
 The Runtime Radar distribution kit includes a set of detectors covered by the Runtime Radar license. Customers, third-party vendors, and community members also can develop detectors and upload them to the system.
 
-You can manage detectors on the **Detectors** tab of the **Runtime** page. Information about all detectors (the identifier, name, version, and description) is presented as a table.
+You can manage detectors on the **Runtime** page on the **Detectors** tab. Information about all detectors (the identifier, name, version, and description) is presented as a table.
 
 **Adding a detector**
 
@@ -1299,3 +1382,44 @@ The page of a separate runtime event displays the following elements:
    * Triggered rules that can be edited and deleted.
    * Detected threats.
    * Detectors that failed to complete the check because of an error.
+
+## <a name="9502135051"></a>Integrating Runtime Radar with Grafana
+
+[Grafana](https://grafana.com/docs) is a data visualization system. Grafana displays information in a format that is easy to analyze and can be used to monitor the operation of Runtime Radar.
+
+For integration, you must set up a connection to Grafana when [installing](#9815029643) or updating Runtime Radar in the central cluster. You can also set up a connection to Grafana when installing Runtime Radar in [child clusters](#9839873547).
+
+After the installation, the Grafana web interface will be available at `<address of theRuntime Radarweb interface in the central cluster>/grafana`. To log in, enter the credentials specified during the Grafana installation.
+
+**Dashboards in Grafana**
+
+A dashboard in Grafana is a page with charts, diagrams, and other statistics about operation of a particular IT system.
+
+Grafana provides a set of dashboards for monitoring Runtime Radar. Each dashboard displays specific information about the state of system components and services. On each dashboard, you can select a cluster for which to display the information.
+
+The following dashboards are included in the distribution kit:
+* Admission. For monitoring detectors used for checks via the admission controller. Shows the number of operation errors and duration of detector chain execution.
+* Cluster status. Provides information about the health of ClickHouse, RabbitMQ, and PostgreSQL, the current cluster state (central cluster, unregistered child cluster, and registered child cluster), and the Runtime Radar license and vulnerability database update status. To get information about the health of external services, you must configure the internal Prometheus system for this purpose or install the external Prometheus system.
+* Go app. Provides the main metrics for Golang services. Shows the key performance and stability indicators for these components.
+* gRPC. Gives a summary of gRPC communications between Runtime Radar services (request types and their statuses and duration). The majority of internal communications between services is done via gRPC. To make analysis easier, all related metrics are gathered on one dashboard.
+* Public API. For monitoring the public API. Shows the external interface health and performance to help control its availability and quality of provided services.
+* Reverse proxy. Provides information about the availability and operation of the reverse proxy component. All internal and external requests to Runtime Radar are routed through the reverse proxy component. The dashboard allows you to detect anomalies in the service and promptly react to possible issues.
+* Runtime. For managing metrics of services dedicated to the in-cluster deployment. If you use external components, such as RabbitMQ or ClickHouse, for correct filtering by the **Cluster** parameter and if there is Grafana configuration for several clusters, add the "cluster" label to the metrics of these components (similar to other system metrics). You can also view information about the runtime monitor service connection to RabbitMQ.
+
+Each dashboard contains annotations and notifications that help promptly respond to changes in the component state.
+
+If you use Grafana from the Runtime Radar distribution kit, dashboards will be available in the Grafana web interface. If you use an external Grafana, you need to import the preset dashboards for monitoring Runtime Radar. The dashboard files are available in the `dashboards` directory of the installation package archive with the Helm chart.
+
+To import the Runtime Radar dashboard to Grafana:
+
+1. Log in to the Grafana web interface.
+
+1. On the main menu, click ![pic](pics/281055243.svg) and select **Dashboards**.
+
+1. Click **New** → **Import**.
+
+1. Click **Upload dashboard JSON file**.
+
+1. Select the Runtime Radar dashboard file.
+
+1. Click **Load**.

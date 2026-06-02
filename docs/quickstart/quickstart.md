@@ -1,6 +1,6 @@
 # Quick installation using Helm
 
-The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the [README.md](../../install/helm/README.md) file.
+The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the `README.md` file.
 
 To install Runtime Radar using Helm,
 
@@ -13,6 +13,22 @@ To install Runtime Radar using Helm,
      --set-string 'global.keys.encryption=INIT-DO-NOT-USE' \
      --set-string 'auth-center.administrator.username=admin' \
      --set-string 'auth-center.administrator.password=Password' \
+     --set-string 'history-api.retentionInterval=8760h' \
+     --set-string 'postgresql.auth.username=admin' \
+     --set-string 'postgresql.auth.password=Password' \
+     --set-string 'postgresql.auth.database=rr_quickstart' \
+     --set 'postgresql.persistence.enabled=false' \
+     --set-string 'redis.auth.username=admin' \
+     --set-string 'redis.auth.password=Password' \
+     --set 'redis.persistence.enabled=false' \
+     --set-string 'rabbitmq.auth.username=admin' \
+     --set-string 'rabbitmq.auth.password=Password' \
+     --set 'rabbitmq.persistence.enabled=false' \
+     --set 'clickhouse.deploy=true' \
+     --set-string 'clickhouse.auth.username=admin' \
+     --set-string 'clickhouse.auth.password=Password' \
+     --set-string 'clickhouse.auth.database=rr_quickstart' \
+     --set 'clickhouse.persistence.enabled=false' \
      --set-string 'reverse-proxy.service.type=NodePort' \
      --set-string 'reverse-proxy.service.nodePorts.http=32000'
    ```
