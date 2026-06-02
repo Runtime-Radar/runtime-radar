@@ -1,10 +1,8 @@
-# Help
-
-## <a name="9815029643"></a>Installing and setting up RuntimeRadar
+# <a name="9815029643"></a>Installing and setting up RuntimeRadar
 
 This section contains instructions on how to install and set up Runtime Radar.
 
-### Hardware and software requirements
+## Hardware and software requirements
 
 Hardware requirements are based on load testing results. Tests were performed using a server with the default number of pods specified in the Helm chart. The requirements can change depending on the following factors:
 * Number of generated runtime events
@@ -176,7 +174,7 @@ HDD
 </td><td align="left">
 
 500 GB
-</td></tr><tr><td colspan="2" align="center">
+</td></tr><tr><td colspan="2" align="left">
 
 SSD
 </td></tr><tr><td align="left">
@@ -224,9 +222,9 @@ Use an OS whose core meets the following requirements:
    * For the Yama module, the mode is set to `0` or `1`.
    * The AppArmor, SElinux, and Parsec modules are disabled for the Tetragon processes, or accurate access to kernel modules is set up.
 
-### Quick installation using Helm
+## Quick installation using Helm
 
-The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the `README.md` file.
+The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the [README.md](../../install/helm/README.md) file.
 
 To install Runtime Radar using Helm,
 
@@ -237,35 +235,30 @@ To install Runtime Radar using Helm,
      --set-string 'global.ownCsUrl=https://<your domain address>:32000' \
      --set-string 'global.keys.publicAccessTokenSalt=INIT-DO-NOT-USE' \
      --set-string 'global.keys.encryption=INIT-DO-NOT-USE' \
-     --set-string 'auth-center.administrator.username=admin' \
-     --set-string 'auth-center.administrator.password=Password' \
-     --set-string 'history-api.retentionInterval=8760h' \
-     --set-string 'postgresql.auth.username=admin' \
-     --set-string 'postgresql.auth.password=Password' \
-     --set-string 'postgresql.auth.database=rr_quickstart' \
-     --set 'postgresql.persistence.enabled=false' \
-     --set-string 'redis.auth.username=admin' \
-     --set-string 'redis.auth.password=Password' \
-     --set 'redis.persistence.enabled=false' \
-     --set-string 'rabbitmq.auth.username=admin' \
-     --set-string 'rabbitmq.auth.password=Password' \
-     --set 'rabbitmq.persistence.enabled=false' \
-     --set 'clickhouse.deploy=true' \
-     --set-string 'clickhouse.auth.username=admin' \
-     --set-string 'clickhouse.auth.password=Password' \
-     --set-string 'clickhouse.auth.database=rr_quickstart' \
-     --set 'clickhouse.persistence.enabled=false' \
+     --set-string 'global.administrator.username=admin' \
+     --set-string 'global.administrator.password=Password' \
      --set-string 'reverse-proxy.service.type=NodePort' \
      --set-string 'reverse-proxy.service.nodePorts.http=32000'
+     --set 'prometheus.deploy=true' \
+     --set 'prometheus.persistence.enabled=true' \
+     --set 'grafana.deploy=true' \
+     --set-string 'grafana.auth.username=<username>' \
+     --set-string 'grafana.auth.password=<password>' \
+     --set 'grafana.persistence.enabled=false' \
+     --set 'metrics.enabled=true'
    ```
+
+   ***Note. **In version 0.2.0, instead of the `auth-center.administrator.username` and `auth-center.administrator.password` parameters, the `global.administrator.username` and `global.administrator.password` parameters are used respectively.*
 
    ***Note.** In the command example, the username is `admin` and the password is `Password`. You can specify other values and later use them to connect to the Runtime Radar web interface.*
 
    ***Note.** In the command example, access to the web interface is configured using the NodePort service on port 32000. You can use the Ingress controller instead or change the port. To do this, you must specify the [corresponding settings](#9815029643). You can also change [other settings](#9815029643) in the installation command.*
 
+   ***Note.** You do not need to specify the `prometheus.deploy`, `prometheus.persistence.enabled`, `grafana.deploy`, `grafana.auth.username`, `grafana.auth.password`, `grafana.persistence.enabled`, and `metrics.enabled` parameters if you do not plan to use the [integration with Grafana](#9502135051) to monitor the health and integrity of the system and its services.*
+
 Now you can start setting up the runtime event monitoring.
 
-### Setting up the Runtime Radar web interface connection
+## Setting up the Runtime Radar web interface connection
 
 You can set up access to the Runtime Radar web interface using the following methods:
 * Using port forwarding.
@@ -278,7 +271,7 @@ To set up access to the web interface using port forwarding,
 
 1. Run the command:
 
-   ```
+   ```bash
    kubectl -n runtime-radar port-forward svc/reverse-proxy 9000:9000
    ```
 
@@ -336,7 +329,7 @@ To set up access to the web interface using the NodePort service:
 
 1. If required, in the `--nodeport` parameter, enter a specific port for access to the NodePort service.
 
-### Configuring monitoring of runtime events
+## Configuring monitoring of runtime events
 
 Manifests are used to configure the Runtime Radar modules. The manifest is a configuration file in YAML format.
 
@@ -360,7 +353,7 @@ To configure the number of sent messages:
 
 1. Restart the event processor and history api modules sequentially by running the following command for each of them:
 
-   ```
+   ```bash
    kubectl rollout restart deployment/<module service name> -n <namespace where Runtime Radar is installed>
    ```
 
@@ -382,13 +375,13 @@ To configure the runtime monitor buffer size:
 
 1. Restart the runtime monitor service by running the following command:
 
-   ```
+   ```bash
    kubectl rollout restart daemonset/<service name> -n <namespace where Runtime Radar is installed>
    ```
 
 **Changing network ports for the runtime monitor service**
 
-The runtime monitor service operates in the hostNetwork mode, that is, it uses a network namespace of the host. If a host port is already in use, the service will not track runtime events. You can set ports for the service in the Helm chart configuration file `values.yaml` before installing Runtime Radar. You can also set a port for the tetragon container of the runtime monitor service if the default host port is already in use.
+The runtime monitor service operates in the hostNetwork mode—that is, it uses a network namespace of the host. If a host port is already in use, the service will not track runtime events. You can set ports for the service in the Helm chart configuration file `values.yaml` before installing Runtime Radar. You can also set a port for the tetragon container of the runtime monitor service if the default host port is already in use.
 
 To set a network port for the runtime monitor service:
 
@@ -423,11 +416,11 @@ To set a network port for the runtime monitor service:
 
 1. Apply the changes and exit the edit mode.
 
-   ```
+   ```bash
    kubectl rollout restart daemonset/<service name> -n <namespace where Runtime Radar is installed>
    ```
 
-## Managing child clusters
+# Managing child clusters
 
 You can use Runtime Radar to protect multiple clusters. You must first install Runtime Radar in the central cluster and then connect child clusters to the Runtime Radar central cluster. This allows you to do the following:
 * Simplify incident management in a complex infrastructure using a single management point.
@@ -463,7 +456,7 @@ Each section with information about the connected cluster has the following elem
 * Cluster status.
 * Buttons to change the cluster name and delete the cluster. If the cluster is selected in the Runtime Radar web interface, the deletion button is inactive.
 
-### <a name="9839873547"></a>Connecting a child cluster to Runtime Radar
+## <a name="9839873547"></a>Connecting a child cluster to Runtime Radar
 
 To connect a child cluster, you must first add the child cluster in the Runtime Radar web interface and get the installation command. Run the received installation command in the child cluster. Then, the cluster will be automatically registered in Runtime Radar.
 
@@ -503,8 +496,6 @@ To install Runtime Radar in a child cluster using the installation command:
 
    ***Note.** If necessary, you can change the path to the Helm chart in the installation command manually.*
 
-   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Installed**. If the status does not change for more than 15 minutes, examine event logs for the cs-manager module.
-
 To install Runtime Radar in a child cluster using the YAML installation command:
 
 1. Connect to the child cluster where to install Runtime Radar.
@@ -515,11 +506,9 @@ To install Runtime Radar in a child cluster using the YAML installation command:
 
 1. Run the YAML installation command.
 
-   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Installed**. If the status does not change for more than 15 minutes, examine event logs for the cs-manager module.
-
 You can manage child clusters in the web interface of the central cluster. If self-signed certificates were generated during Runtime Radar installation in the central cluster, you will not be able to access the data of the child clusters because the connection security cannot be validated. For that reason, before selecting a child cluster, you must add the root certificate to the trusted certificates or follow the child cluster URL by adding the URL to the security exceptions or ignoring the warning about an insecure connection.
 
-### Deleting a child cluster
+## Deleting a child cluster
 
 If Runtime Radar is not yet installed in a child cluster and the child cluster is not registered in Runtime Radar, you can delete the child cluster from the database and the web interface.
 
@@ -558,7 +547,7 @@ To delete a child cluster registered in Runtime Radar:
 
    The child cluster will be deregistered in Runtime Radar and deleted from the web interface automatically after the deletion command is executed.
 
-## Managing notification services and templates
+# Managing notification services and templates
 
 You can integrate Runtime Radar into existing infrastructure and container security processes using email notifications, the webhook tool, or syslog protocol.
 
@@ -586,7 +575,7 @@ If a notification template was created by mistake or notification recipients no 
 
 This section provides instructions on how to manage notification services and templates and a description of notification template settings.
 
-### Managing email notification services and templates
+## Managing email notification services and templates
 
 You can set up email notifications about threats detected and incidents registered during monitoring of runtime events. For example, notifications about detected threats will be sent to employees of one department and notifications about registered incidents will be sent to employees of another department. For this, you need to deploy an SMTP server. In Runtime Radar, you need to set up a connection to it by adding a notification service and one or more notification templates for the service. You can use several SMTP servers if you add a separate notification service and a set of templates for each server.
 
@@ -672,7 +661,7 @@ To add or exclude a recipient from notifications:
 
 1. Click **Save**.
 
-### Managing webhook notification services and templates
+## Managing webhook notification services and templates
 
 You can configure webhook notifications about object scan and action check results.
 
@@ -744,7 +733,7 @@ To add a notification template:
 
 1. Click **Add**.
 
-### Managing syslog notification services and templates
+## Managing syslog notification services and templates
 
 By configuring syslog notifications about object scan and action check results, you enable integration with third-party systems for centralized storing and processing of security events.
 
@@ -804,7 +793,7 @@ To add a notification template:
 
 1. Click **Add**.
 
-### Notification template parameters
+## Notification template parameters
 
 You can create a template for each notification. For this, Runtime Radar supports Go templates. You can create notification templates in various formats. For example, in JSON format for a webhook and syslog notification service, in HTML format for an email notification service, or in another format. The following table lists the available variables.
 
@@ -970,7 +959,7 @@ Notification example:
 
 ```
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
   </head>
@@ -1125,7 +1114,7 @@ The page contains the following tabs:
 * **Events** to [view information about events](#5265696395) that were logged by Runtime Radar according to the values on the **Parameters** tab.
 * **Detectors** to view information about detectors, [add, and delete them](#7163413643).
 
-### <a name="9979340811"></a>Managing runtime event monitoring sources
+## <a name="9979340811"></a>Managing runtime event monitoring sources
 
 The Runtime Radar distribution kit includes a set of sources covered by the Runtime Radar license. The sources from the distribution kit and the types of events they track are described in the table below.
 
@@ -1140,7 +1129,7 @@ Types of tracked events
 Outgoing TCP connections
 </td><td align="left">
 
-This source tracks the `tcp_connect`, `tcp_close`, and `tcp_sendmsg` functions, allowing detection of outgoing TCP connections (including the connection establishment, termination, and sending of TCP packets). Enabling this source can significantly increase the event flow and load on the system. In this case, you should narrow the flow using more accurate filters (for example, specify only certain pods)
+This source tracks the `tcp_connect`, `tcp_close`, and `tcp_sendmsg` functions, allowing detection of outgoing TCP connections (including the connection establishment, termination, and sending of TCP packets). Enabling this source can significantly increase the event flow and load on the system. In this case, we recommend that you narrow the flow using more accurate filters (for example, by specifying only certain pods)
 </td></tr><tr><td align="left">
 
 Privilege escalation
@@ -1158,7 +1147,7 @@ This source tracks the `ptrace` system call, which may indicate attacker activit
 Start and stop of processes
 </td><td align="left">
 
-This source tracks the start and stop of processes in containers on nodes with installed runtime monitoring components. Information about the process context that an event occurs in is added to other types of events (for example, `kprobe`) from other sources, so this source cannot be disabled. Its impact on the overall system load is usually small
+This source tracks the start and stop of processes in containers on nodes with installed runtime monitoring components. Information about the process context that an event occurs in is added to other types of events (for example, `kprobe`) from other sources so this source cannot be disabled. Its impact on the overall system load is usually small
 </td></tr><tr><td align="left">
 
 Loading and unloading of kernel modules
@@ -1239,11 +1228,9 @@ The added source will be the last in the list. To start monitoring events from a
 
 You can delete the source by clicking , which appears when you hover over the source line.
 
-### <a name="7786230795"></a>Managing tracking settings and event filters
+## <a name="7786230795"></a>Managing tracking settings and event filters
 
 **Setting up tracking of events**
-
-You can set up tracking of runtime events. This allows you to get check results of only required events, and reduce the load on the system components.
 
 To set up tracking of events:
 
@@ -1253,7 +1240,7 @@ To set up tracking of events:
 
    ***Note.** If during Runtime Radar deployment, a self-signed certificate was used, to access the child cluster, you may need to follow the child cluster URL by adding the URL to the security exceptions, ignore the warning about an insecure connection, or add the certificate to the trusted certificates and then try to select a child cluster again.*
 
-1. Select [the sources](#9979340811) of runtime events you want to track.
+1. Select the [sources](#9979340811) of runtime events you want to track.
 
    ***Note.** You can view the detailed source description by clicking the line with its name.*
 
@@ -1313,7 +1300,7 @@ To add an event filter:
 
 You can edit the filter by clicking ![pic](pics/9777620363.svg) and delete the filter by clicking ![pic](pics/9697536907.svg). At least one event filter is required. Without filters, too many events will be tracked. After the filter is deleted, Runtime Radar will track events that match the filter, without using conditions.
 
-### <a name="7163413643"></a>Managing detectors
+## <a name="7163413643"></a>Managing detectors
 
 The Runtime Radar distribution kit includes a set of detectors covered by the Runtime Radar license. Customers, third-party vendors, and community members also can develop detectors and upload them to the system.
 
@@ -1341,13 +1328,13 @@ To add a detector:
 
 You can delete a detector by clicking ![pic](pics/9697536907.svg).
 
-### <a name="5265696395"></a>Viewing information about runtime events
+## <a name="5265696395"></a>Viewing information about runtime events
 
 You can view the results of runtime event monitoring according to the specified [event monitoring parameters](#7786230795) by clicking the **Events** tab on the **Runtime** page. To open this page, click **Runtime** on the main menu.
 
 In the top right corner of the page, the page displays the **Cluster** list for selecting a cluster and the ![pic](pics/9854071947.svg) button for refreshing the event table. If child clusters are not yet connected to Runtime Radar or they are not yet in the **Installed** status, you can select only the **Central** option.
 
-The page also displays buttons for filtering events and the runtime event table.
+The page also displays buttons for filtering events and the event table.
 
 The following filtering options are available:
 * By parameters and their values. You can also use this option to filter events with threats by detectors and events with incidents by triggered rules.
@@ -1371,7 +1358,7 @@ Rows with events whose check failed with errors are highlighted in the table in 
 
 Clicking one of the events brings you to the viewing page of the separate event.
 
-The page of a separate runtime event displays the following elements:
+The page with a separate runtime event displays the following elements:
 * Event ID and date.
 * Group box with parameters of the event's parent process.
 * Group box with event process parameters.
@@ -1383,7 +1370,7 @@ The page of a separate runtime event displays the following elements:
    * Detected threats.
    * Detectors that failed to complete the check because of an error.
 
-## <a name="9502135051"></a>Integrating Runtime Radar with Grafana
+# <a name="9502135051"></a>Integrating Runtime Radar with Grafana
 
 [Grafana](https://grafana.com/docs) is a data visualization system. Grafana displays information in a format that is easy to analyze and can be used to monitor the operation of Runtime Radar.
 
@@ -1397,10 +1384,10 @@ A dashboard in Grafana is a page with charts, diagrams, and other statistics abo
 
 Grafana provides a set of dashboards for monitoring Runtime Radar. Each dashboard displays specific information about the state of system components and services. On each dashboard, you can select a cluster for which to display the information.
 
-The following dashboards are included in the distribution kit:
+The following dashboards are included in the distribution package:
 * Admission. For monitoring detectors used for checks via the admission controller. Shows the number of operation errors and duration of detector chain execution.
 * Cluster status. Provides information about the health of ClickHouse, RabbitMQ, and PostgreSQL, the current cluster state (central cluster, unregistered child cluster, and registered child cluster), and the Runtime Radar license and vulnerability database update status. To get information about the health of external services, you must configure the internal Prometheus system for this purpose or install the external Prometheus system.
-* Go app. Provides the main metrics for Golang services. Shows the key performance and stability indicators for these components.
+* Go app. Provides the main metrics for Go services. Shows the key performance and stability indicators for these components.
 * gRPC. Gives a summary of gRPC communications between Runtime Radar services (request types and their statuses and duration). The majority of internal communications between services is done via gRPC. To make analysis easier, all related metrics are gathered on one dashboard.
 * Public API. For monitoring the public API. Shows the external interface health and performance to help control its availability and quality of provided services.
 * Reverse proxy. Provides information about the availability and operation of the reverse proxy component. All internal and external requests to Runtime Radar are routed through the reverse proxy component. The dashboard allows you to detect anomalies in the service and promptly react to possible issues.
@@ -1408,7 +1395,7 @@ The following dashboards are included in the distribution kit:
 
 Each dashboard contains annotations and notifications that help promptly respond to changes in the component state.
 
-If you use Grafana from the Runtime Radar distribution kit, dashboards will be available in the Grafana web interface. If you use an external Grafana, you need to import the preset dashboards for monitoring Runtime Radar. The dashboard files are available in the `dashboards` directory of the installation package archive with the Helm chart.
+If you use Grafana from the Runtime Radar distribution package, dashboards will be available in the Grafana web interface. If you use an external Grafana, you need to import the preset dashboards for monitoring Runtime Radar. The dashboard files are available in the `dashboards` directory of the installation package archive with the Helm chart.
 
 To import the Runtime Radar dashboard to Grafana:
 
@@ -1423,3 +1410,82 @@ To import the Runtime Radar dashboard to Grafana:
 1. Select the Runtime Radar dashboard file.
 
 1. Click **Load**.
+
+# Updating Runtime Radar
+
+To update Runtime Radar from version 0.1.0 to version 0.2.0:
+
+1. Get the PostgreSQL connection data by running the following command:
+
+   ```bash
+   kubectl get secret -n <namespace> postgresql -o json | jq '.data | map_values(@base64d)'
+   ```
+
+   Example of the command output:
+
+   ```bash
+   {
+
+     "postgres-addr": "postgresql",
+     "postgres-db": "ptcs",
+     "postgres-password": "admin",
+     "postgres-ssl-check-cert": "true",
+     "postgres-ssl-mode": "true",
+     "postgres-user": "admin"
+   }
+   ```
+
+1. Connect to the PostgreSQL database using the credentials that you obtained.
+
+1. Delete the `detectors` table by executing the following query:
+
+   ```
+   drop table detectors
+   ```
+
+   > **Warning.** If detectors that are not included in the Runtime Radar distribution package were used, they will be deleted together with the table. You can back up the `detectors` table or load detectors in the web interface after the update.
+
+1. Fetch the `encryption`, `publicAccessTokenSalt`, and `token` parameters from the previous installation by running the following command:
+
+   ```bash
+   $ kubectl get secret cs-keys -n runtime-radar -o json | jq -r '.data | to_entries[] | "\(.key): \(.value | @base64d)"'
+   ```
+
+   Example of the command output:
+
+   ```bash
+   encryption: 3b2ef...e99ba
+
+   publicAccessTokenSalt: 22ea3...03583
+   token: 30d17...d99ge
+   ```
+
+1. Run the command to install new Runtime Radar package:
+
+   ```bash
+   helm upgrade --install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.2.0 \
+     --set-string 'global.ownCsUrl=<address of your domain>:32000' \
+     --set-string 'global.keys.publicAccessTokenSalt=22ea3...03583' \
+     --set-string 'global.keys.encryption=3b2ef...e99ba' \
+     --set-string 'global.keys.token=30d17...d99ge' \
+     --set global.administrator.username=admin \
+     --set global.administrator.password=Password \
+     --set-string 'reverse-proxy.service.type=NodePort' \
+     --set-string 'reverse-proxy.service.nodePorts.http=32000' \
+     --set 'prometheus.deploy=true' \
+     --set 'prometheus.persistence.enabled=false' \
+     --set 'grafana.deploy=true' \
+     --set-string 'grafana.auth.username=<username>' \
+     --set-string 'grafana.auth.password=<password>' \
+     --set 'grafana.persistence.enabled=false' \
+     --set 'metrics.enabled=true'
+   ```
+
+   ***Note. **In version 0.2.0, instead of the `auth-center.administrator.username` and `auth-center.administrator.password` parameters, the `global.administrator.username` and `global.administrator.password` parameters are used respectively.*
+
+   ***Note.** You do not need to specify the `prometheus.deploy`, `prometheus.persistence.enabled`, `grafana.deploy`, `grafana.auth.username`, `grafana.auth.password`, `grafana.persistence.enabled`, and `metrics.enabled` parameters if you do not plan to use the [integration with Grafana](#9502135051) to monitor the health and integrity of the system and its services.*
+
+If you use Runtime Radar to protect multiple clusters, you must do the following:
+1. Update Runtime Radar in the central cluster according to the instructions above.
+1. [Connect the child clusters](#9839873547) in the Runtime Radar web interface.
+1. Update Runtime Radar in the child clusters using commands received after their connection.
