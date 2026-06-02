@@ -1,4 +1,4 @@
-# 
+﻿# 
 ## Use cases
 
 This section describes the most popular Runtime Radar use cases.
@@ -30,7 +30,7 @@ To add a notification service:
 
 1. Click **Connect**.
 
-1. Under the notification service, click ![pic](pics/icon_add.svg).
+1. Under the notification service, click ![pic](pics/9810272139.svg).
 
 1. Enter a name for the template.
 
@@ -81,7 +81,7 @@ To add a notification service:
 
 1. Click **Connect**.
 
-1. Under the notification service, click ![pic](pics/icon_add.svg).
+1. Under the notification service, click ![pic](pics/9810272139.svg).
 
 1. Enter a name for the template.
 
@@ -189,7 +189,7 @@ To add a notification service:
 
 1. Click **Connect**.
 
-1. Under the notification service, click ![pic](pics/icon_add.svg).
+1. Under the notification service, click ![pic](pics/9810272139.svg).
 
 1. Enter a name for the template.
 
