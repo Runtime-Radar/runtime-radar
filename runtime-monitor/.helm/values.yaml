@@ -13,6 +13,7 @@ containerPorts:
   grpc: 8000
   http: 9000
   instrumentation: 9090
+  metrics: '{{ .Values.tetragon.prometheus.port }}'
 service:
   ports:
     grpc: 8000

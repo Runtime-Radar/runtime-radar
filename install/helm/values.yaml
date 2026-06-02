@@ -266,6 +266,11 @@ runtime-monitor:
     grpc:
       # -- Set address of Tetragon grpc connection in host:port format
       address: "localhost:54321"
+    prometheus:
+      # -- Whether to enable exposing Tetragon metrics.
+      enabled: true
+      # -- The port at which to expose metrics.
+      port: 2112
     # -- [object] Resource configuration for tetragon container
     resources:
       limits:

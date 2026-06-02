@@ -44,7 +44,7 @@ data:
             regex: 'runtime-monitor-.*'
             action: keep
           - source_labels: [__meta_kubernetes_pod_container_port_number]
-            regex: '2112'
+            regex: '{{ (get .Values "runtime-monitor").tetragon.prometheus.port }}'
             action: keep
 
           - target_label: cluster

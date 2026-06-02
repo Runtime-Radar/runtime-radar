@@ -14,7 +14,7 @@
   ports:
     {{- range $key, $val := . }}
     - name: {{ $key }}
-      containerPort: {{ $val }}
+      containerPort: {{ tpl (toString $val) $ }}
     {{- end }}
   {{- end }}
   {{- with .Values.resources }}
