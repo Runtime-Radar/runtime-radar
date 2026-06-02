@@ -24,6 +24,7 @@ var (
 type Registrar struct {
 	Interval               time.Duration
 	Token                  uuid.UUID
+	TokenHash              string
 	ClusterController      cluster_api.ClusterControllerClient
 	RegistrationRepository database.RegistrationRepository
 }
@@ -44,7 +45,7 @@ func (r *Registrar) Run(stop <-chan struct{}) {
 			log.Warn().Msgf("Child cluster already registered")
 			return
 		case err != nil:
-			log.Error().Err(err).Msgf("Can't register child cluster")
+			log.Error().Err(err).Interface("registration", reg).Msgf("Can't register child cluster")
 		default:
 			state.Set(state.ChildRegistered)
 			log.Info().Interface("registration", reg).Msgf("Child cluster registered")
@@ -75,19 +76,15 @@ func (r *Registrar) tryRegister(ctx context.Context) (reg *model.Registration, e
 	}()
 
 	// We should check that there is an existing registration in case if there are multiple replicas of cs-manager
-	found := true
-	reg, err = r.RegistrationRepository.GetLastSuccessful(ctx, false)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		found = false
-	} else if err != nil {
+	reg, err = r.RegistrationRepository.GetLastSuccessful(ctx, r.TokenHash, false)
+	if err == nil {
 		return nil, fmt.Errorf("can't get registration: %w", err)
 	}
-
-	if found {
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errAlreadyRegistered
 	}
 
-	reg = &model.Registration{}
+	reg = &model.Registration{TokenHash: r.TokenHash}
 
 	registerReq := &cluster_api.RegisterClusterReq{
 		Token: r.Token.String(),

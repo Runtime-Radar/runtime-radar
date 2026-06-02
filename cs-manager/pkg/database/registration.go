@@ -10,7 +10,7 @@ import (
 
 type RegistrationRepository interface {
 	Add(ctx context.Context, rs ...*model.Registration) error
-	GetLastSuccessful(ctx context.Context, preloadData bool) (*model.Registration, error)
+	GetLastSuccessful(ctx context.Context, hash string, preloadData bool) (*model.Registration, error)
 }
 
 type RegistrationDatabase struct {
@@ -25,11 +25,11 @@ func (rd *RegistrationDatabase) Add(ctx context.Context, rs ...*model.Registrati
 	return rd.WithContext(ctx).Create(rs).Error
 }
 
-func (rd *RegistrationDatabase) GetLastSuccessful(ctx context.Context, preloadData bool) (*model.Registration, error) {
+func (rd *RegistrationDatabase) GetLastSuccessful(ctx context.Context, hash string, preloadData bool) (*model.Registration, error) {
 	r := &model.Registration{}
 
 	err := rd.preloadData(ctx, preloadData).
-		Where(&model.Registration{Status: model.RegistrationStatusOK}).
+		Where(&model.Registration{Status: model.RegistrationStatusOK, TokenHash: hash}).
 		Order("created_at desc").
 		Take(&r).
 		Error

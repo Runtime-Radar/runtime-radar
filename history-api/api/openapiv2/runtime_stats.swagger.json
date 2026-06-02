@@ -16,6 +16,38 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/stats/detector/rating": {
+      "post": {
+        "operationId": "RuntimeStats_DetectorRating",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/runtime_statsDetectorRatingResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/runtime_statsDetectorRatingReq"
+            }
+          }
+        ],
+        "tags": [
+          "RuntimeStats"
+        ]
+      }
+    },
     "/api/v1/stats/runtime-event/count": {
       "get": {
         "operationId": "RuntimeStats_CountEvents",
@@ -85,6 +117,17 @@
         }
       }
     },
+    "commonSort": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -110,6 +153,72 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "runtime_statsDetectorRatingReq": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/runtime_statsDetectorRatingReqFilter"
+        },
+        "period": {
+          "$ref": "#/definitions/commonPeriod"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32",
+          "title": "top-N items should be returned"
+        },
+        "sorts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/commonSort"
+          },
+          "title": "sort by default: severity desc, count desc"
+        }
+      }
+    },
+    "runtime_statsDetectorRatingReqFilter": {
+      "type": "object",
+      "properties": {
+        "podName": {
+          "type": "string"
+        },
+        "podNamespace": {
+          "type": "string"
+        },
+        "containerName": {
+          "type": "string"
+        }
+      }
+    },
+    "runtime_statsDetectorRatingResp": {
+      "type": "object",
+      "properties": {
+        "counters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/runtime_statsDetectorRatingRespCounter"
+          },
+          "title": "detector rating by severity and number of detections"
+        }
+      }
+    },
+    "runtime_statsDetectorRatingRespCounter": {
+      "type": "object",
+      "properties": {
+        "detectorId": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     }

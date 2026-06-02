@@ -9,18 +9,16 @@ import (
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/model"
 )
 
-func IntegrationsToPB(mis []model.Integration, maskSensitive bool) []*api.Integration {
+func IntegrationsToPB(mis []model.Integration) []*api.Integration {
 	pbis := make([]*api.Integration, 0, len(mis))
 	for _, mi := range mis {
-		pbis = append(pbis, IntegrationToPB(mi, maskSensitive))
+		pbis = append(pbis, IntegrationToPB(mi))
 	}
 	return pbis
 }
 
-func IntegrationToPB(mi model.Integration, maskSensitive bool) *api.Integration {
-	if maskSensitive {
-		mi.MaskSensitive()
-	}
+func IntegrationToPB(mi model.Integration) *api.Integration {
+	mi.MaskSensitive()
 
 	switch i := mi.(type) {
 	case *model.Email:

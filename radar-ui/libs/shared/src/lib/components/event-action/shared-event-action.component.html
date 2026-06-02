@@ -16,7 +16,7 @@
         </span>
     }
 
-    <!-- @todo: replace *ngIf -->
+    <!-- @todo: refactor this condition -->
     <ng-template [ngIf]="isEmptyStateShown && (!blockIds?.length && !notifyIds?.length)">
         <span>—</span>
     </ng-template>

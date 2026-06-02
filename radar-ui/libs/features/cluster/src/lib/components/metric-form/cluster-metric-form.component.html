@@ -1,0 +1,126 @@
+<ng-container *transloco="let tCluster; prefix: 'cluster'">
+    <form [formGroup]="form" class="kbq-form-vertical cluster-abstract-feature-form" *transloco="let tCommon; prefix: 'common'">
+        <section class="kbq-form__row layout-margin-top-xxl"
+                 [ngClass]="{ 'layout-margin-bottom-xxl': isMetricEnabled$ | async }">
+            <kbq-toggle formControlName="isMetricEnabled" data-testid="cluster-metric-enabled-toggle">
+                {{ tCluster('Cluster.CreatePage.MetricForm.Label.MetricEnabled') }}
+            </kbq-toggle>
+        </section>
+
+        @if (isMetricEnabled$ | async) {
+            <section class="kbq-form-row_margin">
+                <kbq-button-toggle-group
+                        formControlName="isInternalCluster"
+                        data-testid="cluster-metric-internal-cluster-toggle">
+                    <kbq-button-toggle [value]="true">
+                        {{ tCluster('Cluster.CreatePage.MetricForm.Toogle.Internal') }}
+                    </kbq-button-toggle>
+                    <kbq-button-toggle [value]="false">
+                        {{ tCluster('Cluster.CreatePage.MetricForm.Toogle.External') }}
+                    </kbq-button-toggle>
+                </kbq-button-toggle-group>
+            </section>
+
+            <ng-container *ngrxLet="{
+                isInternal: (isInternalCluster$ | async),
+                isPersistence: (isPersistence$ | async)
+            } as rxlet">
+                <section class="kbq-form__row kbq-form-row_margin">
+                    <span class="kbq-text-compact cs-text-gray">
+                        {{ tCluster(rxlet.isInternal ? 'Cluster.CreatePage.MetricForm.Hint.Internal' : 'Cluster.CreatePage.MetricForm.Hint.External') }}
+                    </span>
+                </section>
+
+                <h2 class="kbq-headline cluster-abstract-feature-form-headline">
+                    {{ tCluster('Cluster.CreatePage.MetricForm.SubHeading.Grafana') }}
+                </h2>
+
+                @if (rxlet.isInternal) {
+                    <section class="kbq-form__row kbq-form-row_margin">
+                        <label for="user" class="kbq-form__label">
+                            {{ tCluster('Cluster.CreatePage.MetricForm.Label.User') }}
+                        </label>
+                        <kbq-form-field class="kbq-form__control">
+                            <input kbqInput
+                                   type="text"
+                                   id="user"
+                                   formControlName="user"
+                                   data-testid="cluster-metric-user-input">
+                        </kbq-form-field>
+                    </section>
+
+                    <section class="kbq-form__row kbq-form-row_margin">
+                        <label for="password" class="kbq-form__label">
+                            {{ tCluster('Cluster.CreatePage.MetricForm.Label.Password') }}
+                        </label>
+                        <kbq-form-field class="kbq-form__control">
+                            <input kbqInputPassword
+                                   type="password"
+                                   id="password"
+                                   formControlName="password"
+                                   data-testid="cluster-metric-password-input">
+                            <kbq-password-toggle
+                                    [kbqTooltipNotHidden]="tCluster('Cluster.CreatePage.Hint.HidePassword')"
+                                    [kbqTooltipHidden]="tCluster('Cluster.CreatePage.Hint.ShowPassword')"></kbq-password-toggle>
+                        </kbq-form-field>
+                    </section>
+
+                    <h2 class="kbq-headline cluster-abstract-feature-form-headline">
+                        {{ tCluster('Cluster.CreatePage.MetricForm.SubHeading.Prometheus') }}
+                    </h2>
+
+                    <section class="kbq-form__row" [ngClass]="{ 'kbq-form-row_margin': rxlet.isPersistence }">
+                        <kbq-toggle formControlName="isPersistence" data-testid="cluster-metric-persistence-toggle">
+                            {{ tCluster('Cluster.CreatePage.MetricForm.Label.Persistence') }}
+                            <span class="kbq-text-compact cs-text-gray cluster-abstract-feature-form-toggle-hint">
+                                {{ tCluster('Cluster.CreatePage.MetricForm.Hint.Persistence') }}
+                            </span>
+                        </kbq-toggle>
+                    </section>
+
+                    @if (rxlet.isPersistence) {
+                        <section class="kbq-form__row">
+                            <label for="storageClass" class="kbq-form__label">
+                                {{ tCluster('Cluster.CreatePage.MetricForm.Label.StorageClass') }}
+                                <i kbq-icon="kbq-question-circle_16"
+                                   class="cs-help-hover"
+                                   kbqTooltip="{{ tCluster('Cluster.CreatePage.MetricForm.Hint.StorageClass') }}"
+                                   kbqTooltipClass="cluster-abstract-feature-form-tooltip"
+                                   [kbqPlacement]="tooltipPlacements.RightTop"></i>
+                            </label>
+                            <kbq-form-field class="kbq-form__control">
+                                <input kbqInput
+                                       type="text"
+                                       id="storageClass"
+                                       formControlName="storageClass"
+                                       placeholder="{{ tCluster('Cluster.CreatePage.MetricForm.Placeholder.StorageClass') }}"
+                                       data-testid="cluster-metric-storage-сlass-input">
+                                <kbq-hint>{{ tCommon('Common.Form.Hint.Optional') }}</kbq-hint>
+                                @if (form.get('storageClass')?.hasError('pattern')) {
+                                    <kbq-hint color="error">{{ tCommon('Common.Form.Error.Format') }}</kbq-hint>
+                                }
+                            </kbq-form-field>
+                        </section>
+                    }
+                } @else {
+                    <section class="kbq-form__row">
+                        <label for="address" class="kbq-form__label">
+                            {{ tCluster('Cluster.CreatePage.MetricForm.Label.Address') }}
+                        </label>
+                        <kbq-form-field class="kbq-form__control">
+                            <input kbqInput
+                                   type="text"
+                                   id="address"
+                                   formControlName="address"
+                                   placeholder="{{ tCluster('Cluster.CreatePage.MetricForm.Placeholder.Address') }}"
+                                   data-testid="cluster-metric-address-input">
+                            @if (form.get('address')?.hasError('pattern')) {
+                                <kbq-hint color="error">{{ tCommon('Common.Form.Error.Format') }}</kbq-hint>
+                            }
+                        </kbq-form-field>
+                    </section>
+                }
+            </ng-container>
+        }
+    </form>
+</ng-container>

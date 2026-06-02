@@ -1,8 +1,8 @@
 import { map } from 'rxjs';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-import { AuthStoreService } from '@cs/domains/auth';
 import { ClusterStoreService } from '@cs/domains/cluster';
+import { LicenseStoreService } from '@cs/domains/license';
 
 import { ClusterFeatureFormComponentStore } from '../../stores/cluster-form.store';
 import { ClusterFormType } from '../../interfaces/cluster-form-state.interface';
@@ -13,6 +13,7 @@ import {
     ClusterCreateFormOutputs,
     ClusterDataBaseForm,
     ClusterIngressForm,
+    ClusterMetricForm,
     ClusterRabbitForm,
     ClusterRegistryForm
 } from '../../interfaces/cluster-form.interface';
@@ -34,13 +35,15 @@ export class ClusterFeatureCreateContainer {
 
     readonly rabbitForm$ = this.clusterFeatureFormComponentStore.partialForm$<ClusterRabbitForm>('rabbit');
 
+    readonly metricForm$ = this.clusterFeatureFormComponentStore.partialForm$<ClusterMetricForm>('metric');
+
     readonly ingressForm$ = this.clusterFeatureFormComponentStore.partialForm$<ClusterIngressForm>('ingress');
 
     readonly accessForm$ = this.clusterFeatureFormComponentStore.partialForm$<ClusterAccessForm>('access');
 
     readonly step$ = this.clusterFeatureFormComponentStore.form$.pipe(map((state) => state.step));
 
-    readonly centralUrl$ = this.authStoreService.centralUrl$;
+    readonly centralUrl$ = this.licenseStoreService.centralUrl$;
 
     readonly isStepValid$ = this.step$.pipe(
         map((step) => {
@@ -55,6 +58,8 @@ export class ClusterFeatureCreateContainer {
                             this.formValidations.get('redis')) ||
                         false
                     );
+                case ClusterStepName.METRIC:
+                    return this.formValidations.get('metric') || false;
                 case ClusterStepName.INGRESS:
                     return this.formValidations.get('ingress') || false;
                 case ClusterStepName.ACCESS:
@@ -69,7 +74,7 @@ export class ClusterFeatureCreateContainer {
 
     constructor(
         private readonly clusterStoreService: ClusterStoreService,
-        private readonly authStoreService: AuthStoreService,
+        private readonly licenseStoreService: LicenseStoreService,
         private readonly clusterFeatureFormComponentStore: ClusterFeatureFormComponentStore
     ) {}
 
@@ -96,6 +101,11 @@ export class ClusterFeatureCreateContainer {
     changeRabbitForm(rabbit: ClusterCreateFormOutputs<ClusterRabbitForm>) {
         this.formValidations.set('rabbit', rabbit.isValid);
         this.clusterFeatureFormComponentStore.update({ rabbit: rabbit.form });
+    }
+
+    changeMetricForm(metric: ClusterCreateFormOutputs<ClusterMetricForm>) {
+        this.formValidations.set('metric', metric.isValid);
+        this.clusterFeatureFormComponentStore.update({ metric: metric.form });
     }
 
     changeIngressForm(ingress: ClusterCreateFormOutputs<ClusterIngressForm>) {

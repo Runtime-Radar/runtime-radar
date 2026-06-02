@@ -4,9 +4,10 @@ import { take } from 'rxjs/operators';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { IModalOptionsForService, KbqModalService, ModalSize } from '@koobiq/components/modal';
 
+import { AuthCredentials } from '@cs/domains/auth';
+import { LicenseStoreService } from '@cs/domains/license';
 import { SharedPasswordModalComponent } from '@cs/shared';
 import { UserStoreService } from '@cs/domains/user';
-import { AuthCredentials, AuthStoreService } from '@cs/domains/auth';
 import { CoreNavigationStoreService, LoadStatus, NAVIGATION, NavigationMenu, RouterName } from '@cs/core';
 
 @Component({
@@ -24,7 +25,7 @@ export class NavbarComponent {
 
     @Output() signOut = new EventEmitter<void>();
 
-    readonly appVersion$: Observable<string> = this.authStoreService.appVersion$;
+    readonly appVersion$: Observable<string> = this.licenseStoreService.appVersion$;
 
     readonly loadStatus$ = this.coreNavigationStoreService.loadStatus$;
 
@@ -38,7 +39,7 @@ export class NavbarComponent {
         private readonly coreNavigationStoreService: CoreNavigationStoreService,
         private readonly modalService: KbqModalService,
         private readonly userStoreService: UserStoreService,
-        private readonly authStoreService: AuthStoreService
+        private readonly licenseStoreService: LicenseStoreService
     ) {}
 
     hidePopover() {

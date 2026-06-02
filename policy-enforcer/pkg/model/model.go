@@ -33,6 +33,20 @@ func (b *Base) BeforeCreate(_ *gorm.DB) error {
 	return nil
 }
 
+func isUnique(ss []string) bool {
+	seen := make(map[string]bool, len(ss))
+
+	for _, s := range ss {
+		if _, ok := seen[s]; !ok {
+			seen[s] = true
+		} else {
+			return false
+		}
+	}
+
+	return true
+}
+
 func getUpdateMapValue[T any](tx *gorm.DB, fieldName string) (T, bool) {
 	var val T
 

@@ -1,0 +1,184 @@
+{{- $tlsEnabled := eq (include "common.tls.enabled" .) "true" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with (include "common.podAnnotations" .) }}
+      annotations:
+        {{- . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "common.podLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "common.serviceAccountName" . }}
+      {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}
+      containers:
+        - name: redis
+          image: {{ include "redis.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - /bin/bash
+            - -c
+            - >-
+              redis-server
+              --include /etc/redis/redis.conf
+            {{- if .Values.auth.enabled }}
+            {{- if ne .Values.auth.username "default" }}
+              --user default off
+            {{- end }}
+              --user "${REDIS_USER}" on "#$(echo -n "${REDIS_PASSWORD}" | sha256sum | cut -d' ' -f1)" "+@all" "~*"
+            {{- else }}
+              --protected-mode no
+            {{- end }}
+          env:
+            {{- if .Values.auth.enabled }}
+            - name: REDIS_USER
+              value: {{ .Values.auth.username | quote }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.auth.secretName" . }}
+                  key: {{ include "redis.secretPasswordKey" . }}
+            {{- end }}
+            {{- with .Values.extraEnvVars }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: redis
+              containerPort: {{ .Values.containerPorts.redis }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+            tcpSocket:
+              port: redis
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  redis-cli
+                  -h localhost
+                  -p {{ $.Values.containerPorts.redis }}
+                {{- if $.Values.auth.enabled }}
+                  --user "${REDIS_USER}"
+                  --pass "${REDIS_PASSWORD}"
+                {{- end }}
+                {{- if $tlsEnabled }}
+                  --tls
+                  --cacert {{ include "redis.tlsCACert" $ }}
+                  {{- if $.Values.tls.authClients }}
+                  --cert {{ include "redis.tlsCert" $ }}
+                  --key {{ include "redis.tlsCertKey" $ }}
+                  {{- end }}
+                {{- end }}
+                  ping | head -n1 | ( ! grep -vP '^\s*(PONG|LOADING|MASTERDOWN)' )
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  redis-cli
+                  -h localhost
+                  -p {{ $.Values.containerPorts.redis }}
+                {{- if $.Values.auth.enabled }}
+                  --user "${REDIS_USER}"
+                  --pass "${REDIS_PASSWORD}"
+                {{- end }}
+                {{- if $tlsEnabled }}
+                  --tls
+                  --cacert {{ include "redis.tlsCACert" $ }}
+                  {{- if $.Values.tls.authClients }}
+                  --cert {{ include "redis.tlsCert" $ }}
+                  --key {{ include "redis.tlsCertKey" $ }}
+                  {{- end }}
+                {{- end }}
+                  ping | head -n1 | ( ! grep -vP '^\s*(PONG)' )
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /etc/redis/redis.conf
+              subPath: redis.conf
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            {{- if $tlsEnabled }}
+            - name: redis-certificates
+              mountPath: /etc/redis/certs
+              readOnly: true
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "common.configmapName" . }}
+        - name: empty-dir
+          emptyDir: {}
+        {{- if $tlsEnabled }}
+        - name: redis-certificates
+          secret:
+            secretName: {{ include "common.tls.secretName" . }}
+            defaultMode: 256
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- else }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "common.pvcName" . }}
+        {{- end }}

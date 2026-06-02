@@ -24,6 +24,16 @@
                 "postgresql": {
                     "type": "object",
                     "properties": {
+                        "auth": {
+                            "type": "object",
+                            "properties": {
+                                "existingSecret": {
+                                    "type": "string",
+                                    "description": "Name of an existing secret that contains the certificates (overrides `auth.existingSecret`)",
+                                    "default": ""
+                                }
+                            }
+                        },
                         "tls": {
                             "type": "object",
                             "properties": {
@@ -329,11 +339,6 @@
         "podSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enabled pods' Security Context",
-                    "default": true
-                },
                 "fsGroupChangePolicy": {
                     "type": "string",
                     "description": "Set filesystem group change policy",
@@ -361,11 +366,6 @@
         "containerSecurityContext": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable containers' Security Context",
-                    "default": true
-                },
                 "runAsUser": {
                     "type": "number",
                     "description": "Set containers' Security Context runAsUser",
@@ -426,11 +426,6 @@
         "livenessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable livenessProbe on PostgreSQL containers",
-                    "default": true
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for livenessProbe",
@@ -461,11 +456,6 @@
         "readinessProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable readinessProbe on PostgreSQL containers",
-                    "default": true
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for readinessProbe",
@@ -496,11 +486,6 @@
         "startupProbe": {
             "type": "object",
             "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable startupProbe on PostgreSQL containers",
-                    "default": false
-                },
                 "initialDelaySeconds": {
                     "type": "number",
                     "description": "Initial delay seconds for startupProbe",
@@ -568,7 +553,7 @@
             "properties": {
                 "enabled": {
                     "type": "boolean",
-                    "description": "Enable PostgreSQL data persistence using PVC",
+                    "description": "Enable persistence using Persistent Volume Claims",
                     "default": true
                 },
                 "existingClaim": {
@@ -578,12 +563,22 @@
                 },
                 "storageClass": {
                     "type": "string",
-                    "description": "PVC Storage Class for PostgreSQL data volume",
+                    "description": "Storage class of backing PVC",
                     "default": ""
+                },
+                "labels": {
+                    "type": "object",
+                    "description": "Persistent Volume Claim labels",
+                    "default": {}
+                },
+                "annotations": {
+                    "type": "object",
+                    "description": "Persistent Volume Claim annotations",
+                    "default": {}
                 },
                 "accessModes": {
                     "type": "array",
-                    "description": "PVC Access Mode for PostgreSQL volume",
+                    "description": "Persistent Volume Access Modes",
                     "default": [
                         "ReadWriteOnce"
                     ],
@@ -593,22 +588,12 @@
                 },
                 "size": {
                     "type": "string",
-                    "description": "PVC Storage Request for PostgreSQL volume",
+                    "description": "Size of data volume",
                     "default": "8Gi"
-                },
-                "annotations": {
-                    "type": "object",
-                    "description": "Annotations for the PVC",
-                    "default": {}
-                },
-                "labels": {
-                    "type": "object",
-                    "description": "Labels for the PVC",
-                    "default": {}
                 },
                 "selector": {
                     "type": "object",
-                    "description": "Selector to match an existing Persistent Volume (this value is evaluated as a template)",
+                    "description": "Selector to match an existing Persistent Volume for ClickHouse data PVC",
                     "default": {}
                 },
                 "dataSource": {
@@ -705,11 +690,6 @@
                 "containerSecurityContext": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "description": "Enable containers' Security Context",
-                            "default": true
-                        },
                         "runAsUser": {
                             "type": "number",
                             "description": "Set containers' Security Context runAsUser",
@@ -770,11 +750,6 @@
                 "livenessProbe": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "description": "Enable livenessProbe on PostgreSQL Prometheus exporter containers",
-                            "default": true
-                        },
                         "initialDelaySeconds": {
                             "type": "number",
                             "description": "Initial delay seconds for livenessProbe",
@@ -805,11 +780,6 @@
                 "readinessProbe": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "description": "Enable readinessProbe on PostgreSQL Prometheus exporter containers",
-                            "default": true
-                        },
                         "initialDelaySeconds": {
                             "type": "number",
                             "description": "Initial delay seconds for readinessProbe",
@@ -840,11 +810,6 @@
                 "startupProbe": {
                     "type": "object",
                     "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "description": "Enable startupProbe on PostgreSQL Prometheus exporter containers",
-                            "default": false
-                        },
                         "initialDelaySeconds": {
                             "type": "number",
                             "description": "Initial delay seconds for startupProbe",
@@ -994,11 +959,6 @@
                         "podSecurityContext": {
                             "type": "object",
                             "properties": {
-                                "enabled": {
-                                    "type": "boolean",
-                                    "description": "Enable PodSecurityContext for CronJob/Backup",
-                                    "default": true
-                                },
                                 "fsGroupChangePolicy": {
                                     "type": "string",
                                     "description": "Set filesystem group change policy",
@@ -1026,11 +986,6 @@
                         "containerSecurityContext": {
                             "type": "object",
                             "properties": {
-                                "enabled": {
-                                    "type": "boolean",
-                                    "description": "Enable containers' Security Context",
-                                    "default": true
-                                },
                                 "runAsUser": {
                                     "type": "number",
                                     "description": "Set containers' Security Context runAsUser",

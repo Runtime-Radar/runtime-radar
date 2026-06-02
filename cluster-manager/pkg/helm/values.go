@@ -1,7 +1,6 @@
 package helm
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -20,8 +19,7 @@ const (
 )
 
 var (
-	errInputNotStruct = errors.New("input must be a struct")
-	errMarshal        = errors.New("failed to marshal field")
+	errUnsupported = errors.New("unsupported field type")
 )
 
 // Values represents helm values returned as a complete install command or yaml.
@@ -45,11 +43,17 @@ type Values struct {
 			PublicAccessTokenSalt string `json:"publicAccessTokenSalt,omitempty"`
 		} `json:"keys,omitzero"`
 
-		Postgresql TLSGlobal `json:"postgresql"`
-		Redis      TLSGlobal `json:"redis"`
-		Clickhouse TLSGlobal `json:"clickhouse"`
-		Grafana    TLSGlobal `json:"grafana,omitzero"`
-		Loki       TLSGlobal `json:"loki,omitzero"`
+		Administrator struct {
+			Username string `json:"username,omitempty"`
+			Password string `json:"password,omitempty"`
+		} `json:"administrator,omitzero"`
+
+		Postgresql AuthTLSGlobal `json:"postgresql"`
+		Redis      AuthTLSGlobal `json:"redis"`
+		Rabbitmq   AuthGlobal    `json:"rabbitmq,omitzero"`
+		Clickhouse AuthTLSGlobal `json:"clickhouse"`
+		Grafana    TLSGlobal     `json:"grafana,omitzero"`
+		Loki       TLSGlobal     `json:"loki,omitzero"`
 	} `json:"global,omitzero"`
 
 	TLS struct {
@@ -59,17 +63,14 @@ type Values struct {
 		CertKey string `json:"certKey,omitempty"`
 	} `json:"tls,omitzero"`
 
-	AuthAPI struct {
-		Administrator struct {
-			Username string `json:"username,omitempty"`
-			Password string `json:"password,omitempty"`
-		} `json:"administrator,omitzero"`
-	} `json:"auth-center,omitzero"`
-
 	ImagePullSecret struct {
 		Username string `json:"username,omitempty"`
 		Password string `json:"password,omitempty"`
 	} `json:"imagePullSecret,omitzero"`
+
+	HistoryAPI struct {
+		RetentionInterval string `json:"retentionInterval,omitempty"`
+	} `json:"history-api,omitzero"`
 
 	Postgresql struct {
 		Deploy       bool   `json:"deploy"`
@@ -151,14 +152,24 @@ type Values struct {
 		} `json:"tls,omitzero"`
 	} `json:"clickhouse"`
 
+	Prometheus struct {
+		Deploy       bool   `json:"deploy"`
+		ExternalHost string `json:"externalHost,omitempty"`
+
+		Persistence struct {
+			Enabled      bool   `json:"enabled"`
+			StorageClass string `json:"storageClass,omitempty"`
+		} `json:"persistence"`
+	} `json:"prometheus,omitzero"`
+
 	Grafana struct {
 		Deploy       bool   `json:"deploy"`
 		ExternalHost string `json:"externalHost,omitempty"`
 
-		Admin struct {
-			User     string `json:"user,omitempty"`
+		Auth struct {
+			Username string `json:"username,omitempty"`
 			Password string `json:"password,omitempty"`
-		} `json:"admin,omitzero"`
+		} `json:"auth,omitzero"`
 
 		Persistence struct {
 			Enabled      bool   `json:"enabled"`
@@ -172,18 +183,20 @@ type Values struct {
 		} `json:"tls,omitzero"`
 	} `json:"grafana,omitzero"`
 
+	Metrics struct {
+		Enabled bool `json:"enabled"`
+	} `json:"metrics"`
+
 	Loki struct {
 		Deploy       bool   `json:"deploy"`
 		ExternalHost string `json:"externalHost,omitempty"`
 
 		TenantID string `json:"tenant_id,omitempty"`
 
-		SingleBinary struct {
-			Persistence struct {
-				Enabled      bool   `json:"enabled"`
-				StorageClass string `json:"storageClass,omitempty"`
-			} `json:"persistence"`
-		}
+		Persistence struct {
+			Enabled      bool   `json:"enabled"`
+			StorageClass string `json:"storageClass,omitempty"`
+		} `json:"persistence"`
 
 		TLS struct {
 			CertCA  string `json:"certCA,omitempty"`
@@ -194,14 +207,14 @@ type Values struct {
 
 	ReverseProxy struct {
 		Ingress struct {
-			Enabled    bool   `json:"enabled,omitempty"`
-			Class      string `json:"class,omitempty"`
-			Hostname   string `json:"hostname,omitempty"`
-			SecretName string `json:"secretName,omitempty"`
-			TLS        struct {
-				CertCA  string `json:"certCA,omitempty"`
-				Cert    string `json:"cert,omitempty"`
-				CertKey string `json:"certKey,omitempty"`
+			Enabled  bool   `json:"enabled,omitempty"`
+			Class    string `json:"class,omitempty"`
+			Hostname string `json:"hostname,omitempty"`
+			TLS      struct {
+				CertCA         string `json:"certCA,omitempty"`
+				Cert           string `json:"cert,omitempty"`
+				CertKey        string `json:"certKey,omitempty"`
+				ExistingSecret string `json:"existingSecret,omitempty"`
 			} `json:"tls,omitzero"`
 		} `json:"ingress,omitzero"`
 
@@ -214,7 +227,7 @@ type Values struct {
 	} `json:"reverse-proxy,omitzero"`
 
 	Notifier struct {
-		OverwriteEnv []Env `json:"overwriteEnv,omitempty"`
+		Env []Env `json:"env,omitempty"`
 	} `json:"notifier,omitzero"`
 
 	CSManager struct {
@@ -234,6 +247,28 @@ type TLSGlobal struct {
 	} `json:"tls"`
 }
 
+// AuthTLSGlobal is the global-section block for services that share both an
+// existing auth secret name and TLS settings across consumer sub-charts
+// (postgresql, redis, clickhouse).
+type AuthTLSGlobal struct {
+	Auth struct {
+		ExistingSecret string `json:"existingSecret,omitempty"`
+	} `json:"auth,omitzero"`
+	TLS struct {
+		Enabled bool `json:"enabled"`
+		Verify  bool `json:"verify"`
+	} `json:"tls"`
+}
+
+// AuthGlobal is the global-section block for services that share only an
+// existing auth secret name across consumer sub-charts (rabbitmq has no TLS
+// knobs at the global level).
+type AuthGlobal struct {
+	Auth struct {
+		ExistingSecret string `json:"existingSecret,omitempty"`
+	} `json:"auth,omitzero"`
+}
+
 // buildHelmArgs recursively converts a struct's fields to Helm command-line arguments.
 // It traverses the struct and generates the appropriate --set or --set-string arguments
 // based on field types.
@@ -248,7 +283,7 @@ type TLSGlobal struct {
 // Fields with `json:",omitempty"` or `json:",omitzero"` are skipped if they contain zero values.
 //
 // Returns an error if JSON marshaling fails for array/slice fields.
-func buildHelmArgs(v any, prefix string) ([]string, error) {
+func buildHelmArgs(v any, prefix string, hasOmit bool) ([]string, error) {
 	var res []string
 
 	val := reflect.ValueOf(v)
@@ -257,66 +292,72 @@ func buildHelmArgs(v any, prefix string) ([]string, error) {
 		val = val.Elem()
 	}
 
-	if val.Kind() != reflect.Struct {
-		return nil, errInputNotStruct
+	// skip field on `omitempty` and `omitzero`
+	// theoretically `field.IsZero()` can possibly panic
+	// but currently it should never happen
+	if hasOmit && val.IsZero() {
+		return nil, nil
 	}
 
-	t := val.Type()
+	switch val.Kind() {
+	case reflect.String:
+		res = append(res, fmt.Sprintf("--set-string '%s=%s'", prefix, val.String()))
 
-	for i := range val.NumField() {
-		field := val.Field(i)
-		fieldType := t.Field(i)
+	case reflect.Bool:
+		res = append(res, fmt.Sprintf("--set '%s=%t'", prefix, val.Bool()))
 
-		tag := fieldType.Tag.Get("json")
-		if tag == "-" {
-			continue
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		res = append(res, fmt.Sprintf("--set '%s=%d'", prefix, val.Int()))
+
+	case reflect.Float32, reflect.Float64:
+		res = append(res, fmt.Sprintf("--set '%s=%f'", prefix, val.Float()))
+
+	case reflect.Array, reflect.Slice:
+		if hasOmit && val.Len() == 0 {
+			return nil, nil
 		}
-
-		parts := strings.Split(tag, ",")
-		fieldName := parts[0]
-		if fieldName == "" {
-			fieldName = fieldType.Name
-		}
-		hasOmit := (slices.Index(parts, "omitempty") != -1) || (slices.Index(parts, "omitzero") != -1)
-
-		// skip field on `omitempty` and `omitzero`
-		// theoretically `field.IsZero()` can possibly panic
-		// but currently it should never happen
-		if hasOmit && field.IsZero() {
-			continue
-		}
-
-		currentPrefix := fieldName
-		if prefix != "" {
-			currentPrefix = prefix + "." + fieldName
-		}
-
-		switch field.Kind() {
-		case reflect.String:
-			res = append(res, fmt.Sprintf("--set-string '%s=%s'", currentPrefix, field.String()))
-		case reflect.Bool:
-			res = append(res, fmt.Sprintf("--set '%s=%t'", currentPrefix, field.Bool()))
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			res = append(res, fmt.Sprintf("--set '%s=%d'", currentPrefix, field.Int()))
-		case reflect.Float32, reflect.Float64:
-			res = append(res, fmt.Sprintf("--set '%s=%f'", currentPrefix, field.Float()))
-		case reflect.Array, reflect.Slice:
-			if hasOmit && field.Len() == 0 {
-				continue
-			}
-			b, err := json.Marshal(field.Interface())
-			if err != nil {
-				return nil, fmt.Errorf("%w: %w", errMarshal, err)
-			}
-			res = append(res, fmt.Sprintf("--set '%s=%s'", currentPrefix, string(b)))
-		case reflect.Struct:
-			nestedRes, err := buildHelmArgs(field.Interface(), currentPrefix)
+		for i := range val.Len() {
+			nestedRes, err := buildHelmArgs(val.Index(i).Interface(), fmt.Sprintf("%s[%d]", prefix, i), false)
 			if err != nil {
 				return nil, err
 			}
 			res = append(res, nestedRes...)
 		}
+	case reflect.Struct:
+		t := val.Type()
+
+		for i := range val.NumField() {
+			field := val.Field(i)
+			fieldType := t.Field(i)
+
+			tag := fieldType.Tag.Get("json")
+			if tag == "-" {
+				continue
+			}
+
+			parts := strings.Split(tag, ",")
+			fieldName := parts[0]
+			if fieldName == "" {
+				fieldName = fieldType.Name
+			}
+
+			hasOmit := (slices.Index(parts, "omitempty") != -1) || (slices.Index(parts, "omitzero") != -1)
+
+			currentPrefix := fieldName
+			if prefix != "" {
+				currentPrefix = prefix + "." + fieldName
+			}
+
+			nestedRes, err := buildHelmArgs(field.Interface(), currentPrefix, hasOmit)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, nestedRes...)
+		}
+	default:
+		return nil, errUnsupported
 	}
+
 	return res, nil
 }
 
@@ -330,5 +371,5 @@ func (v *Values) ToYAML() (string, error) {
 }
 
 func (v *Values) ToHelmArgs() ([]string, error) {
-	return buildHelmArgs(v, "")
+	return buildHelmArgs(v, "", false)
 }

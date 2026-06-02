@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/google/gops/agent"
+	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/cipher"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
@@ -23,6 +25,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/client"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/config"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/database"
+	"github.com/runtime-radar/runtime-radar/notifier/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/server"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/service"
 	"github.com/runtime-radar/runtime-radar/notifier/pkg/template"
@@ -53,7 +56,7 @@ var (
 
 func main() {
 	cfg := config.New()
-	initLogger(cfg.LogFile, cfg.LogLevel)
+	logger.Init(cfg.LogFile, cfg.LogLevel)
 
 	log.Info().Str("build_release", build.Release).Str("build_branch", build.Branch).Str("build_commit", build.Commit).Str("build_date", build.Date).Msgf("-> %s started", build.AppName)
 	defer log.Info().Msgf("<- %s exited", build.AppName)
@@ -103,10 +106,13 @@ func main() {
 		log.Fatal().Msgf("### Failed to migrate DB: %v", err)
 	}
 
+	grpcMetrics := prometheus.NewServerMetrics(prometheus.WithServerHandlingTimeHistogram())
+
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			interceptor.Recovery,
 			interceptor.Correlation,
+			grpcMetrics.UnaryServerInterceptor(),
 		),
 		grpc.MaxRecvMsgSize(server.MaxRecvMsgSize),
 	}
@@ -134,13 +140,20 @@ func main() {
 	api.RegisterNotificationControllerServer(grpcSrv, notification)
 	api.RegisterIntegrationControllerServer(grpcSrv, email)
 
-	template.Init(cfg.TemplatesHTMLFolder, cfg.TemplatesTextFolder)
+	template.Init(cfg.TemplatesFolder)
 
 	// Register reflection service on gRPC server
 	reflection.Register(grpcSrv)
 
-	// Create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	// Initialize metrics
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL, grpcMetrics)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
+
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
+
+	// Run the instrumentation HTTP server for metrics, probes, etc.
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)
@@ -201,7 +214,7 @@ func composeServices(
 	crypter cipher.Crypter,
 	verifier jwt.Verifier,
 	isAuth bool,
-	version string,
+	csVersion string,
 ) (notifier api.NotifierServer, notification api.NotificationControllerServer, integration api.IntegrationControllerServer) {
 	integration = &service.IntegrationGeneric{
 		IntegrationRepository:  &database.IntegrationDatabase{DB: db},
@@ -218,7 +231,7 @@ func composeServices(
 		NotificationRepository: &database.NotificationDatabase{DB: db},
 		IntegrationRepository:  &database.IntegrationDatabase{DB: db},
 		Crypter:                crypter,
-		CSVersion:              version,
+		CSVersion:              csVersion,
 	}
 
 	if isAuth {
@@ -236,8 +249,8 @@ func composeServices(
 		}
 	}
 
-	integration = &service.IntegrationLogging{integration}
-	notification = &service.NotificationLogging{notification}
+	integration = &service.IntegrationLogging{&service.IntegrationAudit{integration}}
+	notification = &service.NotificationLogging{&service.NotificationAudit{notification}}
 	notifier = &service.NotifierLogging{notifier}
 
 	return

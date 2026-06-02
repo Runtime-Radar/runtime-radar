@@ -12,13 +12,6 @@ import (
 func TestBuildHelmArgs(t *testing.T) {
 	t.Parallel()
 
-	// BadType contains cyclic reference to make `json.Marshal` return error
-	type BadType struct {
-		CyclicRef *BadType
-	}
-	badArg := BadType{}
-	badArg.CyclicRef = &badArg
-
 	tests := []struct {
 		name        string
 		input       any
@@ -166,7 +159,9 @@ func TestBuildHelmArgs(t *testing.T) {
 			},
 			prefix: "",
 			expected: []string{
-				"--set 'names=[\"alice\",\"bob\",\"charlie\"]'",
+				"--set-string 'names[0]=alice'",
+				"--set-string 'names[1]=bob'",
+				"--set-string 'names[2]=charlie'",
 			},
 			expectedErr: nil,
 		},
@@ -188,29 +183,12 @@ func TestBuildHelmArgs(t *testing.T) {
 			},
 			prefix: "",
 			expected: []string{
-				"--set 'env=[{\"name\":\"ENV1\",\"value\":\"value1\"},{\"name\":\"ENV2\",\"value\":\"value2\"}]'",
+				"--set-string 'env[0].name=ENV1'",
+				"--set-string 'env[0].value=value1'",
+				"--set-string 'env[1].name=ENV2'",
+				"--set-string 'env[1].value=value2'",
 			},
 			expectedErr: nil,
-		},
-		{
-			name:        "incorrect type",
-			input:       []string{"one", "two", "three"},
-			prefix:      "",
-			expected:    nil,
-			expectedErr: errInputNotStruct,
-		},
-		{
-			name: "unmarshalable slice content",
-			input: struct {
-				BadSlice []BadType `json:"bad_slice"`
-			}{
-				BadSlice: []BadType{
-					badArg,
-				},
-			},
-			prefix:      "",
-			expected:    nil,
-			expectedErr: errMarshal,
 		},
 	}
 
@@ -218,7 +196,7 @@ func TestBuildHelmArgs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			args, err := buildHelmArgs(tt.input, tt.prefix)
+			args, err := buildHelmArgs(tt.input, tt.prefix, false)
 
 			if !errors.Is(err, tt.expectedErr) {
 				t.Fatalf("expected error '%v', got '%v'", tt.expectedErr, err)
@@ -247,6 +225,10 @@ func generateValues() Values {
 	values.Global.ImageShortNames = false
 	values.Global.Keys.Encryption = "encryption-key"
 	values.Global.Keys.Token = "token-key"
+	values.Global.Postgresql.Auth.ExistingSecret = "pg-secret"
+	values.Global.Redis.Auth.ExistingSecret = "redis-secret"
+	values.Global.Rabbitmq.Auth.ExistingSecret = "rabbitmq-secret"
+	values.Global.Clickhouse.Auth.ExistingSecret = "ch-secret"
 
 	values.TLS.CertCA = "ca-cert-data"
 	values.TLS.Cert = "cert-data"
@@ -285,11 +267,11 @@ func generateValues() Values {
 	values.ReverseProxy.Ingress.Enabled = true
 	values.ReverseProxy.Ingress.Class = "nginx"
 	values.ReverseProxy.Ingress.Hostname = "cs.example.com"
-	values.ReverseProxy.Ingress.SecretName = "cs-tls"
+	values.ReverseProxy.Ingress.TLS.ExistingSecret = "cs-tls"
 	values.ReverseProxy.Service.Type = "ClusterIP"
 
 	// Notifier
-	values.Notifier.OverwriteEnv = []Env{
+	values.Notifier.Env = []Env{
 		{Name: "HTTP_PROXY", Value: "http://proxy.local"},
 		{Name: "HTTPS_PROXY", Value: "https://proxy.local"},
 	}
@@ -297,9 +279,9 @@ func generateValues() Values {
 	// CS Manager
 	values.CSManager.RegistrationToken = "registration-token"
 
-	// AuthAPI
-	values.AuthAPI.Administrator.Username = "user"
-	values.AuthAPI.Administrator.Password = "pass"
+	// Administrator
+	values.Global.Administrator.Username = "user"
+	values.Global.Administrator.Password = "pass"
 
 	return values
 }
@@ -333,6 +315,7 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set-string 'postgresql.auth.username=postgres'",
 		"--set-string 'postgresql.auth.password=postgres-password'",
 		"--set 'postgresql.persistence.enabled=true'",
+		"--set-string 'global.postgresql.auth.existingSecret=pg-secret'",
 		"--set 'global.postgresql.tls.enabled=true'",
 		"--set 'global.postgresql.tls.verify=true'",
 		"--set-string 'postgresql.persistence.storageClass=standard-1'",
@@ -340,8 +323,12 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set-string 'redis.auth.username=redis'",
 		"--set-string 'redis.auth.password=redis-password'",
 		"--set 'redis.persistence.enabled=false'",
+		"--set-string 'global.redis.auth.existingSecret=redis-secret'",
 		"--set 'global.redis.tls.enabled=false'",
 		"--set 'global.redis.tls.verify=false'",
+		"--set-string 'global.rabbitmq.auth.existingSecret=rabbitmq-secret'",
+		"--set-string 'global.clickhouse.auth.existingSecret=ch-secret'",
+		"--set 'metrics.enabled=false'",
 		"--set 'rabbitmq.deploy=true'",
 		"--set-string 'rabbitmq.auth.username=rabbitmq'",
 		"--set-string 'rabbitmq.auth.password=rabbitmq-password'",
@@ -355,12 +342,15 @@ func TestValuesToHelmArgs(t *testing.T) {
 		"--set 'reverse-proxy.ingress.enabled=true'",
 		"--set-string 'reverse-proxy.ingress.class=nginx'",
 		"--set-string 'reverse-proxy.ingress.hostname=cs.example.com'",
-		"--set-string 'reverse-proxy.ingress.secretName=cs-tls'",
+		"--set-string 'reverse-proxy.ingress.tls.existingSecret=cs-tls'",
 		"--set-string 'reverse-proxy.service.type=ClusterIP'",
-		"--set 'notifier.overwriteEnv=[{\"name\":\"HTTP_PROXY\",\"value\":\"http://proxy.local\"},{\"name\":\"HTTPS_PROXY\",\"value\":\"https://proxy.local\"}]'",
+		"--set-string 'notifier.env[0].name=HTTP_PROXY'",
+		"--set-string 'notifier.env[0].value=http://proxy.local'",
+		"--set-string 'notifier.env[1].name=HTTPS_PROXY'",
+		"--set-string 'notifier.env[1].value=https://proxy.local'",
 		"--set-string 'cs-manager.registrationToken=registration-token'",
-		"--set-string 'auth-center.administrator.username=user'",
-		"--set-string 'auth-center.administrator.password=pass'",
+		"--set-string 'global.administrator.username=user'",
+		"--set-string 'global.administrator.password=pass'",
 	}
 
 	if diff := cmp.Diff(args, expectedArgs,
@@ -385,10 +375,6 @@ func TestValuesToYaml(t *testing.T) {
 	lines := strings.Split(yaml, "\n")
 
 	expectedLines := []string{
-		"auth-center:",
-		"  administrator:",
-		"    password: pass",
-		"    username: user",
 		"clickhouse:",
 		"  deploy: false",
 		"  externalHost: clickhouse.local",
@@ -397,8 +383,13 @@ func TestValuesToYaml(t *testing.T) {
 		"cs-manager:",
 		"  registrationToken: registration-token",
 		"global:",
+		"  administrator:",
+		"    password: pass",
+		"    username: user",
 		"  centralCsUrl: https://central-cs.local",
 		"  clickhouse:",
+		"    auth:",
+		"      existingSecret: ch-secret",
 		"    tls:",
 		"      enabled: false",
 		"      verify: false",
@@ -410,18 +401,27 @@ func TestValuesToYaml(t *testing.T) {
 		"    token: token-key",
 		"  ownCsUrl: https://cs.local",
 		"  postgresql:",
+		"    auth:",
+		"      existingSecret: pg-secret",
 		"    tls:",
 		"      enabled: true",
 		"      verify: true",
+		"  rabbitmq:",
+		"    auth:",
+		"      existingSecret: rabbitmq-secret",
 		"  redis:",
+		"    auth:",
+		"      existingSecret: redis-secret",
 		"    tls:",
 		"      enabled: false",
 		"      verify: false",
 		"imagePullSecret:",
 		"  password: registry-password",
 		"  username: registry-user",
+		"metrics:",
+		"  enabled: false",
 		"notifier:",
-		"  overwriteEnv:",
+		"  env:",
 		"  - name: HTTP_PROXY",
 		"    value: http://proxy.local",
 		"  - name: HTTPS_PROXY",
@@ -454,7 +454,8 @@ func TestValuesToYaml(t *testing.T) {
 		"    class: nginx",
 		"    enabled: true",
 		"    hostname: cs.example.com",
-		"    secretName: cs-tls",
+		"    tls:",
+		"      existingSecret: cs-tls",
 		"  service:",
 		"    type: ClusterIP",
 		"tls:",

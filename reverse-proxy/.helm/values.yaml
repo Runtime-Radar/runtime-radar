@@ -7,7 +7,7 @@ image:
 containerPorts:
   http: 9000
   grpc: 8000
-  health: 9001
+  health: 9090
 service:
   type: ClusterIP
   annotations: {}
@@ -15,10 +15,9 @@ service:
   ports:
     http: 9000
     grpc: 8000
-    health: 9001
+    health: 9090
   nodePorts: {}
 containerSecurityContext:
-  enabled: true
   seLinuxOptions: {}
   privileged: false
   allowPrivilegeEscalation: false
@@ -31,7 +30,6 @@ containerSecurityContext:
     add:
       - NET_BIND_SERVICE
 podSecurityContext:
-  enabled: true
   fsGroupChangePolicy: Always
   sysctls: []
   supplementalGroups: []
@@ -68,7 +66,6 @@ debugReverseProxy: ""
 isChildCluster: false
 centralCsUrl: ""
 livenessProbe:
-  enabled: true
   httpGet:
     path: /health
     port: health
@@ -77,7 +74,6 @@ livenessProbe:
   successThreshold: 1
   failureThreshold: 2
 readinessProbe:
-  enabled: true
   httpGet:
     path: /ready
     port: health

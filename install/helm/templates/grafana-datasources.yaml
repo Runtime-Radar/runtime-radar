@@ -1,0 +1,26 @@
+{{- define "cs.grafana.datasources" -}}
+apiVersion: 1
+datasources:
+  {{- if or .Values.prometheus.deployed .Values.prometheus.externalHost }}
+  - name: Prometheus
+    type: prometheus
+    url: {{ include "common.cs.prometheus.address" . }}
+  {{- end }}
+{{- end -}}
+
+{{- if .Values.grafana.deployed }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-datasources
+  namespace: {{ include "common.namespace" . | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+  {{- with (include "common.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+type: Opaque
+data:
+  datasources.yaml: {{ include "cs.grafana.datasources" . | b64enc | nindent 4 }}
+{{- end }}

@@ -12,14 +12,17 @@ import (
 	"time"
 
 	"github.com/google/gops/agent"
+	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
-	api "github.com/runtime-radar/runtime-radar/history-api/api"
+	"github.com/runtime-radar/runtime-radar/history-api/api"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/build"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/config"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/consumer"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/database/clickhouse"
+	"github.com/runtime-radar/runtime-radar/history-api/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/server"
 	"github.com/runtime-radar/runtime-radar/history-api/pkg/service"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/rabbit"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
@@ -51,7 +54,7 @@ var (
 
 func main() {
 	cfg := config.New()
-	initLogger(cfg.LogFile, cfg.LogLevel)
+	logger.Init(cfg.LogFile, cfg.LogLevel)
 
 	log.Info().Str("build_release", build.Release).Str("build_branch", build.Branch).Str("build_commit", build.Commit).Str("build_date", build.Date).Msgf("-> %s started", build.AppName)
 	defer log.Info().Msgf("<- %s exited", build.AppName)
@@ -96,7 +99,14 @@ func main() {
 	go eventsCleaner(clickhouseDB, cfg.RuntimeEventsCleanInterval, cfg.RuntimeEventsLimit)
 
 	// Init AMQP message broker
-	mb, err := rabbit.NewMessageBroker(cfg.RabbitAddr, cfg.RabbitUser, cfg.RabbitPassword, cfg.RabbitQueue, rabbit.WithConsumer(build.AppName, cfg.RabbitQueuePrefetchCount))
+	mb, err := rabbit.NewMessageBroker(
+		cfg.RabbitAddr,
+		cfg.RabbitUser,
+		cfg.RabbitPassword,
+		cfg.RabbitQueue,
+		rabbit.WithConsumer(build.AppName, cfg.RabbitQueuePrefetchCount),
+		rabbit.WithStateReporter(metrics.RabbitStateReporter(cfg.RabbitQueue, true)),
+	)
 	if err != nil {
 		log.Fatal().Msgf("Failed to init message broker: %v", err)
 	}
@@ -104,12 +114,18 @@ func main() {
 
 	go eventsConsumer(mb, clickhouseDB, cfg.RuntimeEventsBatchSize, cfg.RuntimeEventsSaveInterval)
 
-	var tlsConfig *tls.Config
+	grpcMetrics := prometheus.NewServerMetrics(prometheus.WithServerHandlingTimeHistogram())
+
 	opts := []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(interceptor.Recovery, interceptor.Correlation),
+		grpc.ChainUnaryInterceptor(
+			interceptor.Recovery,
+			interceptor.Correlation,
+			grpcMetrics.UnaryServerInterceptor(),
+		),
 		grpc.MaxRecvMsgSize(server.MaxRecvMsgSize),
 	}
 
+	var tlsConfig *tls.Config
 	if cfg.TLS {
 		// Load TLS config
 		tlsConfig, err = security.LoadTLS(caFile, certFile, keyFile)
@@ -121,7 +137,7 @@ func main() {
 
 	grpcSrv := grpc.NewServer(opts...)
 
-	runtimeHistorySvc, runtimeStatsSvc := composeServices(clickhouseDB, verifier, cfg.Auth, cfg.RuntimeEventsBatchSize, cfg.RuntimeEventsSaveInterval)
+	runtimeHistorySvc, runtimeStatsSvc := composeServices(clickhouseDB, cfg.RetentionInterval, verifier, cfg.Auth, cfg.RuntimeEventsBatchSize, cfg.RuntimeEventsSaveInterval)
 
 	api.RegisterRuntimeHistoryServer(grpcSrv, runtimeHistorySvc)
 	api.RegisterRuntimeStatsServer(grpcSrv, runtimeStatsSvc)
@@ -129,8 +145,15 @@ func main() {
 	// Register reflection service on gRPC server
 	reflection.Register(grpcSrv)
 
-	// Create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	// Initialize metrics
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL, grpcMetrics)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
+
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
+
+	// Run the instrumentation HTTP server for metrics, probes, etc.
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)
@@ -184,16 +207,17 @@ func main() {
 
 func composeServices(
 	clickhouseDB *gorm.DB,
+	_ time.Duration,
 	verifier jwt.Verifier,
 	isAuth bool,
 	runtimeBatchSize int,
 	runtimeFlushInterval time.Duration,
-) (historySvc api.RuntimeHistoryServer, statsSvc api.RuntimeStatsServer) {
-	statsSvc = &service.RuntimeStatsGeneric{
+) (runtimeHistorySvc api.RuntimeHistoryServer, runtimeStatsSvc api.RuntimeStatsServer) {
+	runtimeStatsSvc = &service.RuntimeStatsGeneric{
 		StatsRepository: &clickhouse.StatsDatabase{clickhouseDB},
 	}
 
-	historySvc = &service.RuntimeHistoryGeneric{
+	runtimeHistorySvc = &service.RuntimeHistoryGeneric{
 		RuntimeEventRepository: clickhouse.NewRuntimeEventBatchingDatabase(
 			runtimeBatchSize,
 			runtimeFlushInterval,
@@ -202,19 +226,19 @@ func composeServices(
 	}
 
 	if isAuth {
-		historySvc = &service.RuntimeHistoryAuth{
-			RuntimeHistoryServer: historySvc,
+		runtimeHistorySvc = &service.RuntimeHistoryAuth{
+			RuntimeHistoryServer: runtimeHistorySvc,
 			Verifier:             verifier,
 		}
 
-		statsSvc = &service.RuntimeStatsAuth{
-			RuntimeStatsServer: statsSvc,
+		runtimeStatsSvc = &service.RuntimeStatsAuth{
+			RuntimeStatsServer: runtimeStatsSvc,
 			Verifier:           verifier,
 		}
 	}
 
-	historySvc = &service.RuntimeHistoryLogging{RuntimeHistoryServer: historySvc}
-	statsSvc = &service.RuntimeStatsLogging{RuntimeStatsServer: statsSvc}
+	runtimeHistorySvc = &service.RuntimeHistoryLogging{RuntimeHistoryServer: runtimeHistorySvc}
+	runtimeStatsSvc = &service.RuntimeStatsLogging{RuntimeStatsServer: runtimeStatsSvc}
 
 	return
 }

@@ -408,6 +408,18 @@
         },
         "proxyUrl": {
           "type": "string"
+        },
+        "historyRetentionInterval": {
+          "type": "string"
+        },
+        "grafana": {
+          "$ref": "#/definitions/ConfigGrafana"
+        },
+        "prometheus": {
+          "$ref": "#/definitions/ConfigPrometheus"
+        },
+        "enableMetrics": {
+          "type": "boolean"
         }
       }
     },
@@ -457,6 +469,20 @@
           "type": "string"
         },
         "database": {
+          "type": "string"
+        }
+      }
+    },
+    "ConfigGrafana": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        },
+        "password": {
           "type": "string"
         }
       }
@@ -514,6 +540,20 @@
           "type": "string"
         },
         "database": {
+          "type": "string"
+        }
+      }
+    },
+    "ConfigPrometheus": {
+      "type": "object",
+      "properties": {
+        "deploy": {
+          "type": "boolean"
+        },
+        "persistence": {
+          "type": "boolean"
+        },
+        "storageClass": {
           "type": "string"
         }
       }

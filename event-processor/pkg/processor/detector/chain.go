@@ -8,9 +8,11 @@ import (
 	"time"
 
 	tetragon_api "github.com/cilium/tetragon/api/v1/tetragon"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/event-processor/api"
 	detector_api "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
+	"github.com/runtime-radar/runtime-radar/event-processor/pkg/metrics"
 	enf_model "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
 )
 
@@ -61,12 +63,16 @@ func (c Chain) Detect(ctx context.Context, event *tetragon_api.GetEventsResponse
 				Detector: d.Info,
 				Error:    err.Error(),
 			})
+			metrics.DetectorErrorsCounter.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Inc()
+
+			metrics.DetectorErrorsCounter.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Inc()
 
 			continue
 		}
 		delta := time.Since(t0)
 
 		log.Debug().Str("delay", delta.String()).Interface("detector_event", dEvent).Interface("detector_resp", resp).Msgf("Detector[%s] is done", d.Info.GetId())
+		metrics.OperationTimeOneDetectorHistogram.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Observe(delta.Seconds())
 
 		if resp.GetSeverity() > detector_api.DetectResp_NONE {
 			s := enf_model.Severity(resp.GetSeverity())
@@ -82,6 +88,7 @@ func (c Chain) Detect(ctx context.Context, event *tetragon_api.GetEventsResponse
 				},
 				Severity: s.String(),
 			})
+			metrics.DetectorThreatsCounter.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Inc()
 		}
 	}
 

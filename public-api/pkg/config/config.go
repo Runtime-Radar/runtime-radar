@@ -16,6 +16,7 @@ type Config struct {
 	PostgresSSLMode        bool   // Postgres SSL mode
 	PostgresSSLCheckCert   bool   // Check postgres SSL cert
 	LogLevel               string // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
+	LogFile                string // path to log file
 	ListenHTTPAddr         string // address "[host]:port" that server should be listening for health checks
 	InstrumentationAddr    string // address "[host]:port" that instrumentation server should be listening for health checks and metrics
 	TLS                    bool   // is TLS enabled?
@@ -26,6 +27,7 @@ type Config struct {
 	AccessTokenSalt        string // salt for access token
 	Auth                   bool   // is auth enabled?
 	GopsAddr               string // gops listen address
+	OwnCSURL               string // URL of current CS (http(s)://host[:port]).
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -40,6 +42,7 @@ func New() *Config {
 	flag.BoolVar(&c.PostgresSSLMode, "postgresSSLMode", config.LookupEnvBool("POSTGRES_SSL_MODE", false), "Set to enable PostgreSQL SSL mode.")
 	flag.BoolVar(&c.PostgresSSLCheckCert, "postgresSSLCheckCert", config.LookupEnvBool("POSTGRES_SSL_CHECK_CERT", false), "Set to check PostgreSQL SSL cert.")
 	flag.StringVar(&c.LogLevel, "logLevel", config.LookupEnvString("LOG_LEVEL", "TRACE"), "Set log level (DEBUG, INFO, WARN, ERROR, FATAL, any other value means TRACE).")
+	flag.StringVar(&c.LogFile, "logFile", config.LookupEnvString("LOG_FILE", ""), "Tail logs to this file. Leave empty to log to stdout without tailing.")
 	flag.StringVar(&c.ListenHTTPAddr, "listenHTTPAddr", config.LookupEnvString("LISTEN_HTTP_ADDR", ":9000"), `Address in form of "[host]:port" that HTTP server should be listening on.`)
 	flag.BoolVar(&c.TLS, "tls", config.LookupEnvBool("TLS", false), "Set to enable TLS.")
 	flag.StringVar(&c.AuthAPIURL, "authAPIURL", config.LookupEnvString("AUTH_API_URL", "http://127.0.0.1:8080"), "Auth API URL in schema://host[:port] format.")
@@ -49,6 +52,7 @@ func New() *Config {
 	flag.StringVar(&c.AccessTokenSalt, "accessTokenSalt", config.LookupEnvString("ACCESS_TOKEN_SALT", ""), "Hex encoded token salt to verify access token. Salt must have 64 bytes length.")
 	flag.BoolVar(&c.Auth, "auth", config.LookupEnvBool("AUTH", false), "Set to enable JWT auth.")
 	flag.StringVar(&c.GopsAddr, "listenGopsAddr", config.LookupEnvString("LISTEN_GOPS_ADDR", "127.0.0.1:7000"), `Address in form of "[host]:port" that gops agent should be listening on. It's not safe to listen to interfaces other than loopback in production.`)
+	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
 
 	flag.Parse()

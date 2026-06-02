@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/google/gops/agent"
+	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
@@ -22,6 +24,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/cache"
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/config"
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/database"
+	"github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/server"
 	"github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/service"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -50,7 +53,7 @@ var (
 
 func main() {
 	cfg := config.New()
-	initLogger(cfg.LogFile, cfg.LogLevel)
+	logger.Init(cfg.LogFile, cfg.LogLevel)
 
 	log.Info().Str("build_release", build.Release).Str("build_branch", build.Branch).Str("build_commit", build.Commit).Str("build_date", build.Date).Msgf("-> %s started", build.AppName)
 	defer log.Info().Msgf("<- %s exited", build.AppName)
@@ -99,10 +102,13 @@ func main() {
 	}
 	defer closeCache()
 
+	grpcMetrics := prometheus.NewServerMetrics(prometheus.WithServerHandlingTimeHistogram())
+
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			interceptor.Recovery,
 			interceptor.Correlation,
+			grpcMetrics.UnaryServerInterceptor(),
 		),
 		grpc.MaxRecvMsgSize(server.MaxRecvMsgSize),
 	}
@@ -127,8 +133,15 @@ func main() {
 	// Register reflection service on gRPC server
 	reflection.Register(grpcSrv)
 
-	// create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	// Initialize metrics
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL, grpcMetrics)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
+
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
+
+	// Run the instrumentation HTTP server for metrics, probes, etc.
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)

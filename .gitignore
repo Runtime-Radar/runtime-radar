@@ -1,9 +1,16 @@
+**/build
 **/bin
 **/charts/*.tgz
 **/charts/.*
 **/Chart.lock
+uv.lock
+**/.task/
 # macOS artifacts
 .DS_Store
 oss-values.yaml
 kubeconfig.yaml
 /values.yaml
+.task/
+.build
+.helmpreview
+.ignore

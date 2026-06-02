@@ -1,10 +1,13 @@
 import { KbqAlertColors } from '@koobiq/components/alert';
 import { KbqBadgeColors } from '@koobiq/components/badge';
+import { PopUpPlacements } from '@koobiq/components/core';
+import { parse } from 'yaml';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormRecord } from '@angular/forms';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
+import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import {
     Observable,
     combineLatest,
@@ -29,6 +32,7 @@ import {
     RUNTIME_EVENT_PROCESSOR,
     RuntimeEventProcessorHistoryControl,
     RuntimeMonitorConfig,
+    RuntimeMonitorConfigStatus,
     RuntimeMonitorPermission,
     RuntimeMonitorTracingPolicies,
     RuntimeMonitorTracingPolicy,
@@ -73,6 +77,8 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
         historyControl: [RuntimeEventProcessorHistoryControl.NONE]
     });
 
+    readonly runtimeGrafanaUrl$: Observable<string> = this.runtimeStoreService.runtimeGrafanaUrl$;
+
     readonly runtimeHasChanges$: Observable<boolean> = this.runtimeStoreService.runtimeHasChanges$;
 
     readonly runtimeHasPoliciesChanges$: Observable<boolean> = this.runtimeStoreService.runtimeHasPoliciesChanges$;
@@ -101,6 +107,11 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
     private historyControlSnapshot?: RuntimeEventProcessorHistoryControl;
     private readonly config$: Observable<RuntimeMonitorConfig> = combineLatest([
         this.runtimeStoreService.runtimeMonitorConfig$.pipe(
+            tap((config) =>
+                this.runtimeFeaturePolicyNameService.setAll(
+                    Object.values(config.tracing_policies).map((policy) => policy.name)
+                )
+            ),
             map((config) => this.addPseudoTracingPoliciesToConfig(config))
         ),
         this.runtimeStoreService.eventProcessorHistoryControl$
@@ -114,6 +125,9 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
         }),
         map(([config]) => config)
     );
+
+    readonly configStatus$: Observable<RuntimeMonitorConfigStatus | undefined> =
+        this.runtimeStoreService.runtimeMonitorConfigStatus$;
 
     private readonly hasChanges$ = this.form.valueChanges.pipe(
         startWith(this.form.value),
@@ -155,6 +169,23 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
         })
     );
 
+    private readonly showGrafanaUrlNotification$ = combineLatest([
+        this.runtimeGrafanaUrl$,
+        this.runtimeStoreService.runtimeIsExpertMode$,
+        this.isAdminRole$
+    ]).pipe(
+        take(1),
+        map(([grafanaUrl, runtimeIsExpertMode, isAdminRole]) => !grafanaUrl && runtimeIsExpertMode && isAdminRole),
+        tap((isNotificationShowed) => {
+            if (isNotificationShowed) {
+                this.toastService.show({
+                    style: KbqToastStyle.Warning,
+                    title: this.i18nService.translate('Runtime.Pseudo.Notification.EmptyGrafanaUrl')
+                });
+            }
+        })
+    );
+
     /* eslint @typescript-eslint/dot-notation: "off" */
     readonly permissions: RolePermissionMap = this.route.snapshot.data['permissions'];
 
@@ -169,6 +200,8 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
     readonly alertColors = KbqAlertColors;
 
     readonly badgeColors = KbqBadgeColors;
+
+    readonly tooltipPlacements = PopUpPlacements;
 
     readonly tracingPoliciesProcessesKey = RUNTIME_SETTINGS_TRACING_POLICIES_PROCESSES_KEY;
 
@@ -195,13 +228,15 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
         private readonly router: Router,
         private readonly runtimeStoreService: RuntimeStoreService,
         private readonly runtimeFeaturePolicyNameService: RuntimeFeaturePolicyNameService,
-        private readonly sidepanelService: KbqSidepanelService
+        private readonly sidepanelService: KbqSidepanelService,
+        private readonly toastService: KbqToastService
     ) {}
 
     ngOnInit() {
         this.config$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
         this.hasChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
         this.toggleExpertMode$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+        this.showGrafanaUrlNotification$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     }
 
     ngOnDestroy() {
@@ -262,6 +297,7 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
             .afterClosed()
             .pipe(take(1), filter(utils.isDefined))
             .subscribe((form: RuntimeSettingPolicyForm) => {
+                const slug = parse(form.yaml).metadata.name as string;
                 const control: FormGroup<FormScheme<RuntimeSettingPolicyForm>> = this.formBuilder.group({
                     isEnabled: [false],
                     name: [form.name],
@@ -269,7 +305,7 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
                     yaml: [form.yaml]
                 });
 
-                this.policiesFormGroup.addControl(utils.generateUuid('zz'), control);
+                this.policiesFormGroup.addControl(slug, control);
                 this.runtimeFeaturePolicyNameService.set(form.name);
             });
     }
@@ -295,6 +331,7 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
             .afterClosed()
             .pipe(take(1), filter(utils.isDefined))
             .subscribe((form: RuntimeSettingPolicyForm) => {
+                const slug = parse(form.yaml).metadata.name as string;
                 const control: FormGroup<FormScheme<RuntimeSettingPolicyForm>> = this.formBuilder.group({
                     isEnabled: [policy.isEnabled],
                     name: [form.name],
@@ -302,7 +339,13 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
                     yaml: [form.yaml]
                 });
 
-                this.policiesFormGroup.setControl(key, control);
+                if (key === slug) {
+                    this.policiesFormGroup.setControl(key, control);
+                } else {
+                    this.policiesFormGroup.removeControl(key);
+                    this.policiesFormGroup.addControl(slug, control);
+                }
+
                 this.runtimeFeaturePolicyNameService.replace(form.name, policy.name);
                 // @todo: refactor this part to remove cdr service
                 this.cdr.markForCheck();
@@ -382,6 +425,18 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
 
         this.form.updateValueAndValidity();
         this.runtimeFeaturePolicyNameService.clear();
+    }
+
+    resetConfig() {
+        this.sharedModalService.delete({
+            title: this.i18nService.translate('Runtime.ConfigResetModal.Content.Title'),
+            content: this.i18nService.translate('Runtime.ConfigResetModal.Content.Text'),
+            confirmText: this.i18nService.translate('Runtime.ConfigResetModal.Button.Confirm'),
+            cancelText: this.i18nService.translate('Runtime.ConfigResetModal.Button.Cancel'),
+            confirmHandler: () => {
+                this.runtimeStoreService.resetConfig();
+            }
+        });
     }
 
     cancel() {

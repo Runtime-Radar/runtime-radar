@@ -1,0 +1,40 @@
+<ng-container *transloco="let tInventory; prefix: 'inventory'">
+    <kbq-sidepanel-header [closeable]="true">
+        <span class="cs-text-gray">{{ tInventory('Inventory.EntitySidepanel.Title.Namespace') }}</span>
+        {{ props.namespace.namespace }}
+    </kbq-sidepanel-header>
+    <kbq-sidepanel-body class="inventory-feature-sidepanel-namespace">
+        <kbq-dl [vertical]="true">
+            <kbq-dt>{{ tInventory('Inventory.EntitySidepanel.Label.Nodes') }}</kbq-dt>
+            <kbq-dd>
+                @if (props.namespace.nodes.length) {
+                    @for (node of props.namespace.nodes; track node) {
+                        <span class="cs-separator">{{ node }}</span>
+                    }
+                } @else {
+                    —
+                }
+            </kbq-dd>
+        </kbq-dl>
+
+        <section class="inventory-feature-sidepanel-namespace-pods">
+            <section class="layout-row layout-align-space-between-center kbq-text-compact cs-text-gray inventory-feature-sidepanel-namespace-pods-header">
+                <span>{{ tInventory('Inventory.EntitySidepanel.Label.Pods') }}</span>
+                <span>{{ tInventory('Inventory.EntitySidepanel.Label.Containers') }}</span>
+            </section>
+
+            @for (pod of props.pods; track pod.uid) {
+                <!-- @todo: add a11y support for header button -->
+                <article [id]="pod.uid"
+                         class="layout-row layout-align-space-between-center inventory-abstract-feature-header inventory-feature-sidepanel-namespace-pod"
+                         [ngClass]="{ 'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING }"
+                         [ngStyle]="{ 'background-color': pod.bgColor }"
+                         (click)="props.podHandler({ pod })"
+                         data-testid="inventory-pod-open-button">
+                    <span class="kbq-mono-normal-strong inventory-feature-sidepanel-namespace-pod-name">{{ pod.name }}</span>
+                    <span class="kbq-mono-normal inventory-feature-sidepanel-namespace-pod-count">{{ pod.containers.length }}</span>
+                </article>
+            }
+        </section>
+    </kbq-sidepanel-body>
+</ng-container>

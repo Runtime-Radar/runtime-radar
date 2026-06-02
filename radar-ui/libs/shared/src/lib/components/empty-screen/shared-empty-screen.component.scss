@@ -7,15 +7,30 @@
         width: 256px;
         height: 185px;
         position: relative;
+        overflow: hidden;
 
         img {
             display: block;
             position: absolute;
             bottom: 0;
         }
+
+        &--small {
+            width: 192px;
+            height: 140px;
+
+            img {
+                width: 192px;
+                height: 192px;
+            }
+        }
     }
 
-    &-actions:empty {
-        margin: 0 !important;
+    &-actions {
+        text-align: center;
+
+        &:empty {
+            margin: 0 !important;
+        }
     }
 }

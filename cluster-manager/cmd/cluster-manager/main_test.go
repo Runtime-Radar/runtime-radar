@@ -16,6 +16,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/cluster-manager/pkg/config"
 	"github.com/runtime-radar/runtime-radar/cluster-manager/pkg/database"
 	"github.com/runtime-radar/runtime-radar/cluster-manager/pkg/model"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/cipher"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
@@ -56,9 +57,9 @@ func TestMain(m *testing.M) {
 	cfg.EncryptionKey = hex.EncodeToString(security.Rand(32))
 
 	if testing.Verbose() {
-		initLogger("", "DEBUG")
+		logger.Init("", "DEBUG")
 	} else {
-		initLogger("", "INFO")
+		logger.Init("", "INFO")
 	}
 
 	crypter, err := cipher.NewCrypt(cfg.EncryptionKey)

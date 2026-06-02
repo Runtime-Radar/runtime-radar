@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"crypto/tls"
 	"encoding/hex"
@@ -14,13 +13,17 @@ import (
 	"time"
 
 	"github.com/google/gops/agent"
+	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/auth-center/api"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/build"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/config"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/database"
+	"github.com/runtime-radar/runtime-radar/auth-center/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/server"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/service"
+	"github.com/runtime-radar/runtime-radar/auth-center/pkg/utils"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
@@ -47,27 +50,9 @@ const (
 // Channel for stopping the program.
 var shutdown = make(chan struct{})
 
-func readPasswordDictionary(path string) ([]string, error) {
-	passDictionary, err := os.Open(path)
-	if err != nil {
-		return nil, err
-
-	}
-	defer passDictionary.Close()
-
-	var passwordCheckArray []string
-	scanner := bufio.NewScanner(passDictionary)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		passwordCheckArray = append(passwordCheckArray, line)
-	}
-	return passwordCheckArray, nil
-}
-
 func main() {
 	cfg := config.New()
-	initLogger(cfg.LogLevel)
+	logger.Init("", cfg.LogLevel)
 
 	log.Info().
 		Str("build_release", build.Release).
@@ -129,10 +114,13 @@ func main() {
 		log.Fatal().Msgf("### Failed to migrate DB: %v", err)
 	}
 
+	grpcMetrics := prometheus.NewServerMetrics(prometheus.WithServerHandlingTimeHistogram())
+
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			interceptor.Recovery,
 			interceptor.Correlation,
+			grpcMetrics.UnaryServerInterceptor(),
 		),
 		grpc.MaxRecvMsgSize(server.MaxRecvMsgSize),
 	}
@@ -154,7 +142,7 @@ func main() {
 		log.Fatal().Msgf("### Failed to decode token key: %v", err)
 	}
 
-	passwordCheckArray, err := readPasswordDictionary(cfg.PathToPasswordSecList)
+	passwordCheckMap, err := utils.ReadPasswordDictionary(cfg.PathToPasswordSecList)
 	if err != nil {
 		log.Fatal().Msgf("### Can't open file with password dictionary: %v", err)
 	}
@@ -164,7 +152,7 @@ func main() {
 		verifier,
 		cfg.Auth,
 		tokenKey,
-		passwordCheckArray,
+		passwordCheckMap,
 		cfg.AccessTokenExpiration,
 		cfg.RefreshTokenExpiration,
 	)
@@ -176,8 +164,14 @@ func main() {
 	// Register reflection auth-center on gRPC server
 	reflection.Register(grpcSrv)
 
-	// Create and Run the instrumentation HTTP server for probes, etc.
-	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr)
+	// Initialize metrics.
+	m, err := metrics.PrepareRegistry(build.AppName, cfg.OwnCSURL, grpcMetrics)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize metrics: %v", err)
+	}
+
+	// Create and Run the instrumentation HTTP server for probes, metrics, etc.
+	iSrv := server.NewInstrumentation(cfg.InstrumentationAddr, m)
 	go func() {
 		if err := iSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Msgf("### Can't serve instrumentation HTTP requests: %v", err)
@@ -223,7 +217,7 @@ func main() {
 	defer cancel()
 
 	log.Info().Msg("HTTP server stopping gracefully")
-	httpSrv.Shutdown(ctx) // we don't care about errors here
+	_ = httpSrv.Shutdown(ctx) // we don't care about errors here
 
 	log.Info().Msg("Instrumentation HTTP server stopping gracefully")
 	_ = iSrv.Shutdown(ctx)
@@ -234,7 +228,7 @@ func composeServices(
 	verifier jwt.Verifier,
 	isAuth bool,
 	tokenKey []byte,
-	passArray []string,
+	passMap map[string]struct{},
 	accessTokenTTL time.Duration,
 	refreshTokenTTL time.Duration,
 
@@ -243,19 +237,19 @@ func composeServices(
 		RoleRepository: &database.RoleDatabase{db}}
 
 	userService = &service.UserGeneric{
-		UserRepository:     &database.UserDatabase{db},
-		TokenKey:           tokenKey,
-		PasswordCheckArray: passArray,
-		AccessTokenTTL:     accessTokenTTL,
-		RefreshTokenTTL:    refreshTokenTTL,
+		UserRepository:   &database.UserDatabase{db},
+		TokenKey:         tokenKey,
+		PasswordCheckMap: passMap,
+		AccessTokenTTL:   accessTokenTTL,
+		RefreshTokenTTL:  refreshTokenTTL,
 	}
 
 	authService = &service.AuthGeneric{
-		UserRepository:     &database.UserDatabase{db},
-		TokenKey:           tokenKey,
-		PasswordCheckArray: passArray,
-		AccessTokenTTL:     accessTokenTTL,
-		RefreshTokenTTL:    refreshTokenTTL,
+		UserRepository:   &database.UserDatabase{db},
+		TokenKey:         tokenKey,
+		PasswordCheckMap: passMap,
+		AccessTokenTTL:   accessTokenTTL,
+		RefreshTokenTTL:  refreshTokenTTL,
 	}
 
 	if isAuth {

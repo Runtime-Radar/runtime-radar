@@ -10,8 +10,9 @@ const (
 
 type Registration struct {
 	Base
-	Status RegistrationStatus
-	Error  string
+	TokenHash string
+	Status    RegistrationStatus
+	Error     string
 }
 
 func (rs RegistrationStatus) String() string {
