@@ -41,12 +41,6 @@ var (
 
 	//go:embed tracingpolicy/io-uring.yml
 	ioUring string
-
-	//go:embed tracingpolicy/umh.yaml
-	umh string
-
-	//go:embed tracingpolicy/rootkit.yml
-	rootkit string
 )
 
 var (
@@ -107,18 +101,6 @@ var (
 					Name:        "Monitoring of the io_uring interface",
 					Description: "This source tracks calls to io_uring_setup and io_uring_enter, providing monitoring of the creation and usage of an io_uring interface instance.",
 					Yaml:        ioUring,
-					Enabled:     false,
-				},
-				"umh": {
-					Name:        "Usermode helper API usage",
-					Description: "The source monitors calls to the Linux kernel functions call_usermodehelper_setup() and call_usermodehelper_exec(), which indicate the setup and launch of processes via the usermode helper API. This helps detect several different attacks that abuse this interface to launch processes at the host OS level.",
-					Yaml:        umh,
-					Enabled:     false,
-				},
-				"rootkit": {
-					Name:        "Rootkit loading monitoring",
-					Description: "The source monitors calls to the Linux kernel function kallsyms_lookup_name() used to obtain the address of the system call table, which may indicate rootkit activity on the target system. Additionally, to detect rootkits that use eBPF, the source monitors the loading of eBPF programs via the bpf_check() function.",
-					Yaml:        rootkit,
 					Enabled:     false,
 				},
 			},
