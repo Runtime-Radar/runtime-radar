@@ -240,7 +240,7 @@ To install Runtime Radar using Helm,
      --set-string 'reverse-proxy.service.type=NodePort' \
      --set-string 'reverse-proxy.service.nodePorts.http=32000'
      --set 'prometheus.deploy=true' \
-     --set 'prometheus.persistence.enabled=true' \
+     --set 'prometheus.persistence.enabled=false' \
      --set 'grafana.deploy=true' \
      --set-string 'grafana.auth.username=<username>' \
      --set-string 'grafana.auth.password=<password>' \
