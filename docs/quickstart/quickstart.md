@@ -1,6 +1,4 @@
-# Quick start guide
-
-## Quick installation using Helm
+# Quick installation using Helm
 
 The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the [README.md](../../install/helm/README.md) file.
 
@@ -10,22 +8,22 @@ To install Runtime Radar using Helm,
 
    ```bash
    helm install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.2.0 \
-     --set-string 'global.ownCsUrl=https://your-domain.com:32000' \
+     --set-string 'global.ownCsUrl=https://<your domain address>:32000' \
      --set-string 'global.keys.publicAccessTokenSalt=INIT-DO-NOT-USE' \
      --set-string 'global.keys.encryption=INIT-DO-NOT-USE' \
-     --set-string 'global.administrator.username=admin' \
-     --set-string 'global.administrator.password=Password' \
+     --set-string 'auth-center.administrator.username=admin' \
+     --set-string 'auth-center.administrator.password=Password' \
      --set-string 'reverse-proxy.service.type=NodePort' \
      --set-string 'reverse-proxy.service.nodePorts.http=32000'
    ```
 
    ***Note.** In the command example, the username is `admin` and the password is `Password`. You can specify other values and later use them to connect to the Runtime Radar web interface.*
 
-   ***Note.** In the command example, access to the web interface is configured using the NodePort service on port 32000. You can use the Ingress controller instead or change the port number. To do this, you must specify the corresponding settings. You can also change other settings in the installation command.*
+   ***Note.** In the command example, access to the web interface is configured using the NodePort service on port 32000. You can use the Ingress controller instead or change the port. To do this, you must specify the corresponding settings. You can also change other settings in the installation command.*
 
 Now you can start [setting up the runtime event monitoring](#9807610635).
 
-## <a name="9807610635"></a>Configuring monitoring of runtime events
+# <a name="9807610635"></a>Configuring monitoring of runtime events
 
 Monitoring of runtime events allows tracking of events at the level of individual pods or containers in Kubernetes clusters, including the start of processes, system calls, and requests to specific kernel functions. During monitoring of and responding to events, they are checked through a chain of detectors that detect threats in an event and assign a severity to them. Response rules created in Runtime Radar allow you to configure responses to be performed when a threat is detected.
 
@@ -66,7 +64,7 @@ To add a notification service:
 
 1. Click **Connect**.
 
-1. Under the notification service, click ![pic](pics/icon_add.svg).
+1. Under the notification service, click ![pic](pics/9810272139.svg).
 
 1. Enter a name for the template.
 
