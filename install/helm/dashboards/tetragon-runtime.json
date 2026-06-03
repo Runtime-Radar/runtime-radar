@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Tetragon runtime metrics: resource usage, policy events, handling latency, dropped/overflowed buffers, and tracing policy state.",
+  "description": "Provides key Tetragon metrics: CPU and RAM usage, event and policy activity, event latency, event losses due to overflowed buffers, average eBPF program runtime per invocation, and tracing policy state on nodes.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -68,13 +68,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(process_cpu_seconds_total{cluster=~\"$cluster\",instance=~\"$node\"}[$interval])) by (instance)",
+          "expr": "sum(rate(process_cpu_seconds_total{cluster=~\"$cluster\",instance=~\"$node\",job=\"tetragon\"}[$interval])) by (instance)",
           "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "description": "Overall Tetragon resource consumption",
+      "description": "CPU usage of the Tetragon process on each node, calculated from the per-process CPU time (`process_cpu_seconds_total`) as a rate over the selected interval.",
       "title": "Tetragon CPU",
       "type": "timeseries"
     },
@@ -124,13 +124,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "max(process_resident_memory_bytes{cluster=~\"$cluster\",instance=~\"$node\"}) by (instance)",
+          "expr": "max(process_resident_memory_bytes{cluster=~\"$cluster\",instance=~\"$node\",job=\"tetragon\"}) by (instance)",
           "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "description": "Overall Tetragon resource consumption",
+      "description": "Resident memory usage of the Tetragon process on each node, based on the current amount of memory held by the process (`process_resident_memory_bytes`).",
       "title": "Tetragon Memory",
       "type": "timeseries"
     },
@@ -186,7 +186,7 @@
           "refId": "A"
         }
       ],
-      "description": "Overall Tetragon resource consumption",
+      "description": "Rate of all Tetragon events grouped by event type. Use this to see how much data Tetragon produces over time and which event types dominate the traffic.",
       "title": "Event Throughput",
       "type": "timeseries"
     },
@@ -242,7 +242,7 @@
           "refId": "A"
         }
       ],
-      "description": "Policy event counters",
+      "description": "Rate of policy-related Tetragon events grouped by policy name. Helps to understand which tracing policies are most active over time.",
       "title": "Policy Events",
       "type": "timeseries"
     },
@@ -312,7 +312,7 @@
           "refId": "C"
         }
       ],
-      "description": "Event handling latency metrics",
+      "description": "Event handling latency in seconds (p50/p95/p99) based on `tetragon_handling_latency_*`. Values stay at 0 when no events are processed or when the histogram is not populated; spikes indicate slower processing in the userspace pipeline.",
       "title": "Handling Latency",
       "type": "timeseries"
     },
@@ -364,12 +364,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(tetragon_tracingpolicy_loaded{cluster=~\"$cluster\",instance=~\"$node\"})",
+          "expr": "sum(tetragon_tracingpolicy_loaded{cluster=~\"$cluster\",instance=~\"$node\",job=\"tetragon\"}) by (instance)",
+          "legendFormat": "{{instance}}",
           "refId": "A"
         }
       ],
-      "description": "Loaded policy state",
-      "title": "Loaded Policies",
+      "description": "Number of tracing policies that are currently loaded on each node (instance). This makes it easier to notice when a node is missing some policies compared to the rest of the cluster.",
+      "title": "Loaded Policies per Node",
       "type": "stat"
     },
     {
@@ -431,7 +432,7 @@
           "refId": "B"
         }
       ],
-      "description": "Buffer overflow and missed-event information",
+      "description": "Per-node rate of missed and overflowed Tetragon events. Non‑zero values indicate that internal buffers are not keeping up and some events are being dropped.",
       "title": "Buffer Overflows",
       "type": "timeseries"
     },
@@ -454,7 +455,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "ns"
         },
         "overrides": []
       },
@@ -474,21 +475,21 @@
         },
         "tooltip": {
           "mode": "multi",
-          "sort": "none"
+          "sort": "desc"
         }
       },
       "pluginVersion": "12.0.2",
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(tetragon_overhead_program_seconds_total{cluster=~\"$cluster\",instance=~\"$node\"}[$interval])) / clamp_min(sum(rate(tetragon_overhead_program_runs_total{cluster=~\"$cluster\",instance=~\"$node\"}[$interval])), 1)",
-          "legendFormat": "avg overhead",
+          "expr": "sum(rate(tetragon_overhead_program_seconds_total{cluster=~\"$cluster\",instance=~\"$node\"}[$interval])) by (attach, policy) / sum(rate(tetragon_overhead_program_runs_total{cluster=~\"$cluster\",instance=~\"$node\"}[$interval])) by (attach, policy)",
+          "legendFormat": "{{attach}} ({{policy}})",
           "range": true,
           "refId": "A"
         }
       ],
-      "description": "Overall Tetragon resource consumption",
-      "title": "Program Overhead",
+      "description": "Average time in seconds that Tetragon eBPF programs spend running per invocation, computed from tetragon_overhead_program_seconds_total and tetragon_overhead_program_runs_total. Near-zero values indicate minimal overhead, while spikes point to heavier BPF processing. The metrics are disabled by default. For details on how to enable the BPF statistics on cluster nodes, visit https://tetragon.io/docs/troubleshooting/bpf-progs-stats/#limitations.",
+      "title": "BPF Program Overhead",
       "type": "timeseries"
     }
   ],
