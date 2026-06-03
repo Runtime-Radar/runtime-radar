@@ -256,6 +256,8 @@ runtime-monitor:
     enableProcessCred: true
     # -- Enable visibility of namespaces in the exec and kprobe events
     enableProcessNs: true
+    # -- Enable latency monitoring in message handling
+    enableMsgHandlingLatency: true
     # -- Allowlist for JSON export
     # e.g.
     # To export only process_connect events from the default namespace:
