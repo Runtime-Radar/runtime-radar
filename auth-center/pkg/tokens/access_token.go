@@ -41,9 +41,6 @@ func NewAccessToken(user model.User, ttl time.Duration) *AccessToken {
 func AccessTokenFromContext(ctx context.Context, key []byte) (*AccessToken, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	auth := md.Get(AuthorizationKey)
-
-	fmt.Println("get auth", auth, ok, md)
-
 	if !ok || len(auth) == 0 {
 		return nil, errors.New("no authorization token provided")
 	}
