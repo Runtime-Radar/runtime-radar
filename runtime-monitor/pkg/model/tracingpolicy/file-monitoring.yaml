@@ -4,386 +4,443 @@ metadata:
   name: "file-monitoring"
 spec:
   kprobes:
-    # SYNOPSIS
-    # int security_file_permission(struct file *file, int mask)
-    #     @file: file
-    #     @mask: requested permissions
-    #
-    # DESCRIPTION
-    # Check file permissions before accessing an open file. This hook is called
-    # by various operations that read or write files.
-    #
-    # RETURN VALUE
-    # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.8-rc7/source/security/security.c#L2666)
-    #
-    # READ SYSCALLS
-    #     read(), readv(), preadv(), preadv2(), pread64(),
-    #     ioctl(), sendfile(), sendfile64(), copy_file_range(),
-    #     old_readdir(), getdents(), getdents64()
-    #
-    # WRITE/MODIFY SYSCALLS
-    #     write(), writev(), pwritev(), pwritev2(), pwrite64()
-    #     ioctl(), splice(), madvise(), process_madvise(), fallocate()
-    #
-    - call: "security_file_permission"
-      syscall: false
-      return: true
-      args:
-        - index: 0
-          type: "file"
-        - index: 1
-          type: "int"
-      returnArg:
-        index: 0
-        type: "int"
-      selectors:
-        # READ
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Prefix"
-              values:
-                - "/boot/"
-                - "/root/.ssh"
-                - "/etc/shadow"
-                - "/etc/profile"
-                - "/etc/sudoers"
-                - "/etc/pam."
-                - "/etc/bashrc"
-                - "/etc/csh.cshrc"
-                - "/etc/csh.login"
-                - "/etc/kubernetes/pki/"
-                - "/etc/security/pwquality.conf"
-                - "/run/secrets/"
-                - "/proc/"
-            - index: 1
-              operator: "Equal"
-              values:
-                - "4" # MAY_READ
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Postfix"
-              values:
-                - ".bashrc"
-                - ".bash_profile"
-                - ".bash_login"
-                - ".bash_logout"
-                - ".cshrc"
-                - ".cshdirs"
-                - ".profile"
-                - ".login"
-                - ".logout"
-                - ".history"
-                - "-release"
-                - "environ"
-            - index: 1
-              operator: "Equal"
-              values:
-                - "4" # MAY_READ
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          # WRITE/MODIFY
-          matchArgs:
-            - index: 0
-              operator: "Prefix"
-              values:
-                - "/etc/"
-                - "/boot/"
-                - "/lib"
-                - "/bin/"
-                - "/sbin/"
-                - "/usr/lib"
-                - "/usr/local/lib"
-                - "/usr/local/sbin/"
-                - "/usr/local/bin/"
-                - "/usr/bin/"
-                - "/usr/sbin/"
-                - "/root/"
-                - "/home/"
-            - index: 1
-              operator: "Equal"
-              values:
-                - "2" # MAY_WRITE
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs: # CVE-2022-0492
-            - index: 0
-              operator: "Postfix"
-              values:
-                - "/notify_on_release"
-                - "/release_agent"
-            - index: 1
-              operator: "Equal"
-              values:
-                - "2" # MAY_WRITE
-
-    # SYNOPSIS
-    # int security_mmap_file(struct file *file, unsigned long prot, unsigned long flags)
-    #     @file: file
-    #     @prot: desired memory protection of the mapping (bitwise OR)
-    #            - PROT_READ: memory pages with mapped @file may be read
-    #            - PROT_WRITE: memory pages with mapped @file may be written
-    #     @flags: mapping visibility to other processes (bitwise OR)
-    #
-    # DESCRIPTION
-    # Check permissions for a mmap operation.
-    #
-    # RETURN VALUE
-    # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.8-rc7/source/security/security.c#L2792)
-    #
-    # SYSCALLS
-    #     shmat(), ipc(), mmap_pgoff(), old_mmap(), mmap()
-    #
-    - call: "security_mmap_file"
-      syscall: false
-      return: true
-      args:
-        - index: 0
-          type: "file"
-        - index: 1
-          type: "uint32"
-        - index: 2
-          type: "uint32"
-      returnArg:
-        index: 0
-        type: "int"
-      selectors:
-        # READ
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Prefix"
-              values:
-                - "/boot/"
-                - "/root/.ssh"
-                - "/etc/shadow"
-                - "/etc/profile"
-                - "/etc/sudoers"
-                - "/etc/pam."
-                - "/etc/bashrc"
-                - "/etc/csh.cshrc"
-                - "/etc/csh.login"
-                - "/etc/kubernetes/pki/"
-                - "/etc/security/pwquality.conf"
-                - "/run/secrets/"
-                - "/proc/"
-                - "/tmp/nginx/client-body/"
-            - index: 1
-              operator: "Mask"
-              values:
-                - "1" # PROT_READ
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Postfix"
-              values:
-                - ".bashrc"
-                - ".bash_profile"
-                - ".bash_login"
-                - ".bash_logout"
-                - ".cshrc"
-                - ".cshdirs"
-                - ".profile"
-                - ".login"
-                - ".logout"
-                - ".history"
-                - "-release"
-                - "environ"
-            - index: 1
-              operator: "Mask"
-              values:
-                - "1" # PROT_READ
-        # WRITE/MODIFY
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Prefix"
-              values:
-                - "/etc/"
-                - "/boot/"
-                - "/lib"
-                - "/bin/"
-                - "/sbin/"
-                - "/usr/lib"
-                - "/usr/local/lib"
-                - "/usr/local/sbin/"
-                - "/usr/local/bin/"
-                - "/usr/bin/"
-                - "/usr/sbin/"
-                - "/root/"
-                - "/home/"
-            - index: 1
-              operator: "Mask"
-              values:
-                - "2" # PROT_WRITE
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs: # CVE-2022-0492
-            - index: 0
-              operator: "Postfix"
-              values:
-                - "/notify_on_release"
-                - "/release_agent"
-            - index: 1
-              operator: "Mask"
-              values:
-                - "2" # PROT_WRITE
-    # SYNOPSIS
-    # int security_path_truncate(const struct path *path)
-    #     @path: file
-    #
-    # DESCRIPTION
-    # Check permission before truncating the file indicated by path.
-    #
-    # RETURN VALUE
-    # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.8-rc7/source/security/security.c#L1928)
-    #
-    # SYSCALLS
-    #     truncate()
-    #
-    - call: "security_path_truncate"
-      syscall: false
-      return: true
-      args:
-        - index: 0
-          type: "path"
-      returnArg:
-        index: 0
-        type: "int"
-      selectors:
-        # MODIFY
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Prefix"
-              values:
-                - "/etc/"
-                - "/boot/"
-                - "/lib"
-                - "/bin/"
-                - "/sbin/"
-                - "/usr/lib"
-                - "/usr/local/lib"
-                - "/usr/local/sbin/"
-                - "/usr/local/bin/"
-                - "/usr/bin/"
-                - "/usr/sbin/"
-                - "/root/"
-                - "/home/"
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs: # CVE-2022-0492
-            - index: 0
-              operator: "Postfix"
-              values:
-                - "/notify_on_release"
-                - "/release_agent"
-    # SYNOPSIS
-    # int security_path_link(struct dentry *old_dentry, const struct path *new_dir, struct dentry *new_dentry)
-    #     @old_dentry: existing file
-    #     @new_dir: new parent directory
-    #     @new_dentry: new hard link
-    #
-    # DESCRIPTION
-    # Check if creating a hard link is allowed.
-    #
-    # RETURN VALUE
-    # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.16-rc5/source/security/security.c#L1987)
-    #
-    # SYSCALLS
-    #     link, linkat
-    #
-    - call: "security_path_link"
-      syscall: false
-      return: true
-      args:
-        - index: 0
-          type: "dentry"
-          label: "existing file"
-        - index: 2
-          type: "dentry"
-          label: "new hard link"
-      returnArg:
-        index: 0
-        type: "int"
-      selectors:
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Prefix"
-              values:
-                - "/etc/"
-                - "/boot/"
-                - "/root/"
-                - "/run/secrets/"
-                - "/lib/"
-                - "/bin/"
-                - "/sbin/"
-                - "/usr/lib/"
-                - "/usr/local/lib/"
-                - "/usr/local/sbin/"
-                - "/usr/local/bin/"
-                - "/usr/bin/"
-                - "/usr/sbin/"
-                - "/home/"
-        - matchNamespaces:
-            - namespace: Pid
-              operator: NotIn
-              values:
-                - "host_ns"
-          matchArgs:
-            - index: 0
-              operator: "Postfix"
-              values:
-                - ".bashrc"
-                - ".bash_profile"
-                - ".bash_login"
-                - ".bash_logout"
-                - ".cshrc"
-                - ".cshdirs"
-                - ".profile"
-                - ".login"
-                - ".logout"
-                - ".history"
-                - "-release"
+  # SYNOPSIS
+  # int security_file_permission(struct file *file, int mask)
+  #     @file: file
+  #     @mask: requested permissions
+  #
+  # DESCRIPTION
+  # Check file permissions before accessing an open file. This hook is called
+  # by various operations that read or write files.
+  #
+  # RETURN VALUE
+  # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.8-rc7/source/security/security.c#L2666)
+  #
+  # READ SYSCALLS
+  #     read(), readv(), preadv(), preadv2(), pread64(),
+  #     ioctl(), sendfile(), sendfile64(), copy_file_range(),
+  #     old_readdir(), getdents(), getdents64()
+  # 
+  # WRITE/MODIFY SYSCALLS
+  #     write(), writev(), pwritev(), pwritev2(), pwrite64()
+  #     ioctl(), splice(), madvise(), process_madvise(), fallocate()
+  #
+  - call: "security_file_permission"
+    syscall: false
+    return: true
+    args:
+    - index: 0
+      type: "file"
+    - index: 1
+      type: "int"
+    returnArg:
+      index: 0
+      type: "int"
+    selectors:
+    # READ
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Prefix"
+        values:
+        - "/boot/"
+        - "/root/.ssh"
+        - "/etc/shadow"
+        - "/etc/profile"
+        - "/etc/sudoers"
+        - "/etc/pam."
+        - "/etc/bashrc"
+        - "/etc/csh.cshrc"
+        - "/etc/csh.login"
+        - "/etc/kubernetes/pki/"
+        - "/etc/security/pwquality.conf"
+        - "/run/secrets/"
+        - "/proc/"
+      - index: 1
+        operator: "Equal"
+        values:
+        - "4"  # MAY_READ
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Postfix"
+        values:
+        - ".bashrc"
+        - ".bash_profile"
+        - ".bash_login"
+        - ".bash_logout"
+        - ".cshrc"
+        - ".cshdirs"
+        - ".profile"
+        - ".login"
+        - ".logout"
+        - ".history"
+        - "-release"
+        - "environ"
+      - index: 1
+        operator: "Equal"
+        values:
+        - "4"  # MAY_READ
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+    # WRITE/MODIFY
+      matchArgs:
+      - index: 0
+        operator: "Prefix"
+        values:
+        - "/etc/"
+        - "/boot/"
+        - "/lib"
+        - "/bin/"
+        - "/sbin/"
+        - "/usr/lib"
+        - "/usr/local/lib"
+        - "/usr/local/sbin/"
+        - "/usr/local/bin/"
+        - "/usr/bin/"
+        - "/usr/sbin/"
+        - "/root/"
+        - "/home/"
+      - index: 1
+        operator: "Equal"
+        values:
+        - "2"  # MAY_WRITE
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:  # CVE-2022-0492
+      - index: 0
+        operator: "Postfix"
+        values:
+        - "/notify_on_release"
+        - "/release_agent"
+        - "/core_pattern"
+      - index: 1
+        operator: "Equal"
+        values:
+        - "2"  # MAY_WRITE
+  # SYNOPSIS
+  # int security_mmap_file(struct file *file, unsigned long prot, unsigned long flags)
+  #     @file: file
+  #     @prot: desired memory protection of the mapping (bitwise OR)
+  #            - PROT_READ: memory pages with mapped @file may be read
+  #            - PROT_WRITE: memory pages with mapped @file may be written
+  #     @flags: mapping visibility to other processes (bitwise OR)
+  #
+  # DESCRIPTION
+  # Check permissions for a mmap operation.
+  #
+  # RETURN VALUE
+  # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.8-rc7/source/security/security.c#L2792)
+  #
+  # SYSCALLS
+  #     shmat(), ipc(), mmap_pgoff(), old_mmap(), mmap()
+  #
+  - call: "security_mmap_file"
+    syscall: false
+    return: true
+    args:
+    - index: 0
+      type: "file"
+    - index: 1
+      type: "uint32"
+    - index: 2
+      type: "uint32"
+    returnArg:
+      index: 0
+      type: "int"
+    selectors:
+    # READ
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Prefix"
+        values:
+        - "/boot/"
+        - "/root/.ssh"
+        - "/etc/shadow"
+        - "/etc/profile"
+        - "/etc/sudoers"
+        - "/etc/pam."
+        - "/etc/bashrc"
+        - "/etc/csh.cshrc"
+        - "/etc/csh.login"
+        - "/etc/kubernetes/pki/"
+        - "/etc/security/pwquality.conf"
+        - "/run/secrets/"
+        - "/proc/"
+        - "/tmp/nginx/client-body/"
+      - index: 1
+        operator: "Mask"
+        values:
+        - "1"  # PROT_READ
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Postfix"
+        values:
+        - ".bashrc"
+        - ".bash_profile"
+        - ".bash_login"
+        - ".bash_logout"
+        - ".cshrc"
+        - ".cshdirs"
+        - ".profile"
+        - ".login"
+        - ".logout"
+        - ".history"
+        - "-release"
+        - "environ"
+      - index: 1
+        operator: "Mask"
+        values:
+        - "1"  # PROT_READ
+    # WRITE/MODIFY
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Prefix"
+        values:
+        - "/etc/"
+        - "/boot/"
+        - "/lib"
+        - "/bin/"
+        - "/sbin/"
+        - "/usr/lib"
+        - "/usr/local/lib"
+        - "/usr/local/sbin/"
+        - "/usr/local/bin/"
+        - "/usr/bin/"
+        - "/usr/sbin/"
+        - "/root/"
+        - "/home/"
+      - index: 1
+        operator: "Mask"
+        values:
+        - "2"  # PROT_WRITE
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs: # CVE-2022-0492
+      - index: 0
+        operator: "Postfix"
+        values:
+        - "/notify_on_release"
+        - "/release_agent"
+        - "/core_pattern"
+      - index: 1
+        operator: "Mask"
+        values:
+        - "2"  # PROT_WRITE
+  # SYNOPSIS
+  # int security_path_truncate(const struct path *path)
+  #     @path: file
+  #
+  # DESCRIPTION
+  # Check permission before truncating the file indicated by path.
+  #
+  # RETURN VALUE
+  # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.8-rc7/source/security/security.c#L1928)
+  #
+  # SYSCALLS
+  #     truncate()
+  #
+  - call: "security_path_truncate"
+    syscall: false
+    return: true
+    args:
+    - index: 0
+      type: "path"
+    returnArg:
+      index: 0
+      type: "int"
+    selectors:
+    # MODIFY
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Prefix"
+        values:
+        - "/etc/"
+        - "/boot/"
+        - "/lib"
+        - "/bin/"
+        - "/sbin/"
+        - "/usr/lib"
+        - "/usr/local/lib"
+        - "/usr/local/sbin/"
+        - "/usr/local/bin/"
+        - "/usr/bin/"
+        - "/usr/sbin/"
+        - "/root/"
+        - "/home/"
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs: # CVE-2022-0492
+      - index: 0
+        operator: "Postfix"
+        values:
+        - "/notify_on_release"
+        - "/release_agent"
+        - "/core_pattern"
+  # SYNOPSIS
+  # int security_path_link(struct dentry *old_dentry, const struct path *new_dir, struct dentry *new_dentry)
+  #     @old_dentry: existing file
+  #     @new_dir: new parent directory
+  #     @new_dentry: new hard link
+  #
+  # DESCRIPTION
+  # Check if creating a hard link is allowed.
+  #
+  # RETURN VALUE
+  # Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v6.16-rc5/source/security/security.c#L1987)
+  #
+  # SYSCALLS
+  #     link, linkat
+  #
+  - call: "security_path_link"
+    syscall: false
+    return: true
+    args:
+    - index: 0
+      type: "dentry"
+      label: "existing file"
+    - index: 2
+      type: "dentry"
+      label: "new hard link"
+    returnArg:
+      index: 0
+      type: "int"
+    selectors:
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Prefix"
+        values:
+        - "/etc/"
+        - "/boot/"
+        - "/root/"
+        - "/run/secrets/"
+        - "/lib/"
+        - "/bin/"
+        - "/sbin/"
+        - "/usr/lib/"
+        - "/usr/local/lib/"
+        - "/usr/local/sbin/"
+        - "/usr/local/bin/"
+        - "/usr/bin/"
+        - "/usr/sbin/"
+        - "/home/"
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 0
+        operator: "Postfix"
+        values:
+        - ".bashrc"
+        - ".bash_profile"
+        - ".bash_login"
+        - ".bash_logout"
+        - ".cshrc"
+        - ".cshdirs"
+        - ".profile"
+        - ".login"
+        - ".logout"
+        - ".history"
+        - "-release"
+  # SYNOPSIS
+  # int security_path_rename(const struct path *old_dir, struct dentry *old_dentry,
+  #                          const struct path *new_dir, struct dentry *new_dentry,
+  #                          unsigned int flags)
+  #     @old_dir: parent directory of the old file
+  #     @old_dentry: the old file
+  #     @new_dir: parent directory of the new file
+  #     @new_dentry: the new file
+  #     @flags: flags
+  #
+  # DESCRIPTION
+  # Check for permission to rename a file or directory.
+  #
+  # RETURN VALUE
+  # Return: Returns 0 if permission is granted. (https://elixir.bootlin.com/linux/v5.4/source/security/security.c#L1064)
+  #
+  # SYSCALLS
+  #     rename, renameat, renameat2
+  #
+  - call: "security_path_rename"
+    syscall: false
+    return: true
+    args:
+    - index: 1
+      type: "dentry"
+      label: "the old file"
+    - index: 3
+      type: "dentry"
+      label: "the new file"
+    returnArg:
+      index: 0
+      type: "int"
+    selectors:
+    - matchNamespaces:
+      - namespace: Pid
+        operator: NotIn
+        values:
+        - "host_ns"
+      matchArgs:
+      - index: 3
+        operator: "Prefix"
+        values:
+        - "/etc/"
+        - "/boot/"
+        - "/lib"
+        - "/bin/"
+        - "/sbin/"
+        - "/usr/lib"
+        - "/usr/local/lib"
+        - "/usr/local/sbin/"
+        - "/usr/local/bin/"
+        - "/usr/bin/"
+        - "/usr/sbin/"
+        - "/root/"
+        - "/home/"

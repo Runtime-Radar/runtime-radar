@@ -21,6 +21,10 @@ spec:
   # Returns 0 if success.
   # 
   # 
+  # TODO: combining a syscall kretprobe (return: true) with string args makes the Tetragon agent emit
+  # "error paring arg type string / string size too large: 16777215" for __x64_sys_mount and drop the
+  # source/target for some mount events. return: true is kept because the PTCS_RT_MOUNT_DEV detector needs
+  # the return code (success vs failed attempt). See runtime-monitor/README.md ("Known limitation: mount").
   - call: "sys_mount"
     syscall: true
     return: true
