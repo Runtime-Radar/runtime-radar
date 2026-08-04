@@ -22,11 +22,11 @@ const (
 
 const (
 	KprobeWriteNoArgs   = "Detected that the `%s` file was edited by the `%s` process, which may indicate an attempt to exploit vulnerability CVE-2022-0492"
-	KprobeWriteDefault  = "Detected that the `%s` file was edited by the `%s` process (started using the `%s` arguments), which may indicate an attempt to exploit vulnerability CVE-2022-0492"
+	KprobeWriteDefault  = "Detected that the `%s` file was edited by the `%s` process, which was started using the `%s` arguments. This may indicate an attempt to exploit vulnerability CVE-2022-0492."
 	KprobeMmapNoArgs    = "Detected that the `%s` file was memory-mapped by the `%s` process, which may indicate an attempt to exploit vulnerability CVE-2022-0492"
-	KprobeMmapDefault   = "Detected that the `%s` file was memory-mapped by the `%s` process (started using the `%s` arguments), which may indicate an attempt to exploit vulnerability CVE-2022-0492"
+	KprobeMmapDefault   = "Detected that the `%s` file was memory-mapped by the `%s` process, which was started using the `%s` arguments. This may indicate an attempt to exploit vulnerability CVE-2022-0492."
 	KprobeRenameNoArgs  = "Detected that the `%s` file was replaced with the `%s` file by the `%s` process, which may indicate an attempt to exploit vulnerability CVE-2022-0492"
-	KprobeRenameDefault = "Detected that the `%s` file was replaced with the `%s` file by the `%s` process (started using the `%s` arguments), which may indicate an attempt to exploit vulnerability CVE-2022-0492"
+	KprobeRenameDefault = "Detected that the `%s` file was replaced with the `%s` file by the `%s` process, which was started using the `%s` arguments. This may indicate an attempt to exploit vulnerability CVE-2022-0492."
 )
 
 var (

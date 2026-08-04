@@ -259,9 +259,9 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "CS_RT_DOWNLOAD_TOOLS",
+      "detector_id": "PTCS_RT_DOWNLOAD_TOOLS",
       "severity": "HIGH",
-      "reason_contains": "download",
+      "reason_contains": "data was downloaded",
       "tactics": [
         "TA0008",
         "TA0010",

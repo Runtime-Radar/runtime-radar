@@ -23,28 +23,28 @@ const (
 const (
 
 	// Anacron
-	KprobeWriteAnacronNoArgs   = "Detected that the configuration file `%s` of the anacron task scheduler was edited by the `%s` process"
-	KprobeWriteAnacronDefault  = "Detected that the configuration file `%s` of the anacron task scheduler was edited by the %s process, which was started using the `%s` arguments"
-	KprobeMmapAnacronNoArgs    = "Detected that the anacron task scheduler file `%s` was memory-mapped by the `%s` process"
-	KprobeMmapAnacronDefault   = "Detected that the anacron task scheduler file `%s` was memory-mapped by the `%s` process, which was started using the `%s` arguments"
-	KprobeRenameAnacronNoArgs  = "Detected that the configuration file `%s` of the anacron task scheduler was replaced with the `%s` file by the `%s` process"
-	KprobeRenameAnacronDefault = "Detected that the configuration file `%s` of the anacron task scheduler was replaced with the `%s` file by the `%s` process, which was started using the `%s` arguments"
+	KprobeWriteAnacronNoArgs         = "Detected that the configuration file `%s` of the anacron task scheduler was edited by the `%s` process"
+	KprobeWriteAnacronDefault        = "Detected that the configuration file `%s` of the anacron task scheduler was edited by the `%s` process, which was started using the `%s` arguments"
+	KprobeMmapAnacronNoArgs          = "Detected that the anacron task scheduler file `%s` was memory-mapped by the `%s` process"
+	KprobeMmapAnacronDefault         = "Detected that the anacron task scheduler file `%s` was memory-mapped by the `%s` process, which was started using the `%s` arguments"
+	KprobeRenameAnacronNoArgs        = "Detected that the configuration file `%s` of the anacron task scheduler was replaced with the `%s` file by the `%s` process"
+	KprobeRenameAnacronDefault       = "Detected that the configuration file `%s` of the anacron task scheduler was replaced with the `%s` file by the `%s` process, which was started using the `%s` arguments"
 
-	// At
-	KprobeWriteAtNoArgs   = "Detected that the configuration file `%s` of the at task scheduler was edited by the `%s` process"
-	KprobeWriteAtDefault  = "Detected that the configuration file `%s` of the at task scheduler was edited by the %s process, which was started using the `%s` arguments"
-	KprobeMmapAtNoArgs    = "Detected that the at task scheduler file `%s` was memory-mapped by the `%s` process"
-	KprobeMmapAtDefault   = "Detected that the at task scheduler file `%s` was memory-mapped by the `%s` process, which was started using the `%s` arguments"
-	KprobeRenameAtNoArgs  = "Detected that the configuration file `%s` of the at task scheduler was replaced with the `%s` file by the `%s` process"
-	KprobeRenameAtDefault = "Detected that the configuration file `%s` of the at task scheduler was replaced with the `%s` file by the `%s` process, which was started using the `%s` arguments"
+	// At	
+	KprobeWriteAtNoArgs              = "Detected that the configuration file `%s` of the at task scheduler was edited by the `%s` process"
+	KprobeWriteAtDefault             = "Detected that the configuration file `%s` of the at task scheduler was edited by the `%s` process, which was started using the `%s` arguments"
+	KprobeMmapAtNoArgs               = "Detected that the at task scheduler file `%s` was memory-mapped by the `%s` process"
+	KprobeMmapAtDefault              = "Detected that the at task scheduler file `%s` was memory-mapped by the `%s` process, which was started using the `%s` arguments"
+	KprobeRenameAtNoArgs             = "Detected that the configuration file `%s` of the at task scheduler was replaced with the `%s` file by the `%s` process"
+	KprobeRenameAtDefault            = "Detected that the configuration file `%s` of the at task scheduler was replaced with the `%s` file by the `%s` process, which was started using the `%s` arguments"
 
 	// Cron
-	KprobeWriteCronNoArgs   = "Detected that the configuration file `%s` of the cron task scheduler was edited by the `%s` process"
-	KprobeWriteCronDefault  = "Detected that the configuration file `%s` of the cron task scheduler was edited by the %s process, which was started using the `%s` arguments"
-	KprobeMmapCronNoArgs    = "Detected that the cron task scheduler file `%s` was memory-mapped by the `%s` process"
-	KprobeMmapCronDefault   = "Detected that the cron task scheduler file `%s` was memory-mapped by the `%s` process, which was started using the `%s` arguments"
-	KprobeRenameCronNoArgs  = "Detected that the configuration file `%s` of the cron task scheduler was replaced with the `%s` file by the `%s` process"
-	KprobeRenameCronDefault = "Detected that the configuration file `%s` of the cron task scheduler was replaced with the `%s` file by the `%s` process, which was started using the `%s` arguments"
+	KprobeWriteCronNoArgs            = "Detected that the configuration file `%s` of the cron task scheduler was edited by the `%s` process"
+	KprobeWriteCronDefault           = "Detected that the configuration file `%s` of the cron task scheduler was edited by the `%s` process, which was started using the `%s` arguments"
+	KprobeMmapCronNoArgs             = "Detected that the cron task scheduler file `%s` was memory-mapped by the `%s` process"
+	KprobeMmapCronDefault            = "Detected that the cron task scheduler file `%s` was memory-mapped by the `%s` process, which was started using the `%s` arguments"
+	KprobeRenameCronNoArgs           = "Detected that the configuration file `%s` of the cron task scheduler was replaced with the `%s` file by the `%s` process"
+	KprobeRenameCronDefault          = "Detected that the configuration file `%s` of the cron task scheduler was replaced with the `%s` file by the `%s` process, which was started using the `%s` arguments"
 
 	// Systemd Timers
 	KprobeWriteSystemdTimersNoArgs   = "Detected that the `%s` file of the systemd subsystem timer was edited by the `%s` process"

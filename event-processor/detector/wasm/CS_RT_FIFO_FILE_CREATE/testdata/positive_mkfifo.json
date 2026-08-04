@@ -286,9 +286,9 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "CS_RT_FIFO_FILE_CREATE",
+      "detector_id": "ESC_RT_FIFO_FILE_CREATE",
       "severity": "HIGH",
-      "reason_contains": "FIFO",
+      "reason_contains": "named pipe file",
       "tactics": [
         "TA0002"
       ]

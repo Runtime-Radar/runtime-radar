@@ -25,7 +25,7 @@ const (
 	ExecMinersNoArgs  = "Detected that the `%s` cryptominer was started"
 	ExecMinersDefault = "Detected that the `%s` cryptominer was started using the `%s` arguments"
 	ExecMinerArgs     = "Detected a suspicious start of the `%s` process with the `%s` arguments typical of cryptominers"
-	ExecKillArgs      = "Detected an attempt to finish the `%s` process using the `%s` utility started with the `%s` arguments typical of cryptominer startup scripts"
+	ExecKillArgs      = "Detected an attempt to finish a process using the `%s` utility, which was started using the `%s` arguments. This may indicate use of cryptominer startup scripts."
 )
 
 var (

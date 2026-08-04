@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	KprobeDetect = "Detected that arbitrary code was executed by the `%s` process, which was started using the `%s` arguments through the Ingress Nightmare vulnerability exploitation"
+	KprobeDetect = "Detected that arbitrary code from the `%s` file  was executed by the `%s` process, which was started using the `%s` arguments through the Ingress Nightmare vulnerability exploitation"
 )
 
 var (

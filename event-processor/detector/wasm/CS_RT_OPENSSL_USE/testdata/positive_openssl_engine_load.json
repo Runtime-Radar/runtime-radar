@@ -1,37 +1,37 @@
 {
   "event": {
-    "process_kprobe": {
+    "process_exec": {
       "process": {
-        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjcxNTE5ODczNTgwOTM0MTk6NjAyNjQy",
-        "pid": 602642,
+        "exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDY1OTkyOTExODg2OToyNzQzNjc2",
+        "pid": 2743676,
         "uid": 0,
-        "cwd": "/",
-        "binary": "/usr/bin/vim",
-        "arguments": "/etc/crontab",
-        "flags": "execve rootcwd clone",
-        "start_time": "2024-08-08T09:52:03.004302955Z",
+        "cwd": "/root/openssl",
+        "binary": "/usr/bin/openssl",
+        "arguments": "engine dynamic -pre SO_PATH:./hostname.so -pre LOAD",
+        "flags": "execve clone",
+        "start_time": "2025-04-10T14:17:32.090308606Z",
         "auid": 4294967295,
         "pod": {
           "namespace": "default",
           "name": "test-pod-debian",
           "container": {
-            "id": "cri-o://426ccd7bdd6e9565a3f2767765b0c1fc160c8132c331884a6000759307b4fae2",
+            "id": "containerd://e9db8d37b2ebde52f63ed8055253e3829175d82285cefa1c06014a8ff59b11c8",
             "name": "test-pod-debian",
             "image": {
-              "id": "31d5e503c34f4496a263fb3557575cf53e6a40add4c459370120c7454985f7b7",
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
               "name": "docker.io/library/debian:12.2-slim"
             },
-            "start_time": "2024-05-18T19:36:11Z",
-            "pid": 4183,
+            "start_time": "2025-03-04T11:51:22Z",
+            "pid": 5520,
             "maybe_exec_probe": false
           },
           "pod_labels": {},
           "workload": "test-pod-debian",
           "workload_kind": "Pod"
         },
-        "docker": "426ccd7bdd6e9565a3f2767765b0c1f",
-        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjcxNTE4OTMwOTUxMjc5Mjc6NjAxNTc0",
-        "refcnt": 1,
+        "docker": "e9db8d37b2ebde52f63ed8055253e38",
+        "parent_exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDQ1NjExOTAyMTQzNzoyNzM4MTc4",
+        "refcnt": 0,
         "cap": {
           "permitted": [
             "CAP_CHOWN",
@@ -42,7 +42,12 @@
             "CAP_SETGID",
             "CAP_SETUID",
             "CAP_SETPCAP",
-            "CAP_NET_BIND_SERVICE"
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
           ],
           "effective": [
             "CAP_CHOWN",
@@ -53,33 +58,38 @@
             "CAP_SETGID",
             "CAP_SETUID",
             "CAP_SETPCAP",
-            "CAP_NET_BIND_SERVICE"
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
           ],
           "inheritable": []
         },
         "ns": {
           "uts": {
-            "inum": 4026532264,
+            "inum": 4026533060,
             "is_host": false
           },
           "ipc": {
-            "inum": 4026532265,
+            "inum": 4026533061,
             "is_host": false
           },
           "mnt": {
-            "inum": 4026532792,
+            "inum": 4026533063,
             "is_host": false
           },
           "pid": {
-            "inum": 4026532793,
+            "inum": 4026533064,
             "is_host": false
           },
           "pid_for_children": {
-            "inum": 4026532793,
+            "inum": 4026533064,
             "is_host": false
           },
           "net": {
-            "inum": 4026532266,
+            "inum": 4026532932,
             "is_host": false
           },
           "time": {
@@ -91,7 +101,7 @@
             "is_host": true
           },
           "cgroup": {
-            "inum": 4026532794,
+            "inum": 4026533065,
             "is_host": false
           },
           "user": {
@@ -99,7 +109,7 @@
             "is_host": true
           }
         },
-        "tid": 602642,
+        "tid": 2743676,
         "process_credentials": {
           "uid": 0,
           "gid": 0,
@@ -117,35 +127,35 @@
         "user": null
       },
       "parent": {
-        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjcxNTE4OTMwOTUxMjc5Mjc6NjAxNTc0",
-        "pid": 601574,
+        "exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDQ1NjExOTAyMTQzNzoyNzM4MTc4",
+        "pid": 2738178,
         "uid": 0,
         "cwd": "/",
         "binary": "/usr/bin/bash",
         "arguments": "",
         "flags": "execve rootcwd",
-        "start_time": "2024-08-08T09:50:28.741338076Z",
+        "start_time": "2025-04-10T14:14:08.280211442Z",
         "auid": 4294967295,
         "pod": {
           "namespace": "default",
           "name": "test-pod-debian",
           "container": {
-            "id": "cri-o://426ccd7bdd6e9565a3f2767765b0c1fc160c8132c331884a6000759307b4fae2",
+            "id": "containerd://e9db8d37b2ebde52f63ed8055253e3829175d82285cefa1c06014a8ff59b11c8",
             "name": "test-pod-debian",
             "image": {
-              "id": "31d5e503c34f4496a263fb3557575cf53e6a40add4c459370120c7454985f7b7",
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
               "name": "docker.io/library/debian:12.2-slim"
             },
-            "start_time": "2024-05-18T19:36:11Z",
-            "pid": 4032,
+            "start_time": "2025-03-04T11:51:22Z",
+            "pid": 5508,
             "maybe_exec_probe": false
           },
           "pod_labels": {},
           "workload": "test-pod-debian",
           "workload_kind": "Pod"
         },
-        "docker": "426ccd7bdd6e9565a3f2767765b0c1f",
-        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjcxNTE4OTMwOTM3MzM1NTk6NjAxNTc0",
+        "docker": "e9db8d37b2ebde52f63ed8055253e38",
+        "parent_exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDQ1NjExMzYyNjk4NzoyNzM4MTc4",
         "refcnt": 0,
         "cap": {
           "permitted": [
@@ -157,7 +167,12 @@
             "CAP_SETGID",
             "CAP_SETUID",
             "CAP_SETPCAP",
-            "CAP_NET_BIND_SERVICE"
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
           ],
           "effective": [
             "CAP_CHOWN",
@@ -168,33 +183,38 @@
             "CAP_SETGID",
             "CAP_SETUID",
             "CAP_SETPCAP",
-            "CAP_NET_BIND_SERVICE"
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
           ],
           "inheritable": []
         },
         "ns": {
           "uts": {
-            "inum": 4026532264,
+            "inum": 4026533060,
             "is_host": false
           },
           "ipc": {
-            "inum": 4026532265,
+            "inum": 4026533061,
             "is_host": false
           },
           "mnt": {
-            "inum": 4026532792,
+            "inum": 4026533063,
             "is_host": false
           },
           "pid": {
-            "inum": 4026532793,
+            "inum": 4026533064,
             "is_host": false
           },
           "pid_for_children": {
-            "inum": 4026532793,
+            "inum": 4026533064,
             "is_host": false
           },
           "net": {
-            "inum": 4026532266,
+            "inum": 4026532932,
             "is_host": false
           },
           "time": {
@@ -206,7 +226,7 @@
             "is_host": true
           },
           "cgroup": {
-            "inum": 4026532794,
+            "inum": 4026533065,
             "is_host": false
           },
           "user": {
@@ -214,7 +234,7 @@
             "is_host": true
           }
         },
-        "tid": 601574,
+        "tid": 2738178,
         "process_credentials": {
           "uid": 0,
           "gid": 0,
@@ -231,54 +251,26 @@
         "binary_properties": null,
         "user": null
       },
-      "function_name": "security_file_permission",
-      "args": [
-        {
-          "file_arg": {
-            "mount": "",
-            "path": "/etc/crontab",
-            "flags": "",
-            "permission": "-rw-r--r--"
-          },
-          "label": ""
-        },
-        {
-          "int_arg": 2,
-          "label": ""
-        }
-      ],
-      "return": {
-        "int_arg": 0,
-        "label": ""
-      },
-      "action": "KPROBE_ACTION_POST",
-      "kernel_stack_trace": [],
-      "policy_name": "file-monitoring",
-      "return_action": "KPROBE_ACTION_POST",
-      "message": "",
-      "tags": [],
-      "user_stack_trace": []
+      "ancestors": []
     },
-    "node_name": "test-k8s-cluster",
-    "time": "2024-08-08T09:52:07.009362950Z",
+    "node_name": "ptcs-debian-11",
+    "time": "2025-04-10T14:17:32.090307890Z",
     "aggregation_info": null
   },
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "PTCS_RT_SCHED_TASK_MOD",
-      "severity": "HIGH",
-      "reason_contains": "cron task scheduler",
+      "detector_id": "ESC_RT_OPENSSL_USE",
+      "severity": "MEDIUM",
+      "reason_contains": "arbitrary code",
       "tactics": [
-        "TA0002",
-        "TA0003",
-        "TA0004"
+        "TA0002"
       ]
     },
     "kill_pod_call": null,
     "notify_call": null,
     "history_event": {
-      "severity": "HIGH",
+      "severity": "MEDIUM",
       "is_threat": true
     }
   }

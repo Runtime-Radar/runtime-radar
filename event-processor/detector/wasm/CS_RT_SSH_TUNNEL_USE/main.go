@@ -21,8 +21,8 @@ const (
 )
 
 const (
-	KprobeLocal  = "Detected a connection to a host with IP address `%s` and port `%d` initiated by the SSH server`%s` (started using the `%s` arguments), which may indicate that a local tunnel was used"
-	KprobeRemote = "Detected that port `%d` was listened to by the SSH server`%s` (started using the `%s` arguments), which may indicate that a remote tunnel was used"
+	KprobeLocal  = "Detected a connection to a host with IP address `%s` and port `%d` initiated by the SSH server `%s`, which was started using the `%s` arguments. This may indicate that a local tunnel was used."
+	KprobeRemote = "Detected that port `%d` was listened to by the SSH server `%s`, which was started using the `%s` arguments. This may indicate that a remote tunnel was used."
 )
 
 var (

@@ -271,9 +271,9 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "CS_RT_FILELESS_EXEC",
+      "detector_id": "PTCS_RT_FILELESS_EXEC",
       "severity": "MEDIUM",
-      "reason_contains": "fileless",
+      "reason_contains": "fileless process",
       "tactics": [
         "TA0005"
       ]

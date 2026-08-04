@@ -1,0 +1,267 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "exec_id": "cHRjcy1jZW50b3MtMTA6NzY2OTc2NzEzOTU3Mjg2OjM1MTYxNw==",
+        "pid": 351617,
+        "uid": 1000,
+        "cwd": "/work/v12-pocs/fragnesia",
+        "binary": "/work/v12-pocs/fragnesia/fragnesia",
+        "arguments": "",
+        "flags": "execve",
+        "start_time": "2026-05-28T13:12:09.189618857Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "pagecache-poc-lab",
+          "container": {
+            "id": "containerd://e73fba46e93f19245473e37e085d80e802c435479ac75483157560ddd5a57d6a",
+            "name": "lab",
+            "image": {
+              "id": "cs-service-node:443/pagecache-poc-lab@sha256:c3c69b1fdbd29d27ab93699497a73f2b41bcf612f4316c02c3a5922d0a720690",
+              "name": "cs-service-node:443/pagecache-poc-lab:local"
+            },
+            "start_time": "2026-05-28T13:01:39Z",
+            "pid": 38,
+            "maybe_exec_probe": false,
+            "security_context": {
+              "privileged": false
+            }
+          },
+          "pod_labels": {
+            "app": "pagecache-poc-lab"
+          },
+          "workload": "pagecache-poc-lab",
+          "workload_kind": "Pod",
+          "pod_annotations": {}
+        },
+        "docker": "e73fba46e93f19245473e37e085d80e",
+        "parent_exec_id": "cHRjcy1jZW50b3MtMTA6NzY2OTc2NzA5NTE5Njk1OjM1MTYxNg==",
+        "refcnt": 1,
+        "cap": {
+          "permitted": [],
+          "effective": [],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026534087,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026534088,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026534090,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026534091,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026534091,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026533865,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026534092,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 351617,
+        "process_credentials": {
+          "uid": 1000,
+          "gid": 1000,
+          "euid": 1000,
+          "egid": 1000,
+          "suid": 1000,
+          "sgid": 1000,
+          "fsuid": 1000,
+          "fsgid": 1000,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null,
+        "user": null,
+        "in_init_tree": false
+      },
+      "parent": {
+        "exec_id": "cHRjcy1jZW50b3MtMTA6NzY2OTc2NzA5NTE5Njk1OjM1MTYxNg==",
+        "pid": 351616,
+        "uid": 1000,
+        "cwd": "/work/v12-pocs/fragnesia",
+        "binary": "/work/v12-pocs/fragnesia/fragnesia",
+        "arguments": "",
+        "flags": "execve clone",
+        "start_time": "2026-05-28T13:12:09.185181893Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "pagecache-poc-lab",
+          "container": {
+            "id": "containerd://e73fba46e93f19245473e37e085d80e802c435479ac75483157560ddd5a57d6a",
+            "name": "lab",
+            "image": {
+              "id": "cs-service-node:443/pagecache-poc-lab@sha256:c3c69b1fdbd29d27ab93699497a73f2b41bcf612f4316c02c3a5922d0a720690",
+              "name": "cs-service-node:443/pagecache-poc-lab:local"
+            },
+            "start_time": "2026-05-28T13:01:39Z",
+            "pid": 37,
+            "maybe_exec_probe": false,
+            "security_context": {
+              "privileged": false
+            }
+          },
+          "pod_labels": {
+            "app": "pagecache-poc-lab"
+          },
+          "workload": "pagecache-poc-lab",
+          "workload_kind": "Pod",
+          "pod_annotations": {}
+        },
+        "docker": "e73fba46e93f19245473e37e085d80e",
+        "parent_exec_id": "cHRjcy1jZW50b3MtMTA6NzY2NTUyMDIwNzQzMzU0OjMzNzQzNQ==",
+        "refcnt": 0,
+        "cap": {
+          "permitted": [],
+          "effective": [],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026534087,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026534088,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026534090,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026534091,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026534091,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026533865,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026534092,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 351616,
+        "process_credentials": {
+          "uid": 1000,
+          "gid": 1000,
+          "euid": 1000,
+          "egid": 1000,
+          "suid": 1000,
+          "sgid": 1000,
+          "fsuid": 1000,
+          "fsgid": 1000,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null,
+        "user": null,
+        "in_init_tree": false
+      },
+      "function_name": "security_socket_create",
+      "args": [
+        {
+          "int_arg": 38,
+          "label": "Family"
+        },
+        {
+          "int_arg": 5,
+          "label": "Type"
+        },
+        {
+          "int_arg": 0,
+          "label": "Protocol"
+        }
+      ],
+      "return": {
+        "int_arg": 0,
+        "label": ""
+      },
+      "action": "KPROBE_ACTION_POST",
+      "kernel_stack_trace": [],
+      "policy_name": "socket",
+      "return_action": "KPROBE_ACTION_POST",
+      "message": "",
+      "tags": [],
+      "user_stack_trace": [],
+      "ancestors": []
+    },
+    "node_name": "test-node",
+    "time": "2026-05-28T13:12:09.290799252Z",
+    "aggregation_info": null,
+    "cluster_name": "",
+    "node_labels": {
+      "beta.kubernetes.io/arch": "amd64",
+      "beta.kubernetes.io/os": "linux",
+      "kubernetes.io/arch": "amd64",
+      "kubernetes.io/hostname": "test-node",
+      "kubernetes.io/os": "linux",
+      "node-role.kubernetes.io/control-plane": "",
+      "node.kubernetes.io/exclude-from-external-load-balancers": ""
+    }
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_PAGE_CACHE_LPE",
+      "severity": "HIGH",
+      "reason_contains": "CVE-2026-31431",
+      "tactics": [
+        "TA0004"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "HIGH",
+      "is_threat": true
+    }
+  }
+}

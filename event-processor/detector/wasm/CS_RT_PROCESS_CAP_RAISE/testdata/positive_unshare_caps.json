@@ -363,9 +363,9 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "CS_RT_PROCESS_CAP_RAISE",
+      "detector_id": "PTCS_RT_PROCESS_CAP_RAISE",
       "severity": "HIGH",
-      "reason_contains": "capabilities",
+      "reason_contains": "excessive effective capabilities",
       "tactics": [
         "TA0004"
       ]

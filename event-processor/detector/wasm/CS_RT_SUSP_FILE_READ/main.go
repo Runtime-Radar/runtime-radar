@@ -30,22 +30,22 @@ const (
 	KprobeDirsReadAccountsDefault  = "Detected that the `%s` file with accounts was read by the executable file `%s` from the `%s` directory started using the `%s` arguments"
 
 	// PAM
-	KprobeUtilsReadPamNoArgs  = "Detected that the `%s` file with the system authentication and authorization settings was read by the `%s` utility"
-	KprobeUtilsReadPamDefault = "Detected that the `%s` file with the system authentication and authorization settings was read by the `%s` utility started using the `%s` arguments"
-	KprobeDirsReadPamNoArgs   = "Detected that the `%s` file with the system authentication and authorization settings was read by the executable file `%s` from the `%s` directory"
-	KprobeDirsReadPamDefault  = "Detected that the `%s` file with the system authentication and authorization settings was read by the executable file `%s` from the `%s` directory (started using the `%s` arguments)"
+	KprobeUtilsReadPamNoArgs       = "Detected that the `%s` file with the system authentication and authorization settings was read by the `%s` utility"
+	KprobeUtilsReadPamDefault      = "Detected that the `%s` file with the system authentication and authorization settings was read by the `%s` utility started using the `%s` arguments"
+	KprobeDirsReadPamNoArgs        = "Detected that the `%s` file with the system authentication and authorization settings was read by the executable file `%s` from the `%s` directory"
+	KprobeDirsReadPamDefault       = "Detected that the `%s` file with the system authentication and authorization settings was read by the executable file `%s` from the `%s` directory, which was started using the `%s` arguments"
 
 	// SystemInfo
-	KprobeUtilsReadSysInfoNoArgs  = "Detected that the `%s` file with system information was read by the `%s` utility"
-	KprobeUtilsReadSysInfoDefault = "Detected that the `%s` file with system information was read by the `%s` utility started using the `%s` arguments"
-	KprobeDirsReadSysInfoNoArgs   = "Detected that the `%s` file with system information was read by the executable file `%s` from the `%s` directory"
-	KprobeDirsReadSysInfoDefault  = "Detected that the `%s` file with system information was read by the executable file `%s` from the `%s` directory (started using the `%s` arguments)"
+	KprobeUtilsReadSysInfoNoArgs   = "Detected that the `%s` file with system information was read by the `%s` utility"
+	KprobeUtilsReadSysInfoDefault  = "Detected that the `%s` file with system information was read by the `%s` utility started using the `%s` arguments"
+	KprobeDirsReadSysInfoNoArgs    = "Detected that the `%s` file with system information was read by the executable file `%s` from the `%s` directory"
+	KprobeDirsReadSysInfoDefault   = "Detected that the `%s` file with system information was read by the executable file `%s` from the `%s` directory, which was started using the `%s` arguments"
 
 	// EnvironmentVariables
-	KprobeUtilsReadEnvVarNoArgs  = "Detected that the `%s` file with environment variables was read by the `%s` utility"
-	KprobeUtilsReadEnvVarDefault = "Detected that the `%s` file with environment variables was read by the `%s` utility started using the `%s` arguments"
-	KprobeDirsReadEnvVarNoArgs   = "Detected that the `%s` file with environment variables was read by the executable file `%s` from the `%s` directory"
-	KprobeDirsReadEnvVarDefault  = "Detected that the `%s` file with environment variables was read by the executable file `%s` from the `%s` directory (started using the `%s` arguments)"
+	KprobeUtilsReadEnvVarNoArgs    = "Detected that the `%s` file with environment variables was read by the `%s` utility"
+	KprobeUtilsReadEnvVarDefault   = "Detected that the `%s` file with environment variables was read by the `%s` utility started using the `%s` arguments"
+	KprobeDirsReadEnvVarNoArgs     = "Detected that the `%s` file with environment variables was read by the executable file `%s` from the `%s` directory"
+	KprobeDirsReadEnvVarDefault    = "Detected that the `%s` file with environment variables was read by the executable file `%s` from the `%s` directory, which was started using the `%s` arguments"
 )
 
 var (

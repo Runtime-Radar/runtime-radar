@@ -473,9 +473,9 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "CS_RT_MOUNT_DEV",
+      "detector_id": "PTCS_RT_MOUNT_DEV",
       "severity": "HIGH",
-      "reason_contains": "mounted",
+      "reason_contains": "mount",
       "tactics": [
         "TA0004"
       ]

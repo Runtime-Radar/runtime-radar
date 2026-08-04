@@ -23,7 +23,7 @@ const (
 
 const (
 	KprobeNoArgs  = "Detected that data was downloaded from a node available at IP address `%s` and port `%d` by the `%s` process"
-	KprobeDefault = "Detected that data was downloaded from a node available at IP address `%s` and port `%d` by the `%s` process, which was started using the %s arguments"
+	KprobeDefault = "Detected that data was downloaded from a node available at IP address `%s` and port `%d` by the `%s` process, which was started using the `%s` arguments"
 )
 
 var (
