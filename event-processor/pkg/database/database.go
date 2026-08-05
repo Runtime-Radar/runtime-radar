@@ -4,10 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/url"
+	"strings"
 	"time"
 
+	"github.com/pressly/goose/v3"
 	"github.com/rs/zerolog/log"
+	"github.com/runtime-radar/runtime-radar/event-processor/migrations"
+	"github.com/runtime-radar/runtime-radar/event-processor/pkg/build"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/model"
 	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"gorm.io/driver/postgres"
@@ -65,19 +70,31 @@ func New(address, database, user, password string, sslMode, sslCheckCert bool) (
 }
 
 func Migrate(db *gorm.DB, newDB bool) error {
+	ctx := context.TODO()
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("can't migrate postgresql db: %w", err)
+	}
+
+	migrationsFS, err := fs.Sub(migrations.Postgres, "postgres")
+	if err != nil {
+		return err
+	}
+
+	// Services share a single database, so each of them keeps its own migration history.
+	provider, err := goose.NewProvider("postgres", sqlDB, migrationsFS, goose.WithTableName(fmt.Sprintf("goose_db_version_%s", strings.ReplaceAll(build.AppName, "-", "_"))))
+	if err != nil {
+		return err
+	}
+
 	if newDB {
-		if err := db.Migrator().DropTable(
-			&model.Detector{},
-			&model.Config{},
-		); err != nil {
+		if _, err := provider.DownTo(ctx, 0); err != nil && !errors.Is(err, goose.ErrNoNextVersion) {
 			return err
 		}
 	}
 
-	if err := db.Migrator().AutoMigrate(
-		&model.Config{},
-		&model.Detector{},
-	); err != nil {
+	if _, err := provider.Up(ctx); err != nil {
 		return err
 	}
 

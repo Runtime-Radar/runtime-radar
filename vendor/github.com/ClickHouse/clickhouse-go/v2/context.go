@@ -6,8 +6,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2/ext"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/ClickHouse/clickhouse-go/v2/ext"
 )
 
 var _contextOptionKey = &QueryOptions{
@@ -268,6 +269,19 @@ func queryOptionsUserLocation(ctx context.Context) *time.Location {
 	}
 
 	return nil
+}
+
+// WithoutProfileEvents instructs the server not to send profile events for this query.
+// This is a performance optimization for servers >= 25.11 that support the send_profile_events setting.
+// On older servers, the setting is unknown and the server will return an error.
+func WithoutProfileEvents() QueryOption {
+	return func(o *QueryOptions) error {
+		if o.settings == nil {
+			o.settings = make(Settings)
+		}
+		o.settings["send_profile_events"] = 0
+		return nil
+	}
 }
 
 func (q *QueryOptions) onProcess() *onProcess {
