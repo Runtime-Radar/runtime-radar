@@ -22,8 +22,10 @@ import (
 
 	"github.com/ClickHouse/ch-go/compress"
 	chproto "github.com/ClickHouse/ch-go/proto"
-	"github.com/ClickHouse/clickhouse-go/v2/lib/proto"
 	"github.com/andybalholm/brotli"
+
+	"github.com/ClickHouse/clickhouse-go/v2/lib/proto"
+	"github.com/ClickHouse/clickhouse-go/v2/lib/timezone"
 )
 
 const (
@@ -107,7 +109,8 @@ func applyOptionsToRequest(ctx context.Context, req *http.Request, opt *Options)
 	jwt := queryOpt.jwt
 	useJWT := jwt != "" || useJWTAuth(opt)
 
-	if opt.TLS != nil && useJWT {
+	switch {
+	case opt.TLS != nil && useJWT:
 		if jwt == "" {
 			var err error
 			jwt, err = opt.GetJWT(ctx)
@@ -117,7 +120,7 @@ func applyOptionsToRequest(ctx context.Context, req *http.Request, opt *Options)
 		}
 
 		req.Header.Set("Authorization", "Bearer "+jwt)
-	} else if opt.TLS != nil && len(opt.Auth.Username) > 0 {
+	case opt.TLS != nil && len(opt.Auth.Username) > 0:
 		req.Header.Set("X-ClickHouse-User", opt.Auth.Username)
 		if len(opt.Auth.Password) > 0 {
 			req.Header.Set("X-ClickHouse-Key", opt.Auth.Password)
@@ -125,7 +128,7 @@ func applyOptionsToRequest(ctx context.Context, req *http.Request, opt *Options)
 		} else {
 			req.Header.Set("X-ClickHouse-SSL-Certificate-Auth", "on")
 		}
-	} else if opt.TLS == nil && len(opt.Auth.Username) > 0 {
+	case opt.TLS == nil && len(opt.Auth.Username) > 0:
 		if len(opt.Auth.Password) > 0 {
 			req.URL.User = url.UserPassword(opt.Auth.Username, opt.Auth.Password)
 
@@ -137,7 +140,11 @@ func applyOptionsToRequest(ctx context.Context, req *http.Request, opt *Options)
 	req.Header.Set("User-Agent", opt.ClientInfo.Append(queryOpt.clientInfo).String())
 
 	for k, v := range opt.HttpHeaders {
-		req.Header.Set(k, v)
+		if strings.EqualFold(k, "Host") {
+			req.Host = v
+		} else {
+			req.Header.Set(k, v)
+		}
 	}
 
 	return nil
@@ -147,20 +154,22 @@ func dialHttp(ctx context.Context, addr string, num int, opt *Options) (*httpCon
 	// Get base logger and enrich with connection-specific context
 	baseLogger := opt.logger()
 	logger := prepareConnLogger(baseLogger, num, addr, "http")
+	scheme := opt.scheme
+	compression := opt.Compression
 
-	if opt.scheme == "" {
+	if scheme == "" {
 		switch opt.Protocol {
 		case HTTP:
-			opt.scheme = opt.Protocol.String()
+			scheme = opt.Protocol.String()
 			if opt.TLS != nil {
-				opt.scheme = fmt.Sprintf("%ss", opt.scheme)
+				scheme = fmt.Sprintf("%ss", scheme)
 			}
 		default:
 			return nil, errors.New("invalid interface type for http")
 		}
 	}
 	u := &url.URL{
-		Scheme: opt.scheme,
+		Scheme: scheme,
 		Host:   addr,
 		Path:   opt.HttpUrlPath,
 	}
@@ -170,13 +179,13 @@ func dialHttp(ctx context.Context, addr string, num int, opt *Options) (*httpCon
 		query.Set("database", opt.Auth.Database)
 	}
 
-	if opt.Compression == nil {
-		opt.Compression = &Compression{
+	if compression == nil {
+		compression = &Compression{
 			Method: CompressionNone,
 		}
 	}
 
-	compressionPool, err := createCompressionPool(opt.Compression)
+	compressionPool, err := createCompressionPool(compression)
 	if err != nil {
 		return nil, err
 	}
@@ -211,8 +220,8 @@ func dialHttp(ctx context.Context, addr string, num int, opt *Options) (*httpCon
 		revision:        ClientTCPProtocolVersion, // Preflight uses hardcoded revision, may break older versions.
 		encodeRevision:  0,                        // Encoding data over HTTP must use 0. client_protocol_version does not apply to inserts.
 		buffer:          new(chproto.Buffer),
-		compression:     opt.Compression.Method,
-		blockCompressor: compress.NewWriter(compress.Level(opt.Compression.Level), compress.Method(opt.Compression.Method)),
+		compression:     compression.Method,
+		blockCompressor: compress.NewWriter(compress.Level(compression.Level), compress.Method(compression.Method)),
 		compressionPool: compressionPool,
 		blockBufferSize: opt.BlockBufferSize,
 	}
@@ -326,13 +335,13 @@ func (h *httpConnect) queryHello(ctx context.Context, release nativeTransportRel
 		displayName string
 		versionStr  string
 		revision    uint32
-		timezone    string
+		tz          string
 	)
-	if err := rows.Scan(&displayName, &versionStr, &revision, &timezone); err != nil {
+	if err := rows.Scan(&displayName, &versionStr, &revision, &tz); err != nil {
 		return proto.ServerHandshake{}, err
 	}
 
-	location, err := time.LoadLocation(timezone)
+	location, err := timezone.Load(tz)
 	if err != nil {
 		return proto.ServerHandshake{}, fmt.Errorf("failed to load timezone from server hello query: %w", err)
 	}
