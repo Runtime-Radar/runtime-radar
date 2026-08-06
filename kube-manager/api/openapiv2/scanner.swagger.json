@@ -1,0 +1,291 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "scanner.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "ClusterScanner"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/cluster-scan": {
+      "post": {
+        "operationId": "ClusterScanner_ScanCluster",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/kubeScanClusterResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/kubeScanClusterReq"
+            }
+          }
+        ],
+        "tags": [
+          "ClusterScanner"
+        ]
+      }
+    },
+    "/api/v1/cluster-scan/image": {
+      "post": {
+        "operationId": "ClusterScanner_ClusterScanImage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/kubeScanImageResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/kubeScanImageReq"
+            }
+          }
+        ],
+        "tags": [
+          "ClusterScanner"
+        ]
+      }
+    },
+    "/api/v1/cluster-scan/page/{pageNum}": {
+      "get": {
+        "operationId": "ClusterScanner_ListScans",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/kubeListScansResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageNum",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ClusterScanner"
+        ]
+      }
+    },
+    "/api/v1/cluster-scan/{scanId}": {
+      "get": {
+        "operationId": "ClusterScanner_GetScan",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/kubeClusterScan"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "scanId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ClusterScanner"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ScanImageReqFilter": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Use exact namespace, pod, and container names for target launching.\nAny of these fields can be set to '*'.\nIf all elements are set to '*', all images in the this cluster will be scanned.\n\nAn empty array will return an error."
+        },
+        "podName": {
+          "type": "string"
+        },
+        "container": {
+          "type": "string"
+        }
+      }
+    },
+    "kubeClusterScan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "totalResources": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "checkedResources": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "error": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "kubeListScansResp": {
+      "type": "object",
+      "properties": {
+        "scans": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/kubeClusterScan"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "kubeScanClusterReq": {
+      "type": "object",
+      "properties": {
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excludedNamespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "kubeScanClusterResp": {
+      "type": "object",
+      "properties": {
+        "scanId": {
+          "type": "string"
+        }
+      }
+    },
+    "kubeScanImageReq": {
+      "type": "object",
+      "properties": {
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/ScanImageReqFilter"
+          }
+        }
+      }
+    },
+    "kubeScanImageResp": {
+      "type": "object",
+      "properties": {
+        "scanIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

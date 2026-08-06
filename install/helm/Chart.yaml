@@ -44,6 +44,10 @@ dependencies:
     version: 0.x.x
     repository: file://../../public-api/.helm
     tags: [cs-app, public-api]
+  - name: kube-manager
+    version: v0.x.x
+    repository: file://../../kube-manager/.helm
+    tags: [cs-app, kube-manager]
   - name: postgresql
     version: 0.x.x
     condition: postgresql.deploy

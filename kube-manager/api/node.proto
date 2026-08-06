@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package node;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "k8s.io/api/core/v1/generated.proto";
+import "kube.proto";
+
+option go_package = "./api";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "K8S Node API";
+    contact: {
+      email: "ptcs@ptsecurity.com";
+    };
+  };
+};
+
+// The PodController service definition.
+service NodeController {
+  rpc Get(GetNodeReq) returns (GetNodeResp) {
+    option (google.api.http) = {
+      get: "/api/v1/node"
+    };
+  }
+
+  rpc ListMeta(ListNodeMetaReq) returns (ListNodeMetaResp) {
+    option (google.api.http) = {
+      get: "/api/v1/node/list"
+    };
+  }
+
+  rpc ListPage(ListNodePageReq) returns (ListNodePageResp) {
+    option (google.api.http) = {
+      get: "/api/v1/node/page/{page_num}"
+    };
+  }
+}
+
+message GetNodeReq {
+  string name = 1;
+}
+
+message GetNodeResp {
+  k8s.io.api.core.v1.Node node = 1;
+}
+
+message ListNodeMetaReq {
+  // By default, the results will be sorted by name,
+  // but if necessary, you can also sort by creation date
+  // Possible sorting options:
+  // name, created_at
+  kube.Sort sort = 1;
+
+  // Names parameter can contain extract values or part of the name and support templating.
+  // For example: node-name-*
+  repeated string names = 10;
+}
+
+message ListNodeMetaResp {
+  message Node {
+    string uid = 1;
+    string ip = 2;
+    string name = 3;
+    string hostname = 4;
+  }
+
+  uint32 total = 1;
+  repeated Node nodes = 2;
+}
+
+message ListNodePageReq {
+  // By default, the results will be sorted by name,
+  // but if necessary, you can also sort by creation date
+  // Possible sorting options:
+  // name, created_at
+  kube.Sort sort = 1;
+  uint32 page_num = 2;
+  uint32 page_size = 3;
+
+  // Names parameter can contain extract values or part of the name and support templating.
+  // For example: node-name-*
+  repeated string names = 10;
+}
+
+message ListNodePageResp {
+  repeated k8s.io.api.core.v1.Node nodes = 1;
+  uint32 total = 2;
+}
