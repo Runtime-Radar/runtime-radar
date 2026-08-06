@@ -144,9 +144,6 @@ func main() {
 	configService, podService, nodeService := composeServices(
 		db, cfg, updateSrv, verifier, infs,
 	)
-	if err != nil {
-		log.Fatal().Msgf("### Failed to initialize informers: %v", err)
-	}
 
 	inv, err := inventory.New(updateSrv, k8sCfg, cfg.K8SSyncInterval, infs.setters()...)
 	if err != nil {

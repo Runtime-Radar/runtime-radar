@@ -625,9 +625,9 @@ clickhouse:
 ### Kube-manager component parameters
 
 | Name                        | Description                                                | Value |
-|-----------------------------| ---------------------------------------------------------- | ----- |
+|-----------------------------|------------------------------------------------------------| ----- |
 | `kube-manager.nodeSelector` | Template to specify the labels of nodes for pod assignment | `{}`  |
-| `kube-manager.replicas`     | Number of replicas for the cs-manager component            | `1`   |
+| `kube-manager.replicas`     | Number of replicas for the kube-manager component           | `1`   |
 
 ### Runtime-monitor component parameters
 

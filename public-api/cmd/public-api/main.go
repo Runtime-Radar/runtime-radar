@@ -249,31 +249,23 @@ func composeServices(
 		}
 	}
 
+	verifier := &auth.Verifier{usersGetter, &database.AccessTokenDatabase{db}, accessTokenSalt}
+
 	services.ruleSvc = &service.RuleGeneric{ruleController}
 	services.ruleSvc = &service.RuleAuth{
 		services.ruleSvc,
-		&auth.Verifier{
-			usersGetter,
-			&database.AccessTokenDatabase{db},
-			accessTokenSalt,
-		},
+		verifier,
 	}
 
 	services.runtimeHistorySvc = &service.RuntimeHistoryGeneric{runtimeHistory}
 	services.runtimeHistorySvc = &service.RuntimeHistoryAuth{
 		services.runtimeHistorySvc,
-		&auth.Verifier{
-			usersGetter,
-			&database.AccessTokenDatabase{db},
-			accessTokenSalt,
-		},
+		verifier,
 	}
 
 	services.accessTokenSvc = &service.AccessTokenLogging{&service.AccessTokenAudit{services.accessTokenSvc}}
 	services.ruleSvc = &service.RuleLogging{services.ruleSvc}
 	services.runtimeHistorySvc = &service.RuntimeHistoryLogging{services.runtimeHistorySvc}
-
-	verifier := &auth.Verifier{usersGetter, &database.AccessTokenDatabase{db}, accessTokenSalt}
 
 	services.configSvc = &service.ConfigGeneric{kubeManagerClients.Config}
 	services.configSvc = &service.ConfigAuth{services.configSvc, verifier}

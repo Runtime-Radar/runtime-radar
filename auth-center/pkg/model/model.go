@@ -70,7 +70,7 @@ var (
 			Description: "CS administrator role",
 		},
 		{
-			ID:       uuid.MustParse(`00000000-0000-0000-0000-000000000002`),
+			ID:       uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 			RoleName: "Security engineer",
 			RolePermissions: Permissions{
 				Users: &jwt.Permission{
