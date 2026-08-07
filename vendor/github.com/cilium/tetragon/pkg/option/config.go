@@ -10,12 +10,14 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/cilium/tetragon/api/v1/tetragon"
+
 	"github.com/cilium/tetragon/pkg/defaults"
 	"github.com/cilium/tetragon/pkg/logger"
 	"github.com/cilium/tetragon/pkg/logger/logfields"
 	"github.com/cilium/tetragon/pkg/metrics"
-	"github.com/spf13/viper"
 )
 
 type config struct {
@@ -31,16 +33,22 @@ type config struct {
 
 	EnablePodAnnotations bool
 
-	EnableProcessAncestors           bool
-	EnableProcessKprobeAncestors     bool
-	EnableProcessTracepointAncestors bool
-	EnableProcessUprobeAncestors     bool
-	EnableProcessLsmAncestors        bool
+	EnableProcessAncestors            bool
+	EnableProcessKprobeAncestors      bool
+	EnableProcessTracepointAncestors  bool
+	EnableProcessLoaderAncestors      bool
+	EnableProcessUprobeAncestors      bool
+	EnableProcessLsmAncestors         bool
+	EnableProcessUsdtAncestors        bool
+	EnableProcessEnvironmentVariables bool
 
-	EnableProcessNs   bool
-	EnableProcessCred bool
-	EnableK8s         bool
-	K8sKubeConfigPath string
+	FilterEnvironmentVariables map[string]struct{}
+
+	EnableProcessNs      bool
+	EnableProcessCred    bool
+	EnableK8s            bool
+	K8sKubeConfigPath    string
+	K8sControlPlaneRetry int
 
 	DisableKprobeMulti bool
 
@@ -52,9 +60,10 @@ type config struct {
 
 	LogOpts map[string]string
 
-	RBSize      int
-	RBSizeTotal int
-	RBQueueSize int
+	UsePerfRingBuffer bool
+	RBSize            int
+	RBSizeTotal       int
+	RBQueueSize       int
 
 	ProcessCacheSize       int
 	DataCacheSize          int
@@ -119,10 +128,18 @@ type config struct {
 	EventCacheNumRetries int
 	EventCacheRetryDelay int
 
-	CompatibilitySyscall64SizeType bool
-
 	ExecveMapEntries int
 	ExecveMapSize    string
+
+	ParentsMapEnabled bool
+	ParentsMapEntries int
+	ParentsMapSize    string
+
+	RetprobesCacheSize int
+
+	EnableGRPCDeprecatedTP bool
+
+	KeepCollection bool
 }
 
 var (
@@ -141,10 +158,13 @@ var (
 		// Enable all metrics labels by default
 		MetricsLabelFilter: DefaultLabelFilter(),
 
-		// set default valus for the event cache
+		// set default values for the event cache
 		// mainly used in the case of testing
 		EventCacheNumRetries: defaults.DefaultEventCacheNumRetries,
 		EventCacheRetryDelay: defaults.DefaultEventCacheRetryDelay,
+
+		// Set default value for {k,u}retprobes lru events cache
+		RetprobesCacheSize: defaults.DefaultRetprobesCacheSize,
 	}
 )
 
@@ -163,10 +183,14 @@ func AncestorsEnabled(eventType tetragon.EventType) bool {
 		return Config.EnableProcessKprobeAncestors
 	case tetragon.EventType_PROCESS_TRACEPOINT:
 		return Config.EnableProcessTracepointAncestors
+	case tetragon.EventType_PROCESS_LOADER:
+		return Config.EnableProcessLoaderAncestors
 	case tetragon.EventType_PROCESS_UPROBE:
 		return Config.EnableProcessUprobeAncestors
 	case tetragon.EventType_PROCESS_LSM:
 		return Config.EnableProcessLsmAncestors
+	case tetragon.EventType_PROCESS_USDT:
+		return Config.EnableProcessUsdtAncestors
 	default:
 		return false
 	}
@@ -174,8 +198,8 @@ func AncestorsEnabled(eventType tetragon.EventType) bool {
 
 // ReadDirConfig reads the given directory and returns a map that maps the
 // filename to the contents of that file.
-func ReadDirConfig(dirName string) (map[string]interface{}, error) {
-	m := map[string]interface{}{}
+func ReadDirConfig(dirName string) (map[string]any, error) {
+	m := map[string]any{}
 	files, err := os.ReadDir(dirName)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, fmt.Errorf("unable to read configuration directory: %w", err)
@@ -252,4 +276,16 @@ func ReadConfigDir(path string) error {
 	}
 
 	return nil
+}
+
+func K8SControlPlaneEnabled() bool {
+	// If K8s is enabled, we assume that the control plane is enabled.
+	// This is because the control plane is required to get the kubeconfig
+	// and other K8s related information.
+	return Config.EnableK8s || len(Config.K8sKubeConfigPath) > 0
+}
+
+func InClusterControlPlaneEnabled() bool {
+	// If K8s is enabled and no kubeconfig path is provided, we assume that the control plane is in-cluster.
+	return Config.EnableK8s && len(Config.K8sKubeConfigPath) == 0
 }

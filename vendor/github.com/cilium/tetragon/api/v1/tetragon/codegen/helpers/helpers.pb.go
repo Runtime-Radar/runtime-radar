@@ -39,6 +39,8 @@ func ResponseTypeString(response *tetragon.GetEventsResponse) (string, error) {
 		return tetragon.EventType_PROCESS_THROTTLE.String(), nil
 	case *tetragon.GetEventsResponse_ProcessLsm:
 		return tetragon.EventType_PROCESS_LSM.String(), nil
+	case *tetragon.GetEventsResponse_ProcessUsdt:
+		return tetragon.EventType_PROCESS_USDT.String(), nil
 	case *tetragon.GetEventsResponse_Test:
 		return tetragon.EventType_TEST.String(), nil
 	case *tetragon.GetEventsResponse_RateLimitInfo:
@@ -75,6 +77,8 @@ func ResponseInnerGetProcess(event tetragon.IsGetEventsResponse_Event) *tetragon
 		return ev.ProcessTracepoint.Process
 	case *tetragon.GetEventsResponse_ProcessUprobe:
 		return ev.ProcessUprobe.Process
+	case *tetragon.GetEventsResponse_ProcessUsdt:
+		return ev.ProcessUsdt.Process
 	case *tetragon.GetEventsResponse_ProcessLsm:
 		return ev.ProcessLsm.Process
 	case *tetragon.GetEventsResponse_ProcessLoader:
@@ -120,8 +124,12 @@ func ResponseInnerGetParent(event tetragon.IsGetEventsResponse_Event) *tetragon.
 		return ev.ProcessTracepoint.Parent
 	case *tetragon.GetEventsResponse_ProcessUprobe:
 		return ev.ProcessUprobe.Parent
+	case *tetragon.GetEventsResponse_ProcessUsdt:
+		return ev.ProcessUsdt.Parent
 	case *tetragon.GetEventsResponse_ProcessLsm:
 		return ev.ProcessLsm.Parent
+	case *tetragon.GetEventsResponse_ProcessLoader:
+		return ev.ProcessLoader.Parent
 
 	}
 	return nil
@@ -154,8 +162,12 @@ func ResponseInnerGetAncestors(event tetragon.IsGetEventsResponse_Event) []*tetr
 		return ev.ProcessTracepoint.Ancestors
 	case *tetragon.GetEventsResponse_ProcessUprobe:
 		return ev.ProcessUprobe.Ancestors
+	case *tetragon.GetEventsResponse_ProcessUsdt:
+		return ev.ProcessUsdt.Ancestors
 	case *tetragon.GetEventsResponse_ProcessLsm:
 		return ev.ProcessLsm.Ancestors
+	case *tetragon.GetEventsResponse_ProcessLoader:
+		return ev.ProcessLoader.Ancestors
 
 	}
 	return nil
@@ -173,6 +185,7 @@ func ResponseTypeMap() map[string]proto.Message {
 		"process_uprobe":     &tetragon.ProcessUprobe{},
 		"process_throttle":   &tetragon.ProcessThrottle{},
 		"process_lsm":        &tetragon.ProcessLsm{},
+		"process_usdt":       &tetragon.ProcessUsdt{},
 		"test":               &tetragon.Test{},
 		"rate_limit_info":    &tetragon.RateLimitInfo{},
 	}
@@ -198,6 +211,8 @@ func ProcessEventMapTuple(response *tetragon.GetEventsResponse) (string, any, an
 		return "process_throttle", response.GetProcessThrottle(), (*tetragon.ProcessThrottle)(nil)
 	case *tetragon.GetEventsResponse_ProcessLsm:
 		return "process_lsm", response.GetProcessLsm(), (*tetragon.ProcessLsm)(nil)
+	case *tetragon.GetEventsResponse_ProcessUsdt:
+		return "process_usdt", response.GetProcessUsdt(), (*tetragon.ProcessUsdt)(nil)
 	case *tetragon.GetEventsResponse_Test:
 		return "test", response.GetTest(), (*tetragon.Test)(nil)
 	case *tetragon.GetEventsResponse_RateLimitInfo:
@@ -218,6 +233,7 @@ func ProcessEventMapEmpty() map[string]any {
 		"process_uprobe":     (*tetragon.ProcessUprobe)(nil),
 		"process_throttle":   (*tetragon.ProcessThrottle)(nil),
 		"process_lsm":        (*tetragon.ProcessLsm)(nil),
+		"process_usdt":       (*tetragon.ProcessUsdt)(nil),
 		"test":               (*tetragon.Test)(nil),
 		"rate_limit_info":    (*tetragon.RateLimitInfo)(nil),
 	}

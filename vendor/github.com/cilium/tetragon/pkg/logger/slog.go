@@ -5,14 +5,16 @@ package logger
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"os"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	"github.com/cilium/tetragon/pkg/logger/logfields"
 	"github.com/go-logr/logr"
+
+	"github.com/cilium/tetragon/pkg/logger/logfields"
 )
 
 // logrErrorKey is the key used by the logr library for the error parameter.
@@ -50,9 +52,10 @@ var slogLeveler = func() *slog.LevelVar {
 // phase.
 func initializeSlog(logOpts LogOptions, useStdout bool) {
 	opts := *slogHandlerOpts
-	opts.Level = logOpts.GetLogLevel()
+	lv := logOpts.GetLogLevel()
+	SetLogLevel(lv)
 
-	if opts.Level == slog.LevelDebug {
+	if lv == slog.LevelDebug {
 		opts.AddSource = true
 	}
 
@@ -64,23 +67,32 @@ func initializeSlog(logOpts LogOptions, useStdout bool) {
 		opts.ReplaceAttr = replaceAttrFn
 	}
 
-	writer := os.Stderr
+	var writers []io.Writer
 	if useStdout {
-		writer = os.Stdout
+		writers = append(writers, os.Stdout)
+	} else {
+		writers = append(writers, os.Stderr)
 	}
 
+	// If a log-file is requested, setup a multi logger
+	if logFile := logOpts.GetLogFile(); logFile != "" {
+		logWriter, err := os.Create(logFile)
+		if err != nil {
+			DefaultSlogLogger.Warn("Failed to open log file, skipping", "file", logFile, "err", err)
+		} else {
+			writers = append(writers, logWriter)
+		}
+	}
+	var newDefaultLogger = DefaultSlogLogger
 	switch logFormat {
 	case logFormatJSON, logFormatJSONTimestamp:
-		DefaultSlogLogger = slog.New(slog.NewJSONHandler(
-			writer,
-			&opts,
-		))
+		newDefaultLogger = slog.New(slog.NewJSONHandler(io.MultiWriter(writers...), &opts))
 	case logFormatText, logFormatTextTimestamp:
-		DefaultSlogLogger = slog.New(slog.NewTextHandler(
-			writer,
-			&opts,
-		))
+		newDefaultLogger = slog.New(slog.NewTextHandler(io.MultiWriter(writers...), &opts))
 	}
+
+	// update in place so package-level cached logger pointers pick up the new config
+	*DefaultSlogLogger = *newDefaultLogger
 }
 
 func replaceAttrFn(_ []string, a slog.Attr) slog.Attr {
@@ -152,8 +164,7 @@ type FieldLogger interface {
 
 func init() {
 	// Set a no-op exit handler to avoid nil dereference
-	a := func() {}
-	exitHandler.Store(&a)
+	exitHandler.Store(new(func() {}))
 }
 
 var (
