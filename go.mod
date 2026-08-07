@@ -8,6 +8,7 @@ require (
 	github.com/distribution/reference v0.6.0
 	github.com/felixge/httpsnoop v1.1.0
 	github.com/gobwas/glob v0.2.3
+	github.com/gojuno/minimock/v3 v3.4.7
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golangci/golangci-lint v1.64.8
 	github.com/google/go-cmp v0.7.0
@@ -19,7 +20,6 @@ require (
 	github.com/hashicorp/go-syslog v1.0.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/justinas/alice v1.2.0
-	github.com/knqyf263/go-plugin v0.9.0
 	github.com/lib/pq v1.10.9
 	github.com/pressly/goose/v3 v3.27.0
 	github.com/prometheus/client_golang v1.23.2
@@ -28,8 +28,10 @@ require (
 	github.com/redis/go-redis/v9 v9.14.1
 	github.com/rs/cors v1.11.1
 	github.com/rs/zerolog v1.34.0
+	github.com/runtime-radar/go-plugin v0.12.0
+	github.com/runtime-radar/vtprotobuf v0.7.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tetratelabs/wazero v1.9.0
+	github.com/tetratelabs/wazero v1.12.0
 	github.com/tidwall/gjson v1.18.0
 	github.com/wneessen/go-mail v0.4.0
 	go.uber.org/automaxprocs v1.6.0
@@ -191,7 +193,6 @@ require (
 	github.com/paulmach/orb v0.13.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pierrec/lz4/v4 v4.1.27 // indirect
-	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polyfloyd/go-errorlint v1.7.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
@@ -296,5 +297,3 @@ require (
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 )
-
-replace github.com/planetscale/vtprotobuf => github.com/planetscale/vtprotobuf v0.4.0

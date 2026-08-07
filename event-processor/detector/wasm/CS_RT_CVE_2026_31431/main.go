@@ -44,7 +44,7 @@ var (
 )
 
 // main is required for TinyGo to compile to Wasm.
-func main() {
+func init() {
 	api.RegisterDetector(Detector{})
 }
 

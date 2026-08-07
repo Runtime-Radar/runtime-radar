@@ -218,8 +218,8 @@ var (
 	nohupBin = glob.MustCompile(`*/nohup`)
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 

@@ -1,0 +1,257 @@
+{
+  "event": {
+    "process_exec": {
+      "process": {
+        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODkzODA1NzY1NDI3Mjc6MTczODQ2NA==",
+        "pid": 1738464,
+        "uid": 0,
+        "cwd": "/",
+        "binary": "/usr/bin/bash",
+        "arguments": "",
+        "flags": "execve rootcwd clone",
+        "start_time": "2024-03-22T12:56:47.369992957Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian",
+          "container": {
+            "id": "cri-o://332cff0fb99f03f8b4fb9633f245ba21ad43339eeafd3b0ac3e5d9a38371262c",
+            "name": "test-pod-debian",
+            "image": {
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2024-02-27T13:26:02Z",
+            "pid": 62632,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-debian",
+          "workload_kind": "Pod"
+        },
+        "docker": "332cff0fb99f03f8b4fb9633f245ba2",
+        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODkzNzUyOTI1MDExMDY6MTczNzA5OA==",
+        "refcnt": 0,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026534978,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026534979,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026535073,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026535074,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026535074,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026534980,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026535075,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 1738464,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null
+      },
+      "parent": {
+        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODkzNzUyOTI1MDExMDY6MTczNzA5OA==",
+        "pid": 1737098,
+        "uid": 0,
+        "cwd": "/",
+        "binary": "/tmp/linpeas.sh",
+        "arguments": "/tmp/linpeas.sh",
+        "flags": "execve rootcwd clone",
+        "start_time": "2024-03-22T12:56:42.085951573Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian",
+          "container": {
+            "id": "cri-o://332cff0fb99f03f8b4fb9633f245ba21ad43339eeafd3b0ac3e5d9a38371262c",
+            "name": "test-pod-debian",
+            "image": {
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2024-02-27T13:26:02Z",
+            "pid": 61338,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-debian",
+          "workload_kind": "Pod"
+        },
+        "docker": "332cff0fb99f03f8b4fb9633f245ba2",
+        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODY1NjA1MDI5Mzg4NDQ6MTcwODI4Mg==",
+        "refcnt": 0,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026534978,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026534979,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026535073,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026535074,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026535074,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026534980,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026535075,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 1737098,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null
+      }
+    },
+    "node_name": "test-k8s-cluster",
+    "time": "2024-03-22T12:56:47.369992646Z",
+    "aggregation_info": null
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_SUSP_SHELL",
+      "severity": "HIGH",
+      "reason_contains": "shell",
+      "tactics": [
+        "TA0001",
+        "TA0002",
+        "TA0003",
+        "TA0004"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "HIGH",
+      "is_threat": true
+    }
+  }
+}

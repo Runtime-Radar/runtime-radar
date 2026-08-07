@@ -22,11 +22,17 @@ message RuntimeEvent {
     string incident_severity = 7;
     repeated string block_by = 8;
     repeated string notify_by = 9;
+    string event_url = 10;
 }
 
 message Threat {
     detector.Detector detector = 1;
     string severity = 2;
+    // reason is an optional human-readable message that describes what exactly was detected.
+    string reason = 3;
+    // tactics_covered is an optional list of Mitre tactics that are covered via detect.
+    // It's supposed to be a subset of tactics covered by the detector.
+    repeated detector.MitreTactic tactics_covered = 4;
 }
 
 message DetectError {

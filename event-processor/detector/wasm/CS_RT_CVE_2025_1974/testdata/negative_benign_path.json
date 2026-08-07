@@ -1,0 +1,34 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "pid": 2082536,
+        "binary": "/usr/bin/nginx",
+        "arguments": "-c /etc/nginx/nginx.conf -t"
+      },
+      "function_name": "security_mmap_file",
+      "args": [
+        {
+          "file_arg": {
+            "path": "/var/log/nginx/access.log"
+          }
+        },
+        {
+          "uint_arg": "1"
+        }
+      ]
+    },
+    "node_name": "test-node",
+    "time": "2025-04-29T11:27:19.395558820Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": null,
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "",
+      "is_threat": false
+    }
+  }
+}

@@ -1,5 +1,7 @@
 package client
 
+//go:generate minimock -i github.com/runtime-radar/runtime-radar/policy-enforcer/api.EnforcerClient -o ./policy_enforcer_mock.go -n EnforcerClientMock -g
+
 import (
 	"crypto/tls"
 

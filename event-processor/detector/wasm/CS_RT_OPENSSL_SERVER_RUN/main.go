@@ -42,8 +42,8 @@ var (
 	s_serverInArgs = glob.MustCompile("s_server*")
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 

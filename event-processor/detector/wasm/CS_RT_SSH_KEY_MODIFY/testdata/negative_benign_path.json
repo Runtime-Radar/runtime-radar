@@ -1,0 +1,35 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "pid": 12345,
+        "binary": "/usr/bin/bash",
+        "arguments": "-c \"echo hello > /root/.bashrc\""
+      },
+      "function_name": "security_file_permission",
+      "args": [
+        {
+          "file_arg": {
+            "path": "/root/.bashrc",
+            "permission": "-rw-r--r--"
+          }
+        },
+        {
+          "int_arg": 2
+        }
+      ]
+    },
+    "node_name": "test-node",
+    "time": "2025-07-28T13:34:05.422534198Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": null,
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "",
+      "is_threat": false
+    }
+  }
+}

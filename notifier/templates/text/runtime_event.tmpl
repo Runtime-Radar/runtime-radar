@@ -8,6 +8,25 @@
                 "detector_name": "{{$t.GetDetectorName}}",
                 "detector_version": "{{$t.GetDetectorVersion}}",
                 "detector_description": {{$t.GetDetectorDescription | printf "%q"}},
+                {{if $t.GetReason}}
+                "reason": {{$t.GetReason | printf "%q"}},
+                {{end}}
+                {{if $tactics := $t.GetTacticsCovered}}
+                {{if gt (len $tactics) 0}}
+                "tactics_covered": [
+                    {{range $i, $tactic := $tactics}}
+                    {
+                        "id": {{$tactic.GetId | printf "%q"}},
+                        "techniques": [
+                            {{range $j, $tech := $tactic.GetTechniques}}
+                            {{$tech | printf "%q"}}{{if not (eq $j (sub (len $tactic.GetTechniques) 1))}},{{end}}
+                            {{end}}
+                        ]
+                    }{{if not (eq $i (sub (len $tactics) 1))}},{{end}}
+                    {{end}}
+                ],
+                {{end}}
+                {{end}}
                 "severity": "{{$t.GetSeverity}}"
             }{{if not (eq $i (sub (len $threats) 1))}},{{end}}
         {{end}}

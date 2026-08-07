@@ -1,0 +1,41 @@
+{
+  "event": {
+    "process_exec": {
+      "process": {
+        "pid": 12345,
+        "uid": 1000,
+        "binary": "/usr/bin/passwd",
+        "arguments": "",
+        "binary_properties": {
+          "setuid": 0
+        }
+      },
+      "parent": {
+        "pid": 12000,
+        "uid": 1000,
+        "binary": "/bin/bash",
+        "arguments": ""
+      }
+    },
+    "node_name": "test-node",
+    "time": "2024-08-15T11:14:57.231060954Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_PRIV_ESC",
+      "severity": "MEDIUM",
+      "reason_contains": "root",
+      "tactics": [
+        "TA0004",
+        "TA0005"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "MEDIUM",
+      "is_threat": true
+    }
+  }
+}

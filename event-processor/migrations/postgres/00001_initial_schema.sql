@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS detectors (
     license text,
     wasm_binary bytea,
     wasm_hash text,
+    tactics_covered jsonb,
     PRIMARY KEY (id, version)
 );
 
