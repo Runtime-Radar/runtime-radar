@@ -11,6 +11,7 @@ package tetragon
 
 import (
 	durationpb "github.com/runtime-radar/go-plugin/types/known/durationpb"
+	fieldmaskpb "github.com/runtime-radar/go-plugin/types/known/fieldmaskpb"
 	timestamppb "github.com/runtime-radar/go-plugin/types/known/timestamppb"
 	wrapperspb "github.com/runtime-radar/go-plugin/types/known/wrapperspb"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -40,6 +41,7 @@ const (
 	EventType_PROCESS_UPROBE     EventType = 12
 	EventType_PROCESS_THROTTLE   EventType = 27
 	EventType_PROCESS_LSM        EventType = 28
+	EventType_PROCESS_USDT       EventType = 29
 	EventType_TEST               EventType = 40000
 	EventType_RATE_LIMIT_INFO    EventType = 40001
 )
@@ -56,6 +58,7 @@ var (
 		12:    "PROCESS_UPROBE",
 		27:    "PROCESS_THROTTLE",
 		28:    "PROCESS_LSM",
+		29:    "PROCESS_USDT",
 		40000: "TEST",
 		40001: "RATE_LIMIT_INFO",
 	}
@@ -69,6 +72,7 @@ var (
 		"PROCESS_UPROBE":     12,
 		"PROCESS_THROTTLE":   27,
 		"PROCESS_LSM":        28,
+		"PROCESS_USDT":       29,
 		"TEST":               40000,
 		"RATE_LIMIT_INFO":    40001,
 	}
@@ -182,6 +186,12 @@ type Filter struct {
 	InInitTree *wrapperspb.BoolValue `protobuf:"bytes,16,opt,name=in_init_tree,json=inInitTree,proto3" json:"in_init_tree,omitempty"`
 	// Filter ancestor processes' binaries using RE2 regular expression syntax.
 	AncestorBinaryRegex []string `protobuf:"bytes,17,rep,name=ancestor_binary_regex,json=ancestorBinaryRegex,proto3" json:"ancestor_binary_regex,omitempty"`
+	// Filter by the container name in the process.pod.container field using RE2 regular expression syntax:
+	// https://github.com/google/re2/wiki/Syntax
+	ContainerNameRegex []string `protobuf:"bytes,18,rep,name=container_name_regex,json=containerNameRegex,proto3" json:"container_name_regex,omitempty"`
+	// Filter by the namespace in the process.pod.namespace field using RE2 regular expression syntax:
+	// https://github.com/google/re2/wiki/Syntax
+	NamespaceRegex []string `protobuf:"bytes,19,rep,name=namespace_regex,json=namespaceRegex,proto3" json:"namespace_regex,omitempty"`
 }
 
 func (x *Filter) ProtoReflect() protoreflect.Message {
@@ -303,6 +313,20 @@ func (x *Filter) GetInInitTree() *wrapperspb.BoolValue {
 func (x *Filter) GetAncestorBinaryRegex() []string {
 	if x != nil {
 		return x.AncestorBinaryRegex
+	}
+	return nil
+}
+
+func (x *Filter) GetContainerNameRegex() []string {
+	if x != nil {
+		return x.ContainerNameRegex
+	}
+	return nil
+}
+
+func (x *Filter) GetNamespaceRegex() []string {
+	if x != nil {
+		return x.NamespaceRegex
 	}
 	return nil
 }
@@ -438,6 +462,111 @@ func (x *RedactionFilter) GetBinaryRegex() []string {
 	return nil
 }
 
+type FieldFilter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Event types to filter or undefined to filter over all event types.
+	EventSet []EventType `protobuf:"varint,1,rep,packed,name=event_set,json=eventSet,proto3,enum=tetragon.EventType" json:"event_set,omitempty"`
+	// Fields to include or exclude.
+	Fields *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=fields,proto3" json:"fields,omitempty"`
+	// Whether to include or exclude fields.
+	Action FieldFilterAction `protobuf:"varint,3,opt,name=action,proto3,enum=tetragon.FieldFilterAction" json:"action,omitempty"`
+	// Whether or not the event set filter should be inverted.
+	InvertEventSet *wrapperspb.BoolValue `protobuf:"bytes,4,opt,name=invert_event_set,json=invertEventSet,proto3" json:"invert_event_set,omitempty"`
+}
+
+func (x *FieldFilter) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *FieldFilter) GetEventSet() []EventType {
+	if x != nil {
+		return x.EventSet
+	}
+	return nil
+}
+
+func (x *FieldFilter) GetFields() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *FieldFilter) GetAction() FieldFilterAction {
+	if x != nil {
+		return x.Action
+	}
+	return FieldFilterAction_INCLUDE
+}
+
+func (x *FieldFilter) GetInvertEventSet() *wrapperspb.BoolValue {
+	if x != nil {
+		return x.InvertEventSet
+	}
+	return nil
+}
+
+type GetEventsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// allow_list specifies a list of filters to apply to only return certain
+	// events. If multiple filters are specified, at least one of them has to
+	// match for an event to be included in the results.
+	AllowList []*Filter `protobuf:"bytes,1,rep,name=allow_list,json=allowList,proto3" json:"allow_list,omitempty"`
+	// deny_list specifies a list of filters to apply to exclude certain events
+	// from the results. If multiple filters are specified, at least one of
+	// them has to match for an event to be excluded.
+	// If both allow_list and deny_list are specified, the results contain the
+	// set difference allow_list - deny_list.
+	DenyList []*Filter `protobuf:"bytes,2,rep,name=deny_list,json=denyList,proto3" json:"deny_list,omitempty"`
+	// aggregation_options configures aggregation options for this request.
+	// If this field is not set, responses will not be aggregated.
+	// Note that currently only process_accept and process_connect events are
+	// aggregated. Other events remain unaggregated.
+	AggregationOptions *AggregationOptions `protobuf:"bytes,3,opt,name=aggregation_options,json=aggregationOptions,proto3" json:"aggregation_options,omitempty"`
+	// Fields to include or exclude for events in the GetEventsResponse. Omitting this
+	// field implies that all fields will be included. Exclusion always takes precedence
+	// over inclusion in the case of conflicts.
+	FieldFilters []*FieldFilter `protobuf:"bytes,4,rep,name=field_filters,json=fieldFilters,proto3" json:"field_filters,omitempty"`
+}
+
+func (x *GetEventsRequest) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *GetEventsRequest) GetAllowList() []*Filter {
+	if x != nil {
+		return x.AllowList
+	}
+	return nil
+}
+
+func (x *GetEventsRequest) GetDenyList() []*Filter {
+	if x != nil {
+		return x.DenyList
+	}
+	return nil
+}
+
+func (x *GetEventsRequest) GetAggregationOptions() *AggregationOptions {
+	if x != nil {
+		return x.AggregationOptions
+	}
+	return nil
+}
+
+func (x *GetEventsRequest) GetFieldFilters() []*FieldFilter {
+	if x != nil {
+		return x.FieldFilters
+	}
+	return nil
+}
+
 // AggregationOptions defines configuration options for aggregating events.
 type AggregationOptions struct {
 	state         protoimpl.MessageState
@@ -558,6 +687,7 @@ type GetEventsResponse struct {
 	//	*GetEventsResponse_ProcessUprobe
 	//	*GetEventsResponse_ProcessThrottle
 	//	*GetEventsResponse_ProcessLsm
+	//	*GetEventsResponse_ProcessUsdt
 	//	*GetEventsResponse_Test
 	//	*GetEventsResponse_RateLimitInfo
 	Event isGetEventsResponse_Event `protobuf_oneof:"event"`
@@ -639,6 +769,13 @@ func (x *GetEventsResponse) GetProcessThrottle() *ProcessThrottle {
 func (x *GetEventsResponse) GetProcessLsm() *ProcessLsm {
 	if x, ok := x.GetEvent().(*GetEventsResponse_ProcessLsm); ok {
 		return x.ProcessLsm
+	}
+	return nil
+}
+
+func (x *GetEventsResponse) GetProcessUsdt() *ProcessUsdt {
+	if x, ok := x.GetEvent().(*GetEventsResponse_ProcessUsdt); ok {
+		return x.ProcessUsdt
 	}
 	return nil
 }
@@ -735,6 +872,10 @@ type GetEventsResponse_ProcessLsm struct {
 	ProcessLsm *ProcessLsm `protobuf:"bytes,28,opt,name=process_lsm,json=processLsm,proto3,oneof"`
 }
 
+type GetEventsResponse_ProcessUsdt struct {
+	ProcessUsdt *ProcessUsdt `protobuf:"bytes,29,opt,name=process_usdt,json=processUsdt,proto3,oneof"`
+}
+
 type GetEventsResponse_Test struct {
 	Test *Test `protobuf:"bytes,40000,opt,name=test,proto3,oneof"`
 }
@@ -758,6 +899,8 @@ func (*GetEventsResponse_ProcessUprobe) isGetEventsResponse_Event() {}
 func (*GetEventsResponse_ProcessThrottle) isGetEventsResponse_Event() {}
 
 func (*GetEventsResponse_ProcessLsm) isGetEventsResponse_Event() {}
+
+func (*GetEventsResponse_ProcessUsdt) isGetEventsResponse_Event() {}
 
 func (*GetEventsResponse_Test) isGetEventsResponse_Event() {}
 

@@ -57,6 +57,8 @@ const (
 	KprobeAction_KPROBE_ACTION_NOTIFYENFORCER KprobeAction = 13
 	// CleanupEnforcerNotification action cleanups any state left by NotifyEnforcer
 	KprobeAction_KPROBE_ACTION_CLEANUPENFORCERNOTIFICATION KprobeAction = 14
+	// Set action sets first USDT argument
+	KprobeAction_KPROBE_ACTION_SET KprobeAction = 15
 )
 
 // Enum value maps for KprobeAction.
@@ -77,6 +79,7 @@ var (
 		12: "KPROBE_ACTION_UNTRACKSOCK",
 		13: "KPROBE_ACTION_NOTIFYENFORCER",
 		14: "KPROBE_ACTION_CLEANUPENFORCERNOTIFICATION",
+		15: "KPROBE_ACTION_SET",
 	}
 	KprobeAction_value = map[string]int32{
 		"KPROBE_ACTION_UNKNOWN":                     0,
@@ -94,6 +97,7 @@ var (
 		"KPROBE_ACTION_UNTRACKSOCK":                 12,
 		"KPROBE_ACTION_NOTIFYENFORCER":              13,
 		"KPROBE_ACTION_CLEANUPENFORCERNOTIFICATION": 14,
+		"KPROBE_ACTION_SET":                         15,
 	}
 )
 
@@ -352,6 +356,8 @@ type Pod struct {
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// Name of the Pod.
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// UID of the Pod.
+	Uid string `protobuf:"bytes,3,opt,name=uid,proto3" json:"uid,omitempty"`
 	// Container of the Pod from which the process that triggered the event
 	// originates.
 	Container *Container `protobuf:"bytes,4,opt,name=container,proto3" json:"container,omitempty"`
@@ -379,6 +385,13 @@ func (x *Pod) GetNamespace() string {
 func (x *Pod) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *Pod) GetUid() string {
+	if x != nil {
+		return x.Uid
 	}
 	return ""
 }
@@ -882,6 +895,34 @@ func (x *UserRecord) GetName() string {
 	return ""
 }
 
+// Environment variable
+type EnvVar struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key   string `protobuf:"bytes,1,opt,name=Key,proto3" json:"Key,omitempty"`
+	Value string `protobuf:"bytes,2,opt,name=Value,proto3" json:"Value,omitempty"`
+}
+
+func (x *EnvVar) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *EnvVar) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *EnvVar) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
 type Process struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -997,6 +1038,8 @@ type Process struct {
 	// for example, you wish to discern whether a process was spawned using a
 	// tool like nsenter or kubectl exec.
 	InInitTree *wrapperspb.BoolValue `protobuf:"bytes,20,opt,name=in_init_tree,json=inInitTree,proto3" json:"in_init_tree,omitempty"`
+	// Environment variables passed to the binary at execution.
+	EnvironmentVariables []*EnvVar `protobuf:"bytes,21,rep,name=environment_variables,json=environmentVariables,proto3" json:"environment_variables,omitempty"`
 }
 
 func (x *Process) ProtoReflect() protoreflect.Message {
@@ -1139,6 +1182,13 @@ func (x *Process) GetUser() *UserRecord {
 func (x *Process) GetInInitTree() *wrapperspb.BoolValue {
 	if x != nil {
 		return x.InInitTree
+	}
+	return nil
+}
+
+func (x *Process) GetEnvironmentVariables() []*EnvVar {
+	if x != nil {
+		return x.EnvironmentVariables
 	}
 	return nil
 }
@@ -1499,6 +1549,33 @@ func (x *KprobeSockaddr) GetPort() uint32 {
 	return 0
 }
 
+type KprobeSockaddrUn struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Family string `protobuf:"bytes,1,opt,name=family,proto3" json:"family,omitempty"`
+	Path   string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+}
+
+func (x *KprobeSockaddrUn) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *KprobeSockaddrUn) GetFamily() string {
+	if x != nil {
+		return x.Family
+	}
+	return ""
+}
+
+func (x *KprobeSockaddrUn) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
 type KprobeNetDev struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1806,6 +1883,41 @@ func (x *KprobeBpfAttr) GetProgName() string {
 	return ""
 }
 
+type KprobeBpfProg struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ProgType string `protobuf:"bytes,1,opt,name=ProgType,proto3" json:"ProgType,omitempty"`
+	InsnCnt  uint32 `protobuf:"varint,2,opt,name=InsnCnt,proto3" json:"InsnCnt,omitempty"`
+	ProgName string `protobuf:"bytes,3,opt,name=ProgName,proto3" json:"ProgName,omitempty"`
+}
+
+func (x *KprobeBpfProg) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *KprobeBpfProg) GetProgType() string {
+	if x != nil {
+		return x.ProgType
+	}
+	return ""
+}
+
+func (x *KprobeBpfProg) GetInsnCnt() uint32 {
+	if x != nil {
+		return x.InsnCnt
+	}
+	return 0
+}
+
+func (x *KprobeBpfProg) GetProgName() string {
+	if x != nil {
+		return x.ProgName
+	}
+	return ""
+}
+
 type KprobePerfEvent struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1900,6 +2012,25 @@ func (x *KprobeBpfMap) GetMapName() string {
 	return ""
 }
 
+type KprobeError struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Message string `protobuf:"bytes,1,opt,name=Message,proto3" json:"Message,omitempty"`
+}
+
+func (x *KprobeError) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *KprobeError) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 type SyscallId struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1963,6 +2094,9 @@ type KprobeArgument struct {
 	//	*KprobeArgument_BpfCmdArg
 	//	*KprobeArgument_SyscallId
 	//	*KprobeArgument_SockaddrArg
+	//	*KprobeArgument_BpfProgArg
+	//	*KprobeArgument_ErrorArg
+	//	*KprobeArgument_SockaddrunArg
 	Arg   isKprobeArgument_Arg `protobuf_oneof:"arg"`
 	Label string               `protobuf:"bytes,18,opt,name=label,proto3" json:"label,omitempty"`
 }
@@ -2189,6 +2323,27 @@ func (x *KprobeArgument) GetSockaddrArg() *KprobeSockaddr {
 	return nil
 }
 
+func (x *KprobeArgument) GetBpfProgArg() *KprobeBpfProg {
+	if x, ok := x.GetArg().(*KprobeArgument_BpfProgArg); ok {
+		return x.BpfProgArg
+	}
+	return nil
+}
+
+func (x *KprobeArgument) GetErrorArg() *KprobeError {
+	if x, ok := x.GetArg().(*KprobeArgument_ErrorArg); ok {
+		return x.ErrorArg
+	}
+	return nil
+}
+
+func (x *KprobeArgument) GetSockaddrunArg() *KprobeSockaddrUn {
+	if x, ok := x.GetArg().(*KprobeArgument_SockaddrunArg); ok {
+		return x.SockaddrunArg
+	}
+	return nil
+}
+
 type isKprobeArgument_Arg interface {
 	isKprobeArgument_Arg()
 }
@@ -2310,6 +2465,18 @@ type KprobeArgument_SockaddrArg struct {
 	SockaddrArg *KprobeSockaddr `protobuf:"bytes,30,opt,name=sockaddr_arg,json=sockaddrArg,proto3,oneof"`
 }
 
+type KprobeArgument_BpfProgArg struct {
+	BpfProgArg *KprobeBpfProg `protobuf:"bytes,31,opt,name=bpf_prog_arg,json=bpfProgArg,proto3,oneof"`
+}
+
+type KprobeArgument_ErrorArg struct {
+	ErrorArg *KprobeError `protobuf:"bytes,32,opt,name=error_arg,json=errorArg,proto3,oneof"`
+}
+
+type KprobeArgument_SockaddrunArg struct {
+	SockaddrunArg *KprobeSockaddrUn `protobuf:"bytes,33,opt,name=sockaddrun_arg,json=sockaddrunArg,proto3,oneof"`
+}
+
 func (*KprobeArgument_StringArg) isKprobeArgument_Arg() {}
 
 func (*KprobeArgument_IntArg) isKprobeArgument_Arg() {}
@@ -2368,6 +2535,12 @@ func (*KprobeArgument_SyscallId) isKprobeArgument_Arg() {}
 
 func (*KprobeArgument_SockaddrArg) isKprobeArgument_Arg() {}
 
+func (*KprobeArgument_BpfProgArg) isKprobeArgument_Arg() {}
+
+func (*KprobeArgument_ErrorArg) isKprobeArgument_Arg() {}
+
+func (*KprobeArgument_SockaddrunArg) isKprobeArgument_Arg() {}
+
 type ProcessKprobe struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2399,6 +2572,8 @@ type ProcessKprobe struct {
 	UserStackTrace []*StackTraceEntry `protobuf:"bytes,12,rep,name=user_stack_trace,json=userStackTrace,proto3" json:"user_stack_trace,omitempty"`
 	// Ancestors of the process beyond the immediate parent.
 	Ancestors []*Process `protobuf:"bytes,13,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
+	// Data definition of the observed kprobe.
+	Data []*KprobeArgument `protobuf:"bytes,14,rep,name=data,proto3" json:"data,omitempty"`
 }
 
 func (x *ProcessKprobe) ProtoReflect() protoreflect.Message {
@@ -2492,6 +2667,13 @@ func (x *ProcessKprobe) GetUserStackTrace() []*StackTraceEntry {
 func (x *ProcessKprobe) GetAncestors() []*Process {
 	if x != nil {
 		return x.Ancestors
+	}
+	return nil
+}
+
+func (x *ProcessKprobe) GetData() []*KprobeArgument {
+	if x != nil {
+		return x.Data
 	}
 	return nil
 }
@@ -2621,6 +2803,10 @@ type ProcessUprobe struct {
 	Offset uint64 `protobuf:"varint,10,opt,name=offset,proto3" json:"offset,omitempty"`
 	// uprobe ref_ctr_offset
 	RefCtrOffset uint64 `protobuf:"varint,11,opt,name=ref_ctr_offset,json=refCtrOffset,proto3" json:"ref_ctr_offset,omitempty"`
+	// Action performed when the uprobe hook matched.
+	Action KprobeAction `protobuf:"varint,12,opt,name=action,proto3,enum=tetragon.KprobeAction" json:"action,omitempty"`
+	// Data definition of the observed uprobe.
+	Data []*KprobeArgument `protobuf:"bytes,13,rep,name=data,proto3" json:"data,omitempty"`
 }
 
 func (x *ProcessUprobe) ProtoReflect() protoreflect.Message {
@@ -2702,6 +2888,135 @@ func (x *ProcessUprobe) GetRefCtrOffset() uint64 {
 		return x.RefCtrOffset
 	}
 	return 0
+}
+
+func (x *ProcessUprobe) GetAction() KprobeAction {
+	if x != nil {
+		return x.Action
+	}
+	return KprobeAction_KPROBE_ACTION_UNKNOWN
+}
+
+func (x *ProcessUprobe) GetData() []*KprobeArgument {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type ProcessUsdt struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Process  *Process `protobuf:"bytes,1,opt,name=process,proto3" json:"process,omitempty"`
+	Parent   *Process `protobuf:"bytes,2,opt,name=parent,proto3" json:"parent,omitempty"`
+	Path     string   `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
+	Provider string   `protobuf:"bytes,4,opt,name=provider,proto3" json:"provider,omitempty"`
+	Name     string   `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	// Name of the policy that created that uprobe.
+	PolicyName string `protobuf:"bytes,6,opt,name=policy_name,json=policyName,proto3" json:"policy_name,omitempty"`
+	// Short message of the Tracing Policy to inform users what is going on.
+	Message string `protobuf:"bytes,7,opt,name=message,proto3" json:"message,omitempty"`
+	// Arguments definition of the observed uprobe.
+	Args []*KprobeArgument `protobuf:"bytes,8,rep,name=args,proto3" json:"args,omitempty"`
+	// Tags of the Tracing Policy to categorize the event.
+	Tags []string `protobuf:"bytes,9,rep,name=tags,proto3" json:"tags,omitempty"`
+	// Ancestors of the process beyond the immediate parent.
+	Ancestors []*Process `protobuf:"bytes,10,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
+	// Action performed when the USDT hook matched.
+	Action KprobeAction `protobuf:"varint,11,opt,name=action,proto3,enum=tetragon.KprobeAction" json:"action,omitempty"`
+	// Flags are for debugging purposes only and should not be considered a
+	// reliable source of information.
+	Flags string `protobuf:"bytes,12,opt,name=flags,proto3" json:"flags,omitempty"`
+}
+
+func (x *ProcessUsdt) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *ProcessUsdt) GetProcess() *Process {
+	if x != nil {
+		return x.Process
+	}
+	return nil
+}
+
+func (x *ProcessUsdt) GetParent() *Process {
+	if x != nil {
+		return x.Parent
+	}
+	return nil
+}
+
+func (x *ProcessUsdt) GetPath() string {
+	if x != nil {
+		return x.Path
+	}
+	return ""
+}
+
+func (x *ProcessUsdt) GetProvider() string {
+	if x != nil {
+		return x.Provider
+	}
+	return ""
+}
+
+func (x *ProcessUsdt) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ProcessUsdt) GetPolicyName() string {
+	if x != nil {
+		return x.PolicyName
+	}
+	return ""
+}
+
+func (x *ProcessUsdt) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ProcessUsdt) GetArgs() []*KprobeArgument {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *ProcessUsdt) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *ProcessUsdt) GetAncestors() []*Process {
+	if x != nil {
+		return x.Ancestors
+	}
+	return nil
+}
+
+func (x *ProcessUsdt) GetAction() KprobeAction {
+	if x != nil {
+		return x.Action
+	}
+	return KprobeAction_KPROBE_ACTION_UNKNOWN
+}
+
+func (x *ProcessUsdt) GetFlags() string {
+	if x != nil {
+		return x.Flags
+	}
+	return ""
 }
 
 type ProcessLsm struct {
@@ -2964,9 +3279,16 @@ type ProcessLoader struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// Process that triggered the loader.
 	Process *Process `protobuf:"bytes,1,opt,name=process,proto3" json:"process,omitempty"`
-	Path    string   `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
-	Buildid []byte   `protobuf:"bytes,3,opt,name=buildid,proto3" json:"buildid,omitempty"`
+	// File path that is being loaded.
+	Path string `protobuf:"bytes,2,opt,name=path,proto3" json:"path,omitempty"`
+	// Buildid of the file that is being loaded.
+	Buildid []byte `protobuf:"bytes,3,opt,name=buildid,proto3" json:"buildid,omitempty"`
+	// Immediate parent of the process.
+	Parent *Process `protobuf:"bytes,4,opt,name=parent,proto3" json:"parent,omitempty"`
+	// Ancestors of the process beyond the immediate parent.
+	Ancestors []*Process `protobuf:"bytes,5,rep,name=ancestors,proto3" json:"ancestors,omitempty"`
 }
 
 func (x *ProcessLoader) ProtoReflect() protoreflect.Message {
@@ -2990,6 +3312,20 @@ func (x *ProcessLoader) GetPath() string {
 func (x *ProcessLoader) GetBuildid() []byte {
 	if x != nil {
 		return x.Buildid
+	}
+	return nil
+}
+
+func (x *ProcessLoader) GetParent() *Process {
+	if x != nil {
+		return x.Parent
+	}
+	return nil
+}
+
+func (x *ProcessLoader) GetAncestors() []*Process {
+	if x != nil {
+		return x.Ancestors
 	}
 	return nil
 }
@@ -3044,6 +3380,53 @@ func (x *RuntimeHookResponse) ProtoReflect() protoreflect.Message {
 	panic(`not implemented`)
 }
 
+type Mount struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Destination is the absolute path where the mount will be placed in the container.
+	Destination string `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
+	// Type specifies the mount kind.
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	// Source specifies the source path of the mount.
+	Source string `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
+	// Options are fstab style mount options.
+	Options []string `protobuf:"bytes,4,rep,name=options,proto3" json:"options,omitempty"`
+}
+
+func (x *Mount) ProtoReflect() protoreflect.Message {
+	panic(`not implemented`)
+}
+
+func (x *Mount) GetDestination() string {
+	if x != nil {
+		return x.Destination
+	}
+	return ""
+}
+
+func (x *Mount) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *Mount) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *Mount) GetOptions() []string {
+	if x != nil {
+		return x.Options
+	}
+	return nil
+}
+
 // CreateContainer informs the agent that a container was created
 // This is intented to be used by OCI hooks (but not limited to them) and corresponds to the
 // CreateContainer hook:
@@ -3078,6 +3461,8 @@ type CreateContainer struct {
 	PodNamespace string `protobuf:"bytes,8,opt,name=podNamespace,proto3" json:"podNamespace,omitempty"`
 	// containerImage is the full image location (repo + image)
 	ContainerImage string `protobuf:"bytes,9,opt,name=containerImage,proto3" json:"containerImage,omitempty"`
+	// Mounts configures additional mounts (on top of Root).
+	Mounts []*Mount `protobuf:"bytes,10,rep,name=mounts,proto3" json:"mounts,omitempty"`
 }
 
 func (x *CreateContainer) ProtoReflect() protoreflect.Message {
@@ -3145,6 +3530,13 @@ func (x *CreateContainer) GetContainerImage() string {
 		return x.ContainerImage
 	}
 	return ""
+}
+
+func (x *CreateContainer) GetMounts() []*Mount {
+	if x != nil {
+		return x.Mounts
+	}
+	return nil
 }
 
 type StackTraceEntry struct {
