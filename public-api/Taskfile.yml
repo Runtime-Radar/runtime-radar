@@ -95,6 +95,7 @@ tasks:
       - history-api/api/**
       - policy-enforcer/api/**
       - event-processor/**
+      - kube-manager/api/**
     generates:
       - "{{.APP_NAME}}/.build"
     cmds:

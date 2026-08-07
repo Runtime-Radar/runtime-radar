@@ -25,6 +25,7 @@ COPY lib/ lib/
 COPY history-api/api/ history-api/api/
 COPY policy-enforcer/api/ policy-enforcer/api/
 COPY event-processor/ event-processor/
+COPY kube-manager/ kube-manager/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d public-api build
 

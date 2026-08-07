@@ -1,0 +1,141 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Kube Manager Config API",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "ConfigController"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/config/kube-manager": {
+      "get": {
+        "operationId": "ConfigController_Read",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/configConfig"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ConfigController"
+        ]
+      },
+      "post": {
+        "operationId": "ConfigController_Add",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/configConfig"
+            }
+          }
+        ],
+        "tags": [
+          "ConfigController"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ConfigConfigJSON": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "allowList": {
+          "$ref": "#/definitions/ConfigJSONFilter",
+          "description": "allow_list specifies a list of namespaces used for tracking Kubernetes.\nIf the namespace list is empty, the list of denied namespaces is applied."
+        },
+        "denyList": {
+          "$ref": "#/definitions/ConfigJSONFilter",
+          "description": "deny_list specifies a list of namespaces that should not be used for tracking Kubernetes.\nIf both allow_list and deny_list filters are specified,\nallow_list is applied as the more specific and narrow list.\n\nIf both lists are empty, all available namespaces will be tracked."
+        }
+      }
+    },
+    "ConfigJSONFilter": {
+      "type": "object",
+      "properties": {
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "configConfig": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "config": {
+          "$ref": "#/definitions/ConfigConfigJSON"
+        }
+      }
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    }
+  }
+}

@@ -52,6 +52,9 @@ type appServices struct {
 	ruleSvc           service.Rule
 	accessTokenSvc    service.AccessToken
 	runtimeHistorySvc service.RuntimeHistory
+	configSvc         service.Config
+	nodeSvc           service.Node
+	podSvc            service.Pod
 }
 
 func main() {
@@ -127,6 +130,12 @@ func main() {
 	}
 	defer closeRH()
 
+	kubeManager, err := client.NewKubeManager(cfg.KubeManagerGRPCAddr, tlsConfig, token)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to connect to Kube Manager: %v", err)
+	}
+	defer kubeManager.Close()
+
 	salt, err := hex.DecodeString(cfg.AccessTokenSalt)
 	if err != nil {
 		log.Fatal().Msgf("### Failed to convert accessTokenSalt to []byte: %v", err)
@@ -150,13 +159,16 @@ func main() {
 	}()
 	log.Info().Msgf("Instrumentation HTTP server listening at %v", cfg.InstrumentationAddr)
 
-	services := composeServices(db, authAPI, ruleController, runtimeHistory, salt, cfg.Auth, verifier, token)
+	services := composeServices(db, authAPI, ruleController, runtimeHistory, kubeManager, salt, cfg.Auth, verifier, token)
 	srv := server.New(
 		cfg.ListenHTTPAddr,
 		tlsConfig,
 		services.accessTokenSvc,
 		services.ruleSvc,
 		services.runtimeHistorySvc,
+		services.configSvc,
+		services.nodeSvc,
+		services.podSvc,
 	)
 
 	go func() {
@@ -215,6 +227,7 @@ func composeServices(
 	usersGetter client.UsersGetter,
 	ruleController enf_api.RuleControllerClient,
 	runtimeHistory history_api.RuntimeHistoryClient,
+	kubeManagerClients *client.KubeManagerClients,
 	accessTokenSalt []byte,
 	isAuth bool,
 	jwtVerifier jwt.Verifier,
@@ -236,29 +249,35 @@ func composeServices(
 		}
 	}
 
+	verifier := &auth.Verifier{usersGetter, &database.AccessTokenDatabase{db}, accessTokenSalt}
+
 	services.ruleSvc = &service.RuleGeneric{ruleController}
 	services.ruleSvc = &service.RuleAuth{
 		services.ruleSvc,
-		&auth.Verifier{
-			usersGetter,
-			&database.AccessTokenDatabase{db},
-			accessTokenSalt,
-		},
+		verifier,
 	}
 
 	services.runtimeHistorySvc = &service.RuntimeHistoryGeneric{runtimeHistory}
 	services.runtimeHistorySvc = &service.RuntimeHistoryAuth{
 		services.runtimeHistorySvc,
-		&auth.Verifier{
-			usersGetter,
-			&database.AccessTokenDatabase{db},
-			accessTokenSalt,
-		},
+		verifier,
 	}
 
 	services.accessTokenSvc = &service.AccessTokenLogging{&service.AccessTokenAudit{services.accessTokenSvc}}
 	services.ruleSvc = &service.RuleLogging{services.ruleSvc}
 	services.runtimeHistorySvc = &service.RuntimeHistoryLogging{services.runtimeHistorySvc}
+
+	services.configSvc = &service.ConfigGeneric{kubeManagerClients.Config}
+	services.configSvc = &service.ConfigAuth{services.configSvc, verifier}
+	services.configSvc = &service.ConfigLogging{services.configSvc}
+
+	services.nodeSvc = &service.NodeGeneric{kubeManagerClients.Node}
+	services.nodeSvc = &service.NodeAuth{services.nodeSvc, verifier}
+	services.nodeSvc = &service.NodeLogging{services.nodeSvc}
+
+	services.podSvc = &service.PodGeneric{kubeManagerClients.Pod}
+	services.podSvc = &service.PodAuth{services.podSvc, verifier}
+	services.podSvc = &service.PodLogging{services.podSvc}
 
 	return services
 }

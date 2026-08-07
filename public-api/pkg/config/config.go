@@ -23,6 +23,7 @@ type Config struct {
 	AuthAPIURL             string // Auth API URL in schema://host[:port] format
 	PolicyEnforcerGRPCAddr string // Policy Enforcer gRPC address in host[:port] format
 	HistoryAPIGRPCAddr     string // History API gRPC address in host[:port] format
+	KubeManagerGRPCAddr    string // Kube Manager gRPC address in host[:port] format
 	TokenKey               string // key for jwt token
 	AccessTokenSalt        string // salt for access token
 	Auth                   bool   // is auth enabled?
@@ -48,6 +49,7 @@ func New() *Config {
 	flag.StringVar(&c.AuthAPIURL, "authAPIURL", config.LookupEnvString("AUTH_API_URL", "http://127.0.0.1:8080"), "Auth API URL in schema://host[:port] format.")
 	flag.StringVar(&c.PolicyEnforcerGRPCAddr, "policyEnforcerGRPCAddr", config.LookupEnvString("POLICY_ENFORCER_GRPC_ADDR", "127.0.0.1:10000"), "Policy Enforcer gRPC address in host[:port] format.")
 	flag.StringVar(&c.HistoryAPIGRPCAddr, "historyAPIGRPCAddr", config.LookupEnvString("HISTORY_API_GRPC_ADDR", "127.0.0.1:10000"), "History API gRPC address in host[:port] format.")
+	flag.StringVar(&c.KubeManagerGRPCAddr, "kubeManagerGRPCAddr", config.LookupEnvString("KUBE_MANAGER_GRPC_ADDR", "127.0.0.1:10000"), "Kube Manager gRPC address in host[:port] format.")
 	flag.StringVar(&c.TokenKey, "tokenKey", config.LookupEnvString("TOKEN_KEY", ""), "Hex encoded token key to verify jwt token. Supported key sizes are greater than 32 bytes.")
 	flag.StringVar(&c.AccessTokenSalt, "accessTokenSalt", config.LookupEnvString("ACCESS_TOKEN_SALT", ""), "Hex encoded token salt to verify access token. Salt must have 64 bytes length.")
 	flag.BoolVar(&c.Auth, "auth", config.LookupEnvBool("AUTH", false), "Set to enable JWT auth.")

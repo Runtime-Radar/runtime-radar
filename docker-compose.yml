@@ -237,5 +237,19 @@ services:
     networks:
       - local
 
+  kube-manager:
+    build:
+      context: ./kube-manager
+    image: kube-manager
+    ports:
+      - "8009:8000"
+      - "9009:9000"
+    command: --postgresAddr=postgres --logLevel=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - local
+
 networks:
   local:

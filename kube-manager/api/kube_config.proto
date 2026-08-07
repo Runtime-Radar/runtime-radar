@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package kube_config;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "./api";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Kube Manager Config API";
+  };
+};
+
+// The ConfigController service definition.
+service ConfigController {
+  rpc Add(Config) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/config/kube-manager"
+      body: "*"
+    };
+  }
+  rpc Read(google.protobuf.Empty) returns (Config)  {
+    option (google.api.http) = {
+      get: "/api/v1/config/kube-manager"
+    };
+  }
+}
+
+message Config {
+  string id = 1;
+  reserved 2,3; // reserved for created_at, updated_at in case we decide to expose them
+
+  message ConfigJSON {
+    string version = 1;
+
+    message Filter {
+      repeated string namespaces = 1;
+    }
+
+    // allow_list specifies a list of namespaces used for tracking Kubernetes.
+    // If the namespace list is empty, the list of denied namespaces is applied.
+    Filter allow_list = 4;
+
+    // deny_list specifies a list of namespaces that should not be used for tracking Kubernetes.
+    // If both allow_list and deny_list filters are specified,
+    // allow_list is applied as the more specific and narrow list.
+    //
+    // If both lists are empty, all available namespaces will be tracked.
+    Filter deny_list = 5;
+  }
+
+  ConfigJSON config = 4;
+}

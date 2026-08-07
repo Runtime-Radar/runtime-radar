@@ -1,0 +1,19 @@
+services:
+  postgres:
+    extends:
+      file: ../docker-compose.test.yml
+      service: postgres
+
+  test:
+    extends:
+      file: ../docker-compose.test.yml
+      service: test
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - COMPONENT=kube-manager
+      - TEST_IN_COMPOSE=true
+
+networks:
+  local:

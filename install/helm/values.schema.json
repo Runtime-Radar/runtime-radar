@@ -542,6 +542,21 @@
                 }
             }
         },
+        "kube-manager": {
+            "type": "object",
+            "properties": {
+                "nodeSelector": {
+                    "type": "object",
+                    "description": "Template to specify the labels of nodes for pod assignment",
+                    "default": {}
+                },
+                "replicas": {
+                    "type": "number",
+                    "description": "Number of replicas for the kube-manager component",
+                    "default": 1
+                }
+            }
+        },
         "runtime-monitor": {
             "type": "object",
             "properties": {

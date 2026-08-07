@@ -1,0 +1,3 @@
+{{ include "common.cs.deployment" . }}
+---
+{{ include "common.cs.service" . }}

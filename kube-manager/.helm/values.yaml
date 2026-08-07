@@ -1,0 +1,72 @@
+image:
+  registry: ghcr.io/runtime-radar
+  repository: kube-manager
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+containerPorts:
+  http: 9000
+  grpc: 8000
+  instrumentation: 9090
+service:
+  ports:
+    http: 9000
+    grpc: 8000
+containerSecurityContext:
+  seLinuxOptions: {}
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: "RuntimeDefault"
+podSecurityContext:
+  fsGroupChangePolicy: Always
+  sysctls: []
+  supplementalGroups: []
+excludeCSFromClusterScan: true
+env:
+  - name: GOPS_CONFIG_DIR
+    value: "/tmp"
+postgresql:
+  enabled: true
+serviceAccount:
+  create: true
+  # Annotations to add to the kube-manager account
+  annotations: {}
+  # The name of the kube-manager account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: kube-manager
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+    ephemeral-storage: 250Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+    ephemeral-storage: 1Mi
+livenessProbe:
+  httpGet:
+    path: /live
+    scheme: HTTP
+    port: instrumentation
+  periodSeconds: 600
+  successThreshold: 1
+  failureThreshold: 2
+readinessProbe:
+  httpGet:
+    path: /ready
+    scheme: HTTP
+    port: instrumentation
+  periodSeconds: 360
+  successThreshold: 1
+  failureThreshold: 3
+startupProbe:
+  httpGet:
+    path: /ready
+    scheme: HTTP
+    port: instrumentation
+  initialDelaySeconds: 1
+  periodSeconds: 3
+  successThreshold: 1
+  failureThreshold: 3
