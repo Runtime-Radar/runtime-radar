@@ -302,6 +302,9 @@ github.com/gofrs/flock
 ## explicit; go 1.15
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
+# github.com/gojuno/minimock/v3 v3.4.7
+## explicit; go 1.23.0
+github.com/gojuno/minimock/v3
 # github.com/golang-jwt/jwt/v5 v5.3.0
 ## explicit; go 1.21
 github.com/golang-jwt/jwt/v5
@@ -662,18 +665,6 @@ github.com/klauspost/compress/internal/le
 github.com/klauspost/compress/internal/snapref
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
-# github.com/knqyf263/go-plugin v0.9.0
-## explicit; go 1.24.0
-github.com/knqyf263/go-plugin/cmd/protoc-gen-go-plugin
-github.com/knqyf263/go-plugin/encoding/defval
-github.com/knqyf263/go-plugin/encoding/tag
-github.com/knqyf263/go-plugin/gen
-github.com/knqyf263/go-plugin/genid
-github.com/knqyf263/go-plugin/types/known/durationpb
-github.com/knqyf263/go-plugin/types/known/timestamppb
-github.com/knqyf263/go-plugin/types/known/wrapperspb
-github.com/knqyf263/go-plugin/version
-github.com/knqyf263/go-plugin/wasm
 # github.com/kulti/thelper v0.6.3
 ## explicit; go 1.18
 github.com/kulti/thelper/pkg/analyzer
@@ -817,13 +808,6 @@ github.com/pierrec/lz4/v4/internal/lz4block
 github.com/pierrec/lz4/v4/internal/lz4errors
 github.com/pierrec/lz4/v4/internal/lz4stream
 github.com/pierrec/lz4/v4/internal/xxh32
-# github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 => github.com/planetscale/vtprotobuf v0.4.0
-## explicit; go 1.16
-github.com/planetscale/vtprotobuf/features/marshal
-github.com/planetscale/vtprotobuf/features/size
-github.com/planetscale/vtprotobuf/features/unmarshal
-github.com/planetscale/vtprotobuf/generator
-github.com/planetscale/vtprotobuf/vtproto
 # github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 ## explicit
 github.com/pmezard/go-difflib/difflib
@@ -939,6 +923,27 @@ github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
+# github.com/runtime-radar/go-plugin v0.12.0
+## explicit; go 1.25.0
+github.com/runtime-radar/go-plugin/cmd/protoc-gen-go-plugin
+github.com/runtime-radar/go-plugin/encoding/defval
+github.com/runtime-radar/go-plugin/encoding/tag
+github.com/runtime-radar/go-plugin/gen
+github.com/runtime-radar/go-plugin/genid
+github.com/runtime-radar/go-plugin/types/known/durationpb
+github.com/runtime-radar/go-plugin/types/known/timestamppb
+github.com/runtime-radar/go-plugin/types/known/wrapperspb
+github.com/runtime-radar/go-plugin/version
+github.com/runtime-radar/go-plugin/wasm
+# github.com/runtime-radar/vtprotobuf v0.7.0
+## explicit; go 1.21
+github.com/runtime-radar/vtprotobuf/features/marshal
+github.com/runtime-radar/vtprotobuf/features/size
+github.com/runtime-radar/vtprotobuf/features/unmarshal
+github.com/runtime-radar/vtprotobuf/generator
+github.com/runtime-radar/vtprotobuf/generator/pattern
+github.com/runtime-radar/vtprotobuf/protohelpers
+github.com/runtime-radar/vtprotobuf/vtproto
 # github.com/ryancurrah/gomodguard v1.3.5
 ## explicit; go 1.22.0
 github.com/ryancurrah/gomodguard
@@ -1066,8 +1071,8 @@ github.com/tdakkota/asciicheck
 # github.com/tetafro/godot v1.5.0
 ## explicit; go 1.20
 github.com/tetafro/godot
-# github.com/tetratelabs/wazero v1.9.0
-## explicit; go 1.22.0
+# github.com/tetratelabs/wazero v1.12.0
+## explicit; go 1.25.0
 github.com/tetratelabs/wazero
 github.com/tetratelabs/wazero/api
 github.com/tetratelabs/wazero/experimental
@@ -1085,7 +1090,6 @@ github.com/tetratelabs/wazero/internal/engine/wazevo/ssa
 github.com/tetratelabs/wazero/internal/engine/wazevo/wazevoapi
 github.com/tetratelabs/wazero/internal/expctxkeys
 github.com/tetratelabs/wazero/internal/filecache
-github.com/tetratelabs/wazero/internal/fsapi
 github.com/tetratelabs/wazero/internal/ieee754
 github.com/tetratelabs/wazero/internal/internalapi
 github.com/tetratelabs/wazero/internal/leb128
@@ -1917,4 +1921,3 @@ sigs.k8s.io/structured-merge-diff/v6/value
 ## explicit; go 1.22
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
-# github.com/planetscale/vtprotobuf => github.com/planetscale/vtprotobuf v0.4.0
