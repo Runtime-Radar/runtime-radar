@@ -1,0 +1,13 @@
+# .vscode
+.idea
+.task
+/.task/checksum/tools
+*.exe
+/bin
+cmd/kube-manager/service
+cmd/kube-manager/kube-manager
+/tmp
+
+# helm dependencies
+.helm/charts
+.helm/Chart.lock

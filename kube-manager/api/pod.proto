@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package pod;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "k8s.io/api/core/v1/generated.proto";
+import "kube.proto";
+
+option go_package = "./api";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "K8S Pod API";
+    contact: {
+      email: "ptcs@ptsecurity.com";
+    };
+  };
+};
+
+// The PodController service definition.
+service PodController {
+  rpc Get(GetPodReq) returns (GetPodResp) {
+    option (google.api.http) = {
+      get: "/api/v1/pod"
+    };
+  }
+
+  rpc ListMeta(ListPodMetaReq) returns (ListPodMetaResp) {
+    option (google.api.http) = {
+      get: "/api/v1/pod/list"
+    };
+  }
+
+  rpc ListPage(ListPodPageReq) returns (ListPodPageResp) {
+    option (google.api.http) = {
+      get: "/api/v1/pod/page/{page_num}"
+    };
+  }
+}
+
+message GetPodReq {
+  string name = 1;
+  string namespace = 2;
+}
+
+message GetPodResp {
+  k8s.io.api.core.v1.Pod pod = 1;
+}
+
+message ListPodMetaReq {
+  // By default, the results will be sorted by namespace+name,
+  // but if necessary, you can also sort by name or creation date
+  // Possible sorting options:
+  // name, created_at
+  kube.Sort sort = 1;
+
+  // The Namespaces parameter only supports a list of exact values.
+  repeated string namespaces = 10;
+  // Node, Pod, and Container parameters can contain extract values or part of the name and support templating.
+  // For example: pod-name-*
+  repeated string nodes = 11;
+  repeated string pods = 12;
+  repeated string containers = 13;
+}
+
+message ListPodMetaResp {
+  message Pod {
+    message Owner {
+      string kind = 1;
+      string name = 2;
+      bool scannable = 3;
+    }
+
+    string uid = 1;
+    string name = 2;
+    string namespace = 3;
+    string node_name = 4;
+    // The phase of a Pod is a simple, high-level summary of where the Pod is in its lifecycle.
+    // There are five possible phase values:
+    // Pending, Running, Succeeded, Failed, Unknown
+    string phase = 5;
+
+    repeated string containers = 10;
+  }
+
+  uint32 total = 1;
+  repeated Pod pods = 2;
+}
+
+message ListPodPageReq {
+  // By default, the results will be sorted by namespace+name,
+  // but if necessary, you can also sort by name or creation date
+  // Possible sorting options:
+  // name, created_at
+  kube.Sort sort = 1;
+  uint32 page_num = 2;
+  uint32 page_size = 3;
+
+  // The Namespaces parameter only supports a list of exact values.
+  repeated string namespaces = 10;
+  // Node, Pod, and Container parameters can contain extract values or part of the name and support templating.
+  // For example: pod-name-*
+  repeated string nodes = 11;
+  repeated string pods = 12;
+  repeated string containers = 13;
+}
+
+message ListPodPageResp {
+  repeated k8s.io.api.core.v1.Pod pods = 1;
+  uint32 total = 2;
+}

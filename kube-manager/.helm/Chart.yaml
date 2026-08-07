@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kube-manager
+description: A Helm chart for Kubernetes
+type: application
+version: 0.0.1
+dependencies:
+  - name: common
+    repository: file://../../install/helm/charts/common
+    version: 0.x.x
+
