@@ -250,7 +250,7 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "CS_RT_PAGE_CACHE_LPE",
+      "detector_id": "CS_RT_CVE_2026_31431",
       "severity": "HIGH",
       "reason_contains": "CVE-2026-31431",
       "tactics": [

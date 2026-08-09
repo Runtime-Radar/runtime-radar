@@ -249,16 +249,16 @@
         "label": ""
       },
       "action": "KPROBE_ACTION_POST",
-      "policy_name": "pt-cs-ptrace-monitoring"
+      "policy_name": "cs-ptrace-monitoring"
     },
-    "node_name": "ptexperts-k8s-ptcs",
+    "node_name": "experts-k8s-ptcs",
     "time": "2024-03-21T09:37:29.671244063Z",
     "aggregation_info": null
   },
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "PTCS_RT_PTRACE_USE",
+      "detector_id": "CS_RT_PTRACE_USE",
       "severity": "HIGH",
       "reason_contains": "ptrace",
       "tactics": [

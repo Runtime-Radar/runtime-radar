@@ -473,7 +473,7 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "PTCS_RT_MOUNT_DEV",
+      "detector_id": "CS_RT_MOUNT_DEV",
       "severity": "HIGH",
       "reason_contains": "mount",
       "tactics": [

@@ -250,7 +250,7 @@
       ],
       "return": null,
       "action": "KPROBE_ACTION_POST",
-      "policy_name": "pt-cs-tcp-out-monitoring"
+      "policy_name": "cs-tcp-out-monitoring"
     },
     "node_name": "test-k8s-cluster",
     "time": "2024-03-22T11:45:01.589721382Z",
@@ -259,7 +259,7 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "PTCS_RT_DOWNLOAD_TOOLS",
+      "detector_id": "CS_RT_DOWNLOAD_TOOLS",
       "severity": "HIGH",
       "reason_contains": "data was downloaded",
       "tactics": [

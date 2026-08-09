@@ -230,14 +230,14 @@
         "binary_properties": null
       }
     },
-    "node_name": "ptexperts-k8s-ptcs",
+    "node_name": "experts-k8s-ptcs",
     "time": "2024-03-22T12:19:16.974922129Z",
     "aggregation_info": null
   },
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "PTCS_RT_SUSP_TOOLS",
+      "detector_id": "CS_RT_SUSP_TOOLS",
       "severity": "LOW",
       "reason_contains": "privilege management utility",
       "tactics": [

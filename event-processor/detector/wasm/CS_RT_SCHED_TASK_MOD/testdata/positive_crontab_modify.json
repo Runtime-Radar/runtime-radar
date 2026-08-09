@@ -266,7 +266,7 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "PTCS_RT_SCHED_TASK_MOD",
+      "detector_id": "CS_RT_SCHED_TASK_MOD",
       "severity": "HIGH",
       "reason_contains": "cron task scheduler",
       "tactics": [

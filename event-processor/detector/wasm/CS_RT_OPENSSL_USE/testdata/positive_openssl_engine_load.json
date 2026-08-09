@@ -260,7 +260,7 @@
   "policy_response": null,
   "expect": {
     "policy_call": {
-      "detector_id": "ESC_RT_OPENSSL_USE",
+      "detector_id": "CS_RT_OPENSSL_USE",
       "severity": "MEDIUM",
       "reason_contains": "arbitrary code",
       "tactics": [
