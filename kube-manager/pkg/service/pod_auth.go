@@ -6,6 +6,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/kube-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // PodAuth is a layer for jwt-based authentication.
@@ -52,5 +53,14 @@ func (pa *PodAuth) ListPage(ctx context.Context, req *api.ListPodPageReq) (resp 
 	}
 
 	resp, err = pa.PodControllerServer.ListPage(ctx, req)
+	return
+}
+
+func (pa *PodAuth) Kill(ctx context.Context, req *api.KillPodReq) (resp *emptypb.Empty, err error) {
+	if err := pa.Verifier.VerifyPermission(ctx, jwt.PermissionKillPods, jwt.ActionExecute); err != nil {
+		return nil, errcommon.PermissionErrorToStatus(err)
+	}
+
+	resp, err = pa.PodControllerServer.Kill(ctx, req)
 	return
 }
