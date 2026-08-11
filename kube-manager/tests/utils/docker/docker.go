@@ -6,6 +6,7 @@ import (
 
 	"github.com/ory/dockertest/v3"
 	"github.com/rs/zerolog/log"
+	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gl "gorm.io/gorm/logger"
@@ -58,6 +59,15 @@ func (d *dockerData) Run() error {
 		d.resource.GetHostPort("5432/tcp"),
 		"cs_test",
 		"disable",
+	)
+
+	d.gormLogger = gl.New(
+		&logger.GORM{&log.Logger},
+		gl.Config{
+			SlowThreshold: 100 * time.Millisecond,
+			Colorful:      false,
+			LogLevel:      gl.Info,
+		},
 	)
 
 	if err := d.pool.Retry(func() error {

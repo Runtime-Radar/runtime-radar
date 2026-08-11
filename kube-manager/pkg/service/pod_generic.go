@@ -3,19 +3,25 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/runtime-radar/runtime-radar/kube-manager/api"
+	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/client"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/informers"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/model/convert"
+	"github.com/runtime-radar/runtime-radar/lib/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "k8s.io/api/core/v1"
+	k8s_errors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 type PodGeneric struct {
 	api.UnimplementedPodControllerServer
 
-	Pods informers.Getter[*v1.Pod]
+	Pods       informers.Getter[*v1.Pod]
+	Kubernetes *client.Kubernetes
 }
 
 func (pg *PodGeneric) Get(_ context.Context, req *api.GetPodReq) (resp *api.GetPodResp, err error) {
@@ -56,9 +62,13 @@ func (pg *PodGeneric) ListMeta(_ context.Context, req *api.ListPodMetaReq) (*api
 
 	var pods []*api.ListPodMetaResp_Pod
 	for _, pod := range prepared {
-		containers := make([]string, 0, len(pod.Spec.Containers))
+		containers := make([]*api.ListPodMetaResp_Pod_Container, 0, len(pod.Spec.Containers))
 		for _, c := range pod.Spec.Containers {
-			containers = append(containers, c.Name)
+			containers = append(containers, &api.ListPodMetaResp_Pod_Container{
+				Name:        c.Name,
+				ImageRef:    c.Image,
+				ImageDigest: digest(pod, c.Name),
+			})
 		}
 
 		pods = append(pods, &api.ListPodMetaResp_Pod{
@@ -103,6 +113,19 @@ func (pg *PodGeneric) ListPage(_ context.Context, req *api.ListPodPageReq) (*api
 	}, nil
 }
 
+func (pg *PodGeneric) Kill(ctx context.Context, req *api.KillPodReq) (*emptypb.Empty, error) {
+	if req.GetName() == "" || req.GetNamespace() == "" {
+		return nil, status.Error(codes.InvalidArgument, "both name and namespace should be present")
+	}
+
+	err := pg.Kubernetes.DeletePod(ctx, req.GetNamespace(), req.GetName(), true)
+	if err != nil && !k8s_errors.IsNotFound(err) {
+		return nil, status.Errorf(codes.Internal, "can't kill pod: %v", err)
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
 func (pg *PodGeneric) withOpts(pods []*v1.Pod, opts *ListOpts) ([]*v1.Pod, error) {
 	var filtered []*v1.Pod
 	for _, pod := range pods {
@@ -119,4 +142,27 @@ func (pg *PodGeneric) withOpts(pods []*v1.Pod, opts *ListOpts) ([]*v1.Pod, error
 	}
 
 	return withPagination(withSort(filtered, opts), opts), nil
+}
+
+func digest(pod *v1.Pod, containerName string) string {
+	for _, st := range pod.Status.ContainerStatuses {
+		if st.Name == containerName {
+			return extractDigest(st.ImageID)
+		}
+	}
+
+	return ""
+}
+
+func extractDigest(imageID string) string {
+	switch parts := strings.SplitN(imageID, "@", 2); {
+	case len(parts) != 2:
+		return ""
+
+	case util.IsValidDigest(parts[1]):
+		return parts[1]
+
+	default:
+		return ""
+	}
 }

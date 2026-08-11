@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/kube-manager/api"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/build"
+	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/client"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/config"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/database"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/informers"
@@ -139,11 +140,19 @@ func main() {
 		}
 	}
 
+	k8sClient, err := client.NewKubernetes(k8sCfg)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize Kubernetes client: %v", err)
+	}
+
 	infs := createInformers()
 
 	configService, podService, nodeService := composeServices(
-		db, cfg, updateSrv, verifier, infs,
+		db, cfg, updateSrv, verifier, k8sClient, infs,
 	)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize informers: %v", err)
+	}
 
 	inv, err := inventory.New(updateSrv, k8sCfg, cfg.K8SSyncInterval, infs.setters()...)
 	if err != nil {
@@ -227,6 +236,7 @@ func composeServices(
 	cfg *config.Config,
 	updater *updater.Service,
 	verifier jwt.Verifier,
+	k8s *client.Kubernetes,
 	infs *Informers,
 ) (
 	configService api.ConfigControllerServer,
@@ -240,7 +250,8 @@ func composeServices(
 		},
 	}
 	podService = &service.PodGeneric{
-		Pods: infs.Pods,
+		Pods:       infs.Pods,
+		Kubernetes: k8s,
 	}
 	nodeService = &service.NodeGeneric{
 		Nodes: infs.Nodes,

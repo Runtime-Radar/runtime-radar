@@ -3,6 +3,7 @@ syntax = "proto3";
 package pod;
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "k8s.io/api/core/v1/generated.proto";
 import "kube.proto";
@@ -34,6 +35,14 @@ service PodController {
   rpc ListPage(ListPodPageReq) returns (ListPodPageResp) {
     option (google.api.http) = {
       get: "/api/v1/pod/page/{page_num}"
+    };
+  }
+
+  // Kill forcefully deletes given pod.
+  rpc Kill(KillPodReq) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/pod/{namespace}/{name}/kill"
+      body: "*"
     };
   }
 }
@@ -71,6 +80,12 @@ message ListPodMetaResp {
       bool scannable = 3;
     }
 
+    message Container {
+      string name = 1;
+      string image_ref = 2;
+      string image_digest = 3;
+    }
+
     string uid = 1;
     string name = 2;
     string namespace = 3;
@@ -80,7 +95,7 @@ message ListPodMetaResp {
     // Pending, Running, Succeeded, Failed, Unknown
     string phase = 5;
 
-    repeated string containers = 10;
+    repeated Container containers = 10;
   }
 
   uint32 total = 1;
@@ -108,4 +123,9 @@ message ListPodPageReq {
 message ListPodPageResp {
   repeated k8s.io.api.core.v1.Pod pods = 1;
   uint32 total = 2;
+}
+
+message KillPodReq {
+  string namespace = 1;
+  string name = 2;
 }
