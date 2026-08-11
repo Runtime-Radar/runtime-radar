@@ -29,6 +29,7 @@ type Config struct {
 	GopsAddr             string        // gops listen address
 	K8SSyncInterval      time.Duration // Kube Manager cache periodic synchronization interval with K8S API
 	KubeConfig           string        // Path to your kube config file
+	HistoryAPIGRPCAddr   string        // address of history-api gRPC service
 
 	// for tests only
 	TestInCompose bool
@@ -58,6 +59,7 @@ func New() *Config {
 	flag.DurationVar(&c.ConfigUpdateInterval, "configUpdateInterval", config.LookupEnvDuration("CONFIG_UPDATE_INTERVAL", 30*time.Second), "Interval for Kube Manager config periodic update check.")
 	flag.DurationVar(&c.K8SSyncInterval, "k8sSyncInterval", config.LookupEnvDuration("K8S_SYNC_INTERVAL", 0), "Kube Manager cache periodic synchronization interval with K8S API.")
 	flag.StringVar(&c.KubeConfig, "kubeconfig", config.LookupEnvString("KUBECONFIG", ""), "Path to your kube config file.")
+	flag.StringVar(&c.HistoryAPIGRPCAddr, "historyAPIGRPCAddr", config.LookupEnvString("HISTORY_API_GRPC_ADDR", "history-api:8000"), "Address of history-api gRPC service.")
 
 	// For tests only
 	flag.BoolVar(&c.TestInCompose, "useCompose", config.LookupEnvBool("TEST_IN_COMPOSE", false), `For integration tests, use docker compose or docker test`)

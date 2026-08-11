@@ -1,0 +1,713 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "k8s management monitoring",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 6,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Events received from Kubernetes about namespaces.\n\nThe graph shows the rate of new events generated in Kubernetes relative to the monitored elements in the cluster.\n\nWhen a new element is added, we receive an Add event, when a change occurs, an Update event, and when a deletion occurs, a Delete event.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 82,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(informer_events_count{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"kube-manager\",k8s_entity=\"namespace\",event_type=~\"$event_type\"}[$interval])) by (event_type)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Namespace events",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Errors when retrieving namespace data from the Kubernetes API",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 85,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(informer_errors_count{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"kube-manager\",k8s_entity=\"namespace\"}[$interval])) OR  vector(0)",
+          "legendFormat": "namespace errors",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Namespace errors",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Events received from Kubernetes about nodes.\n\nThe graph shows the rate of new events generated in Kubernetes relative to the monitored elements in the cluster.\n\nWhen a new element is added, we receive an Add event, when a change occurs, an Update event, and when a deletion occurs, a Delete event.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 83,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(informer_events_count{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"kube-manager\",k8s_entity=\"nodes\",event_type=~\"$event_type\"}[$interval])) by (event_type)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Node events",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Errors when retrieving node data from the Kubernetes API",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 86,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(informer_errors_count{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"kube-manager\",k8s_entity=\"nodes\"}[$interval])) OR  vector(0)",
+          "legendFormat": "node errors",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Node errors",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Events received from Kubernetes about pods.\n\nThe graph shows the rate of new events generated in Kubernetes relative to the monitored elements in the cluster.\n\nWhen a new element is added, we receive an Add event, when a change occurs, an Update event, and when a deletion occurs, a Delete event.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 84,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(informer_events_count{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"kube-manager\",k8s_entity=\"pods\",event_type=~\"$event_type\"}[$interval])) by (event_type)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pod events",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Errors when retrieving pod data from the Kubernetes API",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 87,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(increase(informer_errors_count{cluster=~\"$cluster\",job=\"kubernetes-pods\",service=\"kube-manager\",k8s_entity=\"pods\"}[$interval])) OR  vector(0)",
+          "legendFormat": "pod errors",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pod errors",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": [
+    "k8s-api"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "definition": "label_values(go_goroutines,cluster)",
+        "includeAll": true,
+        "label": "Cluster",
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(go_goroutines,cluster)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "add",
+            "update",
+            "delete"
+          ],
+          "value": [
+            "add",
+            "update",
+            "delete"
+          ]
+        },
+        "label": "Event type",
+        "multi": true,
+        "name": "event_type",
+        "options": [
+          {
+            "selected": true,
+            "text": "add",
+            "value": "add"
+          },
+          {
+            "selected": true,
+            "text": "update",
+            "value": "update"
+          },
+          {
+            "selected": true,
+            "text": "delete",
+            "value": "delete"
+          }
+        ],
+        "query": "add,update,delete",
+        "type": "custom"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": {
+          "text": "2m",
+          "value": "2m"
+        },
+        "name": "interval",
+        "options": [
+          {
+            "selected": true,
+            "text": "2m",
+            "value": "2m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "15m",
+            "value": "15m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          }
+        ],
+        "query": "2m,5m,10m,15m,30m,1h",
+        "refresh": 2,
+        "type": "interval"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "15s",
+      "30s",
+      "1m",
+      "5m",
+      "10m",
+      "15m"
+    ]
+  },
+  "timezone": "",
+  "title": "K8S management events",
+  "uid": "982b1b61-c9de-4126-9698-79dff4d382f8",
+  "version": 1
+}

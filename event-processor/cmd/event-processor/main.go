@@ -32,6 +32,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor/updater"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/server"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/service"
+	kube_manager "github.com/runtime-radar/runtime-radar/kube-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/rabbit"
 	"github.com/runtime-radar/runtime-radar/lib/security"
@@ -145,6 +146,12 @@ func main() {
 	}
 	defer closeNotifier()
 
+	podController, closePK, err := client.NewPodController(cfg.KubeManagerGRPCAddr, tlsConfig, tokenKey)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to connect to Pod Controller: %v", err)
+	}
+	defer closePK()
+
 	runtimeMB, err := rabbit.NewMessageBroker(
 		cfg.RabbitAddr,
 		cfg.RabbitUser,
@@ -179,7 +186,7 @@ func main() {
 		log.Fatal().Msgf("### Failed to add default detectors: %v", err)
 	}
 
-	pool, err := getPool(cfg.WorkersPoolSize, cfg.JobsBufferSize, db, historyMB, plugin, enforcer, notifier)
+	pool, err := getPool(cfg.WorkersPoolSize, cfg.JobsBufferSize, db, historyMB, plugin, enforcer, notifier, podController)
 	if err != nil {
 		log.Fatal().Msgf("### Failed to initialize workers pool: %v", err)
 	}
@@ -355,6 +362,7 @@ func getPool(
 	plugin *detector_api.DetectorPlugin,
 	enforcer enforcer_api.EnforcerClient,
 	notifier notifier_api.NotifierClient,
+	podController kube_manager.PodControllerClient,
 ) (*processor.WorkersPool, error) {
 	ctx := context.Background()
 	configRepo := &database.ConfigDatabase{db}
@@ -370,7 +378,7 @@ func getPool(
 		return nil, fmt.Errorf("can't get last config from DB: %w", err)
 	}
 
-	pool, err := processor.NewWorkersPool(poolSize, bufferSize, mb, plugin, enforcer, notifier, bins, cfg)
+	pool, err := processor.NewWorkersPool(poolSize, bufferSize, mb, plugin, enforcer, notifier, podController, bins, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize workers pool: %w", err)
 	}

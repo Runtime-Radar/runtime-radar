@@ -227,7 +227,7 @@ func composeServices(
 		}
 	}
 
-	ruleSvc = &service.RuleLogging{ruleSvc}
+	ruleSvc = &service.RuleLogging{&service.RuleAudit{ruleSvc}}
 	enforcerSvc = &service.EnforcerLogging{enforcerSvc}
 
 	return

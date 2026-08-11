@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/kube-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/server/interceptor"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type PodLogging struct {
@@ -53,5 +54,20 @@ func (pl *PodLogging) ListPage(ctx context.Context, req *api.ListPodPageReq) (re
 	}(time.Now())
 
 	resp, err = pl.PodControllerServer.ListPage(ctx, req)
+	return
+}
+
+func (pl *PodLogging) Kill(ctx context.Context, req *api.KillPodReq) (resp *emptypb.Empty, err error) {
+	defer func(t0 time.Time) {
+		corrID, _ := interceptor.CorrelationIDFromContext(ctx)
+
+		log.Err(err).Str("delay", time.Since(t0).String()).
+			Any("args", req).
+			Any("result", resp).
+			Stringer("correlation_id", corrID).
+			Msg("Called PodControllerServer.Kill")
+	}(time.Now())
+
+	resp, err = pl.PodControllerServer.Kill(ctx, req)
 	return
 }

@@ -1,9 +1,11 @@
+docs/plans/
 **/build
+!**/pkg/build
+!vendor/**/build
 **/bin
 **/charts/*.tgz
 **/charts/.*
 **/Chart.lock
-uv.lock
 **/.task/
 # macOS artifacts
 .DS_Store
@@ -14,3 +16,17 @@ kubeconfig.yaml
 .build
 .helmpreview
 .ignore
+tmp/
+node_modules/
+node_modules
+
+_stuff/ # for inner documents and plan
+_stuff
+
+# Generated placeholder TLS certs (created at build time / via `task <svc>:certs`).
+# Real certs are mounted from K8s secrets in production. See CLAUDE.md (`certs` task row).
+**/ca.pem
+**/cert.pem
+**/key.pem
+**/db_ca.pem
+**/redis_ca.pem

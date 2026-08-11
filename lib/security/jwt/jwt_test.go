@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"reflect"
 	"testing"
 	"time"
 )
@@ -53,19 +52,19 @@ func TestUnMarshalJSON(t *testing.T) {
 		{
 			name:          "happy path",
 			time:          "1752753600",
-			want:          JSONTime(time.Date(2025, time.July, 17, 15, 0, 0, 0, time.Local)),
+			want:          JSONTime(time.Date(2025, time.July, 17, 12, 0, 0, 0, time.UTC)),
 			expectedError: false,
 		},
 		{
 			name:          "JSONTime is float",
 			time:          "1652824443.7082417",
-			want:          JSONTime(time.Date(2022, time.May, 18, 00, 54, 03, 0, time.Local)),
+			want:          JSONTime(time.Date(2022, time.May, 17, 21, 54, 03, 0, time.UTC)),
 			expectedError: false,
 		},
 		{
 			name: "JSONTime is zero",
 			time: "0",
-			want: JSONTime(time.Date(1970, time.January, 1, 3, 0, 0, 0, time.Local)),
+			want: JSONTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
 
 			expectedError: false,
 		},
@@ -94,8 +93,12 @@ func TestUnMarshalJSON(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(tt.want, got) {
-				t.Fatalf("Expected %v, got %v", tt.want, got)
+			// Compare instants, not wall clock + location: time.Unix always
+			// returns a time.Local time, so the result would otherwise depend
+			// on the machine's TZ.
+			if !time.Time(tt.want).Equal(time.Time(got)) {
+				t.Fatalf("Expected %v, got %v",
+					time.Time(tt.want).UTC(), time.Time(got).UTC())
 			}
 		})
 	}

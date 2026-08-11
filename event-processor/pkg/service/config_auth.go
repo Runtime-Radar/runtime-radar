@@ -26,6 +26,7 @@ func (ca *ConfigAuth) Add(ctx context.Context, req *api.Config) (resp *emptypb.E
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionSystemSettings, jwt.ActionCreate, jwt.ActionUpdate); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 
 	lib_context.SetUserID(ctx)
 
@@ -37,6 +38,7 @@ func (ca *ConfigAuth) Read(ctx context.Context, req *emptypb.Empty) (resp *api.C
 	if err := ca.Verifier.VerifyPermission(ctx, jwt.PermissionSystemSettings, jwt.ActionRead); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
+	lib_context.SetUserID(ctx)
 
 	lib_context.SetUserID(ctx)
 

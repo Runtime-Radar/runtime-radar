@@ -11,6 +11,7 @@ import (
 	"github.com/cilium/tetragon/api/v1/tetragon"
 	detector_api "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/model"
+	kube_manager "github.com/runtime-radar/runtime-radar/kube-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/rabbit"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	notifier_api "github.com/runtime-radar/runtime-radar/notifier/api"
@@ -37,8 +38,9 @@ type WorkersPool struct {
 	history rabbit.PublishConsumer
 	plugin  *detector_api.DetectorPlugin
 
-	enforcer enforcer_api.EnforcerClient
-	notifier notifier_api.NotifierClient
+	enforcer      enforcer_api.EnforcerClient
+	notifier      notifier_api.NotifierClient
+	podController kube_manager.PodControllerClient
 
 	jobs chan *tetragon.GetEventsResponse
 	fire chan struct{}
@@ -80,6 +82,7 @@ func NewWorkersPool(
 	plugin *detector_api.DetectorPlugin,
 	enforcer enforcer_api.EnforcerClient,
 	notifier notifier_api.NotifierClient,
+	podController kube_manager.PodControllerClient,
 	bins [][]byte,
 	cfg *model.Config,
 	opts ...WorkersPoolOption,
@@ -88,8 +91,9 @@ func NewWorkersPool(
 		history: history,
 		plugin:  plugin,
 
-		enforcer: enforcer,
-		notifier: notifier,
+		enforcer:      enforcer,
+		notifier:      notifier,
+		podController: podController,
 
 		bins:         bins,
 		binsRootHash: BinsRootHashAsHex(bins),

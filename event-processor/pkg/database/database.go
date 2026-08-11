@@ -71,7 +71,6 @@ func New(address, database, user, password string, sslMode, sslCheckCert bool) (
 
 func Migrate(db *gorm.DB, newDB bool) error {
 	ctx := context.TODO()
-
 	sqlDB, err := db.DB()
 	if err != nil {
 		return fmt.Errorf("can't migrate postgresql db: %w", err)
@@ -82,7 +81,6 @@ func Migrate(db *gorm.DB, newDB bool) error {
 		return err
 	}
 
-	// Services share a single database, so each of them keeps its own migration history.
 	provider, err := goose.NewProvider("postgres", sqlDB, migrationsFS, goose.WithTableName(fmt.Sprintf("goose_db_version_%s", strings.ReplaceAll(build.AppName, "-", "_"))))
 	if err != nil {
 		return err

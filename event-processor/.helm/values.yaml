@@ -20,6 +20,8 @@ env:
     value: "policy-enforcer:8000"
   - name: NOTIFIER_GRPC_ADDR
     value: "notifier:8000"
+  - name: KUBE_MANAGER_GRPC_ADDR
+    value: "kube-manager:8000"
   - name: JOBS_BUFFER_SIZE
     value: "100"
   - name: RABBIT_RUNTIME_EVENTS_QUEUE_PREFETCH_COUNT

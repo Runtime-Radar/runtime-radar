@@ -16,13 +16,14 @@ import (
 	detector_api "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/metrics"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor/detector"
+	kube_manager "github.com/runtime-radar/runtime-radar/kube-manager/api"
 	enforcer_api "github.com/runtime-radar/runtime-radar/policy-enforcer/api"
 	enforcer_model "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
 )
 
 const (
 	// TODO: pass Tetragon version from runtime_monitor when corresponding field is added to incoming message
-	tetragonVersion = "v1.5.0"
+	tetragonVersion = "v1.7.0"
 	actionType      = "runtime-threat-detection"
 )
 
@@ -186,7 +187,14 @@ func (wp *WorkersPool) doJob(ctx context.Context, event *tetragon.GetEventsRespo
 	block := false
 	if len(blockRules) > 0 {
 		block = true
-		// TODO: implement blocking/isolation of pod as a response
+
+		req := &kube_manager.KillPodReq{
+			Namespace: eventData.PodNamespace,
+			Name:      eventData.PodName,
+		}
+		if _, err := wp.podController.Kill(ctx, req); err != nil {
+			return nil, fmt.Errorf("can't kill pod: %w", err)
+		}
 	}
 
 	if len(notifyRules) > 0 {
