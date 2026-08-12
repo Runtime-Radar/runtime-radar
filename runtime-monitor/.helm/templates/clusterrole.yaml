@@ -37,5 +37,4 @@ rules:
       - get
       - list
       - watch
-  {{- include "clusterrole.extra" . | nindent 2 }}
 {{- end }}

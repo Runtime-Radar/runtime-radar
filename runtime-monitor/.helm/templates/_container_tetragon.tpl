@@ -1,7 +1,7 @@
 {{- define "container.tetragon" -}}
 - name: {{ include "container.tetragon.name" . }}
   securityContext:
-    {{- toYaml .Values.tetragon.containerSecurityContext | nindent 4 }}
+    {{- toYaml .Values.tetragon.securityContext | nindent 4 }}
   image: {{ include "common.cs.image" (dict "context" . "image" .Values.tetragon.image) }}
   imagePullPolicy: {{ .Values.image.pullPolicy }}
   terminationMessagePolicy: FallbackToLogsOnError
@@ -34,8 +34,6 @@
       name: bpf-maps
     - mountPath: "/var/run/cilium"
       name: cilium-run
-    - mountPath: "/var/run/tetragon"
-      name: tetragon-run
     - mountPath: {{ .Values.exportDirectory }}
       name: export-logs
     - mountPath: "/procRoot"
@@ -60,7 +58,6 @@
       mountPath: {{ .mountPath }}
       readOnly: {{ .readOnly }}
 {{- end }}
-    {{- include "tetragon.volumemounts.extra" . | nindent 4 }}
   env:
     - name: NODE_NAME
       valueFrom:
