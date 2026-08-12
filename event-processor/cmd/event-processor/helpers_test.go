@@ -10,9 +10,11 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	amqp "github.com/rabbitmq/amqp091-go"
 	runtime_event "github.com/runtime-radar/runtime-radar/event-processor/api"
+	kube_manager "github.com/runtime-radar/runtime-radar/kube-manager/api"
 	notifier_api "github.com/runtime-radar/runtime-radar/notifier/api"
 	enforcer_api "github.com/runtime-radar/runtime-radar/policy-enforcer/api"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 // drainHistoryEvent blocks until either a history-queue delivery arrives on
@@ -215,6 +217,32 @@ func assertReasonContains(t *testing.T, want *expectPolicyCall, ev *runtime_even
 	}
 	t.Errorf("assertReasonContains: detector %q fired but no threat reason contains %q (case-insensitive); got reasons: %v",
 		want.DetectorID, want.ReasonContains, gotReasons)
+}
+
+// assertKillPodCall asserts that the captured KillPod invocations match the
+// expectation. nil want means "no Kill call expected".
+func assertKillPodCall(t *testing.T, want *expectKillPodCall, calls []*kube_manager.KillPodReq) {
+	t.Helper()
+
+	if want == nil {
+		if len(calls) != 0 {
+			t.Errorf("assertKillPodCall: got %d KillPod calls, want 0", len(calls))
+		}
+		return
+	}
+
+	if len(calls) != 1 {
+		t.Errorf("assertKillPodCall: got %d KillPod calls, want 1", len(calls))
+		return
+	}
+	got := calls[0]
+	wantReq := &kube_manager.KillPodReq{
+		Namespace: want.Namespace,
+		Name:      want.Name,
+	}
+	if diff := cmp.Diff(wantReq, got, protocmp.Transform()); diff != "" {
+		t.Errorf("assertKillPodCall: KillPod request mismatch (-want +got):\n%s", diff)
+	}
 }
 
 // assertNotifyCall asserts that the captured Notify invocations match the

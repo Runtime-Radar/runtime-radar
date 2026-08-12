@@ -54,12 +54,13 @@ type fixturePolicyRule struct {
 
 // fixtureExpect is the assertion bundle for a fixture.
 //
-// Pointer-typed sub-structs (PolicyCall, NotifyCall) follow the
+// Pointer-typed sub-structs (PolicyCall, KillPodCall, NotifyCall) follow the
 // "nil means assert-not-called" convention from the schema. HistoryEvent is
 // always asserted (every event the worker processes produces exactly one
 // history event), so it is a value, not a pointer.
 type fixtureExpect struct {
 	PolicyCall   *expectPolicyCall  `json:"policy_call"`
+	KillPodCall  *expectKillPodCall `json:"kill_pod_call"`
 	NotifyCall   *expectNotifyCall  `json:"notify_call"`
 	HistoryEvent expectHistoryEvent `json:"history_event"`
 }
@@ -72,6 +73,13 @@ type expectPolicyCall struct {
 	Severity       string   `json:"severity"`
 	ReasonContains string   `json:"reason_contains"`
 	Tactics        []string `json:"tactics"`
+}
+
+// expectKillPodCall describes the expected PodController.Kill call. Both
+// fields are required when the struct is non-nil.
+type expectKillPodCall struct {
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
 }
 
 // expectNotifyCall describes the expected Notifier.Notify call. Currently
@@ -182,7 +190,7 @@ func TestLoadFixture(t *testing.T) {
   },
   "expect": {
     "policy_call": {
-      "detector_id": "PTCS_RT_REVERSE_SHELL_CREATE",
+      "detector_id": "CS_RT_REVERSE_SHELL_CREATE",
       "severity": "CRITICAL",
       "reason_contains": "reverse shell",
       "tactics": ["TA0011"]
@@ -239,8 +247,11 @@ func TestLoadFixture(t *testing.T) {
 		if f.Expect.PolicyCall == nil {
 			t.Fatal("expect.policy_call: got nil, want non-nil")
 		}
-		if f.Expect.PolicyCall.DetectorID != "PTCS_RT_REVERSE_SHELL_CREATE" {
+		if f.Expect.PolicyCall.DetectorID != "CS_RT_REVERSE_SHELL_CREATE" {
 			t.Fatalf("detector_id = %q", f.Expect.PolicyCall.DetectorID)
+		}
+		if f.Expect.KillPodCall == nil || f.Expect.KillPodCall.Name != "victim-7" {
+			t.Fatalf("kill_pod_call: got %#v", f.Expect.KillPodCall)
 		}
 		if f.Expect.NotifyCall != nil {
 			t.Fatalf("notify_call: got %#v, want nil", f.Expect.NotifyCall)
@@ -257,6 +268,9 @@ func TestLoadFixture(t *testing.T) {
 		}
 		if f.Expect.PolicyCall != nil {
 			t.Fatalf("expect.policy_call: got %#v, want nil", f.Expect.PolicyCall)
+		}
+		if f.Expect.KillPodCall != nil {
+			t.Fatalf("expect.kill_pod_call: got %#v, want nil", f.Expect.KillPodCall)
 		}
 		if f.Expect.HistoryEvent.IsThreat {
 			t.Fatal("expect.history_event.is_threat = true, want false")

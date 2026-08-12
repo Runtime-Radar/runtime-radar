@@ -25,6 +25,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/database"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/processor/detector"
+	kube_manager "github.com/runtime-radar/runtime-radar/kube-manager/api"
 	"github.com/runtime-radar/runtime-radar/lib/logger"
 	"github.com/runtime-radar/runtime-radar/lib/rabbit"
 	"github.com/runtime-radar/runtime-radar/lib/server/interceptor"
@@ -62,8 +63,9 @@ const (
 var (
 	testCfg *config.Config
 
-	enforcerMock *client.EnforcerClientMock
-	notifierMock *client.NotifierClientMock
+	enforcerMock      *client.EnforcerClientMock
+	notifierMock      *client.NotifierClientMock
+	podControllerMock *client.PodControllerClientMock
 	// mocksMu serializes mock reconfiguration done by per-fixture subtests.
 	// Subtests run sequentially today, but the smoke test publishes through
 	// the same shared mocks; the lock keeps mock reconfiguration honest if
@@ -223,6 +225,7 @@ func TestMain(m *testing.M) {
 	tester := &noopTester{}
 	enforcerMock = client.NewEnforcerClientMock(tester)
 	notifierMock = client.NewNotifierClientMock(tester)
+	podControllerMock = client.NewPodControllerClientMock(tester)
 
 	// Detector plugin (wazero host). Same construction path as production
 	// main() so the seed-and-load codepath is byte-identical to prod.
@@ -270,6 +273,7 @@ func TestMain(m *testing.M) {
 		plugin,
 		enforcerMock,
 		notifierMock,
+		podControllerMock,
 		bins,
 		poolCfg,
 		processor.WithReports(),
@@ -330,7 +334,6 @@ func TestMain(m *testing.M) {
 	// processor.worker.go before the report is dropped, accumulating against
 	// per-fixture deadlines.
 	go func() {
-		//revive:disable:empty-block
 		for range pool.Reports() {
 		}
 	}()
@@ -405,6 +408,7 @@ func TestMain(m *testing.M) {
 	// regression where invocation counts ARE checked.
 	enforcerMock.MinimockFinish()
 	notifierMock.MinimockFinish()
+	podControllerMock.MinimockFinish()
 
 	os.Exit(res)
 }
@@ -703,6 +707,7 @@ func runFixtureSubtest(t *testing.T, path string, deadline time.Duration) {
 	// drainHistoryEvent unblocks.
 	var (
 		policyCalls []*enforcer_api.EvaluatePolicyRuntimeEventReq
+		killCalls   []*kube_manager.KillPodReq
 		notifyCalls []*notifier_api.NotifyReq
 		callsMutex  sync.Mutex
 	)
@@ -728,6 +733,14 @@ func runFixtureSubtest(t *testing.T, path string, deadline time.Duration) {
 				}
 			}
 			return respClone, nil
+		},
+	)
+	podControllerMock.KillMock.Set(
+		func(_ context.Context, in *kube_manager.KillPodReq, _ ...grpc.CallOption) (*emptypb.Empty, error) {
+			callsMutex.Lock()
+			killCalls = append(killCalls, proto.Clone(in).(*kube_manager.KillPodReq))
+			callsMutex.Unlock()
+			return &emptypb.Empty{}, nil
 		},
 	)
 	notifierMock.NotifyMock.Set(
@@ -794,12 +807,14 @@ func runFixtureSubtest(t *testing.T, path string, deadline time.Duration) {
 	// length, or a different sync point in worker.go).
 	callsMutex.Lock()
 	pCalls := append([]*enforcer_api.EvaluatePolicyRuntimeEventReq(nil), policyCalls...)
+	kCalls := append([]*kube_manager.KillPodReq(nil), killCalls...)
 	nCalls := append([]*notifier_api.NotifyReq(nil), notifyCalls...)
 	callsMutex.Unlock()
 
 	assertPolicyCall(t, fx.Expect.PolicyCall, pCalls)
 	assertReasonContains(t, fx.Expect.PolicyCall, ev)
 	assertTactics(t, fx.Expect.PolicyCall, ev)
+	assertKillPodCall(t, fx.Expect.KillPodCall, kCalls)
 	assertNotifyCall(t, fx.Expect.NotifyCall, nCalls)
 	assertHistoryEvent(t, fx.Expect.HistoryEvent, ev)
 }
