@@ -24,18 +24,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "common.serviceAccountName" . }}
-      {{- with .Values.podSecurityContext }}
+      {{- if (.Values.podSecurityContext).enabled }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
+        {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
-      initContainers:
-      {{- include "initcontainers.extra" . | nindent 6 }}
       containers:
         {{- include "common.cs.container.app" . | nindent 8 -}}
         {{- include "container.tetragon" . | nindent 8 -}}
-        {{- if eq (include "common.cs.logger.enabled" .) "true" -}}
-        {{- include "common.cs.container.logger" . | nindent 8 -}}
-        {{- end -}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -55,10 +50,6 @@ spec:
       - name: cilium-run
         hostPath:
           path: /var/run/cilium
-          type: DirectoryOrCreate
-      - name: tetragon-run
-        hostPath:
-          path: /var/run/tetragon
           type: DirectoryOrCreate
       - name: export-logs
         hostPath:

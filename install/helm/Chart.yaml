@@ -77,7 +77,7 @@ dependencies:
     tags: [cs-lib]
 
 annotations:
-  runtime-monitor.tetragon: quay.io/cilium/tetragon:v1.5.0
+  runtime-monitor.tetragon: quay.io/cilium/tetragon:v1.7.0
   postgresql: postgres:17.5
   postgresql.metrics: quay.io/prometheuscommunity/postgres-exporter:v0.17.1
   redis: redis:8.0.2
