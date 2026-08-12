@@ -38,6 +38,13 @@ message CreateDetectorReq {
     string wasm_base64 = 1;
 }
 
+// MitreTactic represents a tactic from Mitre matrix that are covered by a detector.
+// Since it's possible for detector to cover only specific techniques, their ids are listed explicitly.
+message MitreTactic {
+    string id = 1;
+    repeated string techniques = 2; // list of techniques' ids
+}
+
 message Detector {
     string id = 1;
     string name = 2;
@@ -46,6 +53,7 @@ message Detector {
     string author = 5;
     string contact = 6;
     string license = 7;
+    repeated MitreTactic tactics_covered = 8;
 }
 
 message CreateDetectorResp {

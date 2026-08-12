@@ -1,0 +1,277 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMxOTEwMjI4NzY4MTM4NTc6NzUwNzA1",
+        "pid": 750705,
+        "uid": 0,
+        "cwd": "/root/ptrace",
+        "binary": "/root/ptrace/exploit",
+        "arguments": "914",
+        "flags": "execve clone",
+        "start_time": "2024-03-21T09:37:29.670264484Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-ubuntu-ptrace",
+          "container": {
+            "id": "cri-o://d401cf5283b757aa15aabd23e793c42840d658f1b5457250f32a9aa101371046",
+            "name": "test-pod-ubuntu-ptrace",
+            "image": {
+              "id": "docker.io/library/ubuntu@sha256:a4fab1802f08df089c4b2e0a1c8f1a06f573bd1775687d07fef4076d3a2e4900",
+              "name": "docker.io/library/ubuntu:focal"
+            },
+            "start_time": "2024-03-21T09:31:26Z",
+            "pid": 916,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-ubuntu-ptrace",
+          "workload_kind": "Pod"
+        },
+        "docker": "d401cf5283b757aa15aabd23e793c42",
+        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMxOTA2Njk4Mjk2NTkxODA6NzQ2Mjg4",
+        "refcnt": 1,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_PTRACE"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_PTRACE"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026533756,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026533757,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026535184,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026535185,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026535185,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026533758,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026535186,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 750705,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null
+      },
+      "parent": {
+        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMxOTA2Njk4Mjk2NTkxODA6NzQ2Mjg4",
+        "pid": 746288,
+        "uid": 0,
+        "cwd": "/",
+        "binary": "/usr/bin/bash",
+        "arguments": "",
+        "flags": "execve rootcwd",
+        "start_time": "2024-03-21T09:31:36.623109545Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-ubuntu-ptrace",
+          "container": {
+            "id": "cri-o://d401cf5283b757aa15aabd23e793c42840d658f1b5457250f32a9aa101371046",
+            "name": "test-pod-ubuntu-ptrace",
+            "image": {
+              "id": "docker.io/library/ubuntu@sha256:a4fab1802f08df089c4b2e0a1c8f1a06f573bd1775687d07fef4076d3a2e4900",
+              "name": "docker.io/library/ubuntu:focal"
+            },
+            "start_time": "2024-03-21T09:31:26Z",
+            "pid": 7,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-ubuntu-ptrace",
+          "workload_kind": "Pod"
+        },
+        "docker": "d401cf5283b757aa15aabd23e793c42",
+        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMxOTA2Njk4MjgzMDIyMzg6NzQ2Mjg4",
+        "refcnt": 0,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_PTRACE"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_PTRACE"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026533756,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026533757,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026535184,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026535185,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026535185,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026533758,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026535186,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 746288,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null
+      },
+      "function_name": "__x64_sys_ptrace",
+      "args": [
+        {
+          "int_arg": 4,
+          "label": ""
+        },
+        {
+          "int_arg": 914,
+          "label": ""
+        }
+      ],
+      "return": {
+        "int_arg": 0,
+        "label": ""
+      },
+      "action": "KPROBE_ACTION_POST",
+      "policy_name": "cs-ptrace-monitoring"
+    },
+    "node_name": "experts-k8s-ptcs",
+    "time": "2024-03-21T09:37:29.671244063Z",
+    "aggregation_info": null
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_PTRACE_USE",
+      "severity": "HIGH",
+      "reason_contains": "ptrace",
+      "tactics": [
+        "TA0003",
+        "TA0004",
+        "TA0005"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "HIGH",
+      "is_threat": true
+    }
+  }
+}

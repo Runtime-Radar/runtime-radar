@@ -1,0 +1,32 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "pid": 12345,
+        "binary": "/usr/bin/curl",
+        "arguments": "https://example.com"
+      },
+      "function_name": "tcp_connect",
+      "args": [
+        {
+          "sock_arg": {
+            "daddr": "203.0.113.10",
+            "dport": 443
+          }
+        }
+      ]
+    },
+    "node_name": "test-node",
+    "time": "2025-07-28T13:34:05.422534198Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": null,
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "",
+      "is_threat": false
+    }
+  }
+}

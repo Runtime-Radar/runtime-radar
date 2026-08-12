@@ -21,9 +21,7 @@ const (
 )
 
 const (
-	// Memory page access permissions.
-	// https://elixir.bootlin.com/linux/v6.10-rc6/source/include/uapi/asm-generic/mman-common.h#L10
-	PROT_READ = 1
+	KprobeDetect = "Detected that arbitrary code from the `%s` file  was executed by the `%s` process, which was started using the `%s` arguments through the Ingress Nightmare vulnerability exploitation"
 )
 
 var (
@@ -45,6 +43,35 @@ var (
 )
 
 var (
+	mitreTactics = []*api.MitreTactic{
+		{
+			Id: "TA0001",
+			Techniques: []string{
+				"T1190",
+			},
+		},
+		{
+			Id: "TA0002",
+			Techniques: []string{
+				"T1129",
+			},
+		},
+		{
+			Id: "TA0008",
+			Techniques: []string{
+				"T1210",
+			},
+		},
+	}
+)
+
+const (
+	// Memory page access permissions.
+	// https://elixir.bootlin.com/linux/v6.10-rc6/source/include/uapi/asm-generic/mman-common.h#L10
+	PROT_READ = 1
+)
+
+var (
 	// NGINX binary.
 	nginxBinary = glob.MustCompile("*/nginx")
 
@@ -52,8 +79,8 @@ var (
 	libPath = glob.MustCompile("/tmp/nginx/client-body/*")
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 
@@ -61,12 +88,13 @@ type Detector struct{}
 
 func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
 	return &api.InfoResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-		License:     License,
+		Id:             ID,
+		Name:           Name,
+		Description:    Description,
+		Version:        Version,
+		Author:         Author,
+		License:        License,
+		TacticsCovered: mitreTactics,
 	}, nil
 }
 
@@ -100,8 +128,8 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		// Nothing here
 	case *tetragon.GetEventsResponse_ProcessKprobe:
 		kprobe := ev.ProcessKprobe
-
 		binary := kprobe.GetProcess().GetBinary()
+		binaryArgs := kprobe.GetProcess().GetArguments()
 		function := kprobe.GetFunctionName()
 		args := kprobe.GetArgs()
 
@@ -124,6 +152,8 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		path = args[0].GetFileArg().GetPath()
 
 		if nginxBinary.Match(binary) && libPath.Match(path) {
+			resp.TacticsCovered = mitreTactics
+			resp.Reason = fmt.Sprintf(KprobeDetect, path, binary, binaryArgs)
 			resp.Severity = api.DetectResp_HIGH // <-- threat detected
 
 			return resp, nil
@@ -136,256 +166,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	return resp, nil
 }
 
-/* Example event (JSON):
-
-{
-    "process_kprobe": {
-        "process": {
-            "exec_id": "cHRjcy1tYXN0ZXItbm9kZToyMDQ2MjI5Mjk5MjY5MzY5NzoyMDgyNTM2",
-            "pid": 2082536,
-            "uid": 101,
-            "cwd": "/etc/nginx",
-            "binary": "/usr/bin/nginx",
-            "arguments": "-c /tmp/nginx/nginx-cfg1787549034 -t",
-            "flags": "execve clone",
-            "start_time": "2025-04-29T11:27:19.395558820Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "ingress-nginx",
-                "name": "ingress-nginx-controller-56748c4f7c-nfsq8",
-                "container": {
-                    "id": "containerd://60c397c08e0c4dc29b6623f864451415e6b9999cac34608572514e94f514a98b",
-                    "name": "controller",
-                    "image": {
-                        "id": "registry.k8s.io/ingress-nginx/controller@sha256:9724476b928967173d501040631b23ba07f47073999e80e34b120e8db5f234d5",
-                        "name": "sha256:11b916a025f028a5868d51d66773e876910636a1c261e919d72864dbb9bfc860"
-                    },
-                    "start_time": "2025-04-29T11:12:32Z",
-                    "pid": 730,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {
-                    "app.kubernetes.io/component": "controller",
-                    "app.kubernetes.io/instance": "ingress-nginx",
-                    "app.kubernetes.io/name": "ingress-nginx",
-                    "app.kubernetes.io/part-of": "ingress-nginx",
-                    "app.kubernetes.io/version": "1.12.0-beta.0",
-                    "pod-template-hash": "56748c4f7c"
-                },
-                "workload": "ingress-nginx-controller",
-                "workload_kind": "Deployment"
-            },
-            "docker": "60c397c08e0c4dc29b6623f86445141",
-            "parent_exec_id": "cHRjcy1tYXN0ZXItbm9kZToyMDQ2MTQwNjE3MDAyMDM3NToyMDU1MjUx",
-            "refcnt": 1,
-            "cap": {
-                "permitted": [
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "effective": [
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026533517,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026533518,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026533520,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026533521,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026533521,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026533119,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026533522,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 2082536,
-            "process_credentials": {
-                "uid": 101,
-                "gid": 82,
-                "euid": 101,
-                "egid": 82,
-                "suid": 101,
-                "sgid": 82,
-                "fsuid": 101,
-                "fsgid": 82,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null,
-            "user": null
-        },
-        "parent": {
-            "exec_id": "cHRjcy1tYXN0ZXItbm9kZToyMDQ2MTQwNjE3MDAyMDM3NToyMDU1MjUx",
-            "pid": 2055251,
-            "uid": 101,
-            "cwd": "/etc/nginx",
-            "binary": "/nginx-ingress-controller",
-            "arguments": "--election-id=ingress-nginx-leader --controller-class=k8s.io/ingress-nginx --ingress-class=nginx --configmap=ingress-nginx/ingress-nginx-controller --validating-webhook=:8443 --validating-webhook-certificate=/usr/local/certificates/cert --validating-webhook-key=/usr/local/certificates/key",
-            "flags": "execve clone",
-            "start_time": "2025-04-29T11:12:32.572886816Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "ingress-nginx",
-                "name": "ingress-nginx-controller-56748c4f7c-nfsq8",
-                "container": {
-                    "id": "containerd://60c397c08e0c4dc29b6623f864451415e6b9999cac34608572514e94f514a98b",
-                    "name": "controller",
-                    "image": {
-                        "id": "registry.k8s.io/ingress-nginx/controller@sha256:9724476b928967173d501040631b23ba07f47073999e80e34b120e8db5f234d5",
-                        "name": "sha256:11b916a025f028a5868d51d66773e876910636a1c261e919d72864dbb9bfc860"
-                    },
-                    "start_time": "2025-04-29T11:12:32Z",
-                    "pid": 7,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {
-                    "app.kubernetes.io/component": "controller",
-                    "app.kubernetes.io/instance": "ingress-nginx",
-                    "app.kubernetes.io/name": "ingress-nginx",
-                    "app.kubernetes.io/part-of": "ingress-nginx",
-                    "app.kubernetes.io/version": "1.12.0-beta.0",
-                    "pod-template-hash": "56748c4f7c"
-                },
-                "workload": "ingress-nginx-controller",
-                "workload_kind": "Deployment"
-            },
-            "docker": "60c397c08e0c4dc29b6623f86445141",
-            "parent_exec_id": "cHRjcy1tYXN0ZXItbm9kZToyMDQ2MTQwNjE2NDA5NDAwMToyMDU1MjI3",
-            "refcnt": 0,
-            "cap": {
-                "permitted": [
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "effective": [
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026533517,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026533518,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026533520,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026533521,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026533521,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026533119,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026533522,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 2055251,
-            "process_credentials": {
-                "uid": 101,
-                "gid": 82,
-                "euid": 101,
-                "egid": 82,
-                "suid": 101,
-                "sgid": 82,
-                "fsuid": 101,
-                "fsgid": 82,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null,
-            "user": null
-        },
-        "function_name": "security_mmap_file",
-        "args": [
-            {
-                "file_arg": {
-                    "mount": "",
-                    "path": "/tmp/nginx/client-body/0000000002 (deleted)",
-                    "flags": "",
-                    "permission": "-rw-------"
-                },
-                "label": ""
-            },
-            {
-                "uint_arg": 5,
-                "label": ""
-            },
-            {
-                "uint_arg": 2,
-                "label": ""
-            }
-        ],
-        "return": {
-            "int_arg": 0,
-            "label": ""
-        },
-        "action": "KPROBE_ACTION_POST",
-        "kernel_stack_trace": [],
-        "policy_name": "file-monitoring",
-        "return_action": "KPROBE_ACTION_POST",
-        "message": "",
-        "tags": [],
-        "user_stack_trace": []
-    },
-    "node_name": "cs-master-node",
-    "time": "2025-04-29T11:27:19.484544474Z",
-    "aggregation_info": null
+// tacticTechniques is a constructor for *api.MitreTactic which makes its initialization less verbose.
+func tacticTechniques(tacticID string, techniqueIDs ...string) *api.MitreTactic {
+	return &api.MitreTactic{
+		Id:         tacticID,
+		Techniques: techniqueIDs,
+	}
 }
-*/

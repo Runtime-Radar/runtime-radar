@@ -1,9 +1,23 @@
 services:
+  postgres:
+    extends:
+      file: ../docker-compose.test.yml
+      service: postgres
+
+  rabbitmq:
+    extends:
+      file: ../docker-compose.test.yml
+      service: rabbitmq
+
   test:
     extends:
       file: ../docker-compose.test.yml
       service: test
-    depends_on: {}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       - COMPONENT=event-processor
 

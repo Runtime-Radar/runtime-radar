@@ -52,6 +52,20 @@
     }
   },
   "definitions": {
+    "EventMitreTactic": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "techniques": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "EventThreat": {
       "type": "object",
       "properties": {
@@ -70,6 +84,16 @@
         },
         "severity": {
           "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "tacticsCovered": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/EventMitreTactic"
+          }
         }
       }
     },

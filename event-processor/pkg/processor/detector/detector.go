@@ -16,7 +16,7 @@ import (
 )
 
 func NewPlugin(ctx context.Context) (*detector_api.DetectorPlugin, error) {
-	mc := wazero.NewModuleConfig()
+	mc := wazero.NewModuleConfig().WithStartFunctions("_initialize")
 
 	p, err := detector_api.NewDetectorPlugin(ctx, detector_api.WazeroModuleConfig(mc))
 	if err != nil {
@@ -52,15 +52,16 @@ func BinToModel(ctx context.Context, plugin *detector_api.DetectorPlugin, bin []
 	}
 
 	d := &model.Detector{
-		ID:          infoResp.GetId(),
-		Name:        infoResp.GetName(),
-		Description: infoResp.GetDescription(),
-		Version:     uint(infoResp.GetVersion()),
-		Author:      infoResp.GetAuthor(),
-		Contact:     infoResp.GetContact(),
-		License:     infoResp.GetLicense(),
-		WasmBinary:  bin,
-		WasmHash:    security.HashSHA512AsHex(bin),
+		ID:             infoResp.GetId(),
+		Name:           infoResp.GetName(),
+		Description:    infoResp.GetDescription(),
+		Version:        uint(infoResp.GetVersion()),
+		Author:         infoResp.GetAuthor(),
+		Contact:        infoResp.GetContact(),
+		License:        infoResp.GetLicense(),
+		WasmBinary:     bin,
+		WasmHash:       security.HashSHA512AsHex(bin),
+		TacticsCovered: infoResp.GetTacticsCovered(),
 	}
 
 	return d, err

@@ -1,0 +1,277 @@
+{
+  "event": {
+    "process_exec": {
+      "process": {
+        "exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDY1OTkyOTExODg2OToyNzQzNjc2",
+        "pid": 2743676,
+        "uid": 0,
+        "cwd": "/root/openssl",
+        "binary": "/usr/bin/openssl",
+        "arguments": "engine dynamic -pre SO_PATH:./hostname.so -pre LOAD",
+        "flags": "execve clone",
+        "start_time": "2025-04-10T14:17:32.090308606Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian",
+          "container": {
+            "id": "containerd://e9db8d37b2ebde52f63ed8055253e3829175d82285cefa1c06014a8ff59b11c8",
+            "name": "test-pod-debian",
+            "image": {
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2025-03-04T11:51:22Z",
+            "pid": 5520,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-debian",
+          "workload_kind": "Pod"
+        },
+        "docker": "e9db8d37b2ebde52f63ed8055253e38",
+        "parent_exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDQ1NjExOTAyMTQzNzoyNzM4MTc4",
+        "refcnt": 0,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026533060,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026533061,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026533063,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026533064,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026533064,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026532932,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026533065,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 2743676,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null,
+        "user": null
+      },
+      "parent": {
+        "exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDQ1NjExOTAyMTQzNzoyNzM4MTc4",
+        "pid": 2738178,
+        "uid": 0,
+        "cwd": "/",
+        "binary": "/usr/bin/bash",
+        "arguments": "",
+        "flags": "execve rootcwd",
+        "start_time": "2025-04-10T14:14:08.280211442Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian",
+          "container": {
+            "id": "containerd://e9db8d37b2ebde52f63ed8055253e3829175d82285cefa1c06014a8ff59b11c8",
+            "name": "test-pod-debian",
+            "image": {
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2025-03-04T11:51:22Z",
+            "pid": 5508,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-debian",
+          "workload_kind": "Pod"
+        },
+        "docker": "e9db8d37b2ebde52f63ed8055253e38",
+        "parent_exec_id": "cHRjcy1kZWJpYW4tMTE6NDUxNDQ1NjExMzYyNjk4NzoyNzM4MTc4",
+        "refcnt": 0,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026533060,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026533061,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026533063,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026533064,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026533064,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026532932,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026533065,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 2738178,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null,
+        "user": null
+      },
+      "ancestors": []
+    },
+    "node_name": "ptcs-debian-11",
+    "time": "2025-04-10T14:17:32.090307890Z",
+    "aggregation_info": null
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_OPENSSL_USE",
+      "severity": "MEDIUM",
+      "reason_contains": "arbitrary code",
+      "tactics": [
+        "TA0002"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "MEDIUM",
+      "is_threat": true
+    }
+  }
+}

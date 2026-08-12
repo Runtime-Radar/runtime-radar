@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/gobwas/glob"
@@ -13,11 +14,18 @@ import (
 
 const (
 	ID          = "CS_RT_CRYPTOMINER"
-	Name        = "Cryptominer execution"
-	Description = "The detector detects if any known cryptominers were started or stopped. The latter may indicate an attacker's attempt to get rid of competing loads."
+	Name        = "Cryptominer startup"
+	Description = "The detector detects if any known cryptominers were started or stopped, which may indicate an attacker's attempt to get rid of competing loads."
 	Version     = 2
 	Author      = "Runtime Radar Team"
 	License     = "Apache License 2.0"
+)
+
+const (
+	ExecMinersNoArgs  = "Detected that the `%s` cryptominer was started"
+	ExecMinersDefault = "Detected that the `%s` cryptominer was started using the `%s` arguments"
+	ExecMinerArgs     = "Detected a suspicious start of the `%s` process with the `%s` arguments typical of cryptominers"
+	ExecKillArgs      = "Detected an attempt to finish a process using the `%s` utility, which was started using the `%s` arguments. This may indicate use of cryptominer startup scripts."
 )
 
 var (
@@ -35,6 +43,23 @@ var (
 		// "PROCESS_EXEC": {},
 		// same as:
 		// "PROCESS_EXEC": {"*"},
+	}
+)
+
+var (
+	mitreTactics = []*api.MitreTactic{
+		{
+			Id: "TA0002",
+			Techniques: []string{
+				"T1204.003",
+			},
+		},
+		{
+			Id: "TA0040",
+			Techniques: []string{
+				"T1496",
+			},
+		},
 	}
 )
 
@@ -90,8 +115,8 @@ var (
 	}
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 
@@ -99,12 +124,13 @@ type Detector struct{}
 
 func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
 	return &api.InfoResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-		License:     License,
+		Id:             ID,
+		Name:           Name,
+		Description:    Description,
+		Version:        Version,
+		Author:         Author,
+		License:        License,
+		TacticsCovered: mitreTactics,
 	}, nil
 }
 
@@ -140,7 +166,14 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		for _, mt := range minerTools {
 			// Trigger on explicit miner utility name.
 			if mt.MatchString(binary) {
+				resp.TacticsCovered = mitreTactics
+				if args == "" {
+					resp.Reason = fmt.Sprintf(ExecMinersNoArgs, binary)
+				} else {
+					resp.Reason = fmt.Sprintf(ExecMinersDefault, binary, args)
+				}
 				resp.Severity = api.DetectResp_HIGH // <-- threat detected
+
 				return resp, nil
 			}
 		}
@@ -148,7 +181,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		// Trigger on explicit miner utility args.
 		for _, ma := range minerArgs {
 			if ma.MatchString(args) {
+				resp.TacticsCovered = mitreTactics
+				resp.Reason = fmt.Sprintf(ExecMinerArgs, binary, args)
 				resp.Severity = api.DetectResp_HIGH // <-- threat detected
+
 				return resp, nil
 			}
 		}
@@ -157,7 +193,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		if killingTools.MatchString(binary) {
 			for _, ka := range killArgs {
 				if ka.Match(args) {
+					resp.TacticsCovered = mitreTactics
+					resp.Reason = fmt.Sprintf(ExecKillArgs, binary, args)
 					resp.Severity = api.DetectResp_HIGH // <-- threat detected
+
 					return resp, nil
 				}
 			}
@@ -176,459 +215,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	return resp, nil
 }
 
-/* Example event (JSON):
-{
-    "process_exit": {
-        "process": {
-            "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjc3NjE3NjE1NzgxMjI1OTk6MjIxNzU1MQ==",
-            "pid": 2217551,
-            "uid": 0,
-            "cwd": "/opt/xmrig/xmrig-6.22.0",
-            "binary": "/usr/bin/pkill",
-            "arguments": "-f xmrig",
-            "flags": "execve clone",
-            "start_time": "2024-08-15T11:14:57.224332234Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian-privileged",
-                "container": {
-                    "id": "cri-o://497809a2cbb0695fbd5383072cfb59e5c3b6905ab1ac336147cccbcf4a2b224e",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "31d5e503c34f4496a263fb3557575cf53e6a40add4c459370120c7454985f7b7",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2024-05-18T19:36:18Z",
-                    "pid": 4043,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian-privileged",
-                "workload_kind": "Pod"
-            },
-            "docker": "497809a2cbb0695fbd5383072cfb59e",
-            "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjc3NjE3MzY1MzMzODc2NTQ6MjIxNzI4Ng==",
-            "refcnt": 0,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_DAC_READ_SEARCH",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_LINUX_IMMUTABLE",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_BROADCAST",
-                    "CAP_NET_ADMIN",
-                    "CAP_NET_RAW",
-                    "CAP_IPC_LOCK",
-                    "CAP_IPC_OWNER",
-                    "CAP_SYS_MODULE",
-                    "CAP_SYS_RAWIO",
-                    "CAP_SYS_CHROOT",
-                    "CAP_SYS_PTRACE",
-                    "CAP_SYS_PACCT",
-                    "CAP_SYS_ADMIN",
-                    "CAP_SYS_BOOT",
-                    "CAP_SYS_NICE",
-                    "CAP_SYS_RESOURCE",
-                    "CAP_SYS_TIME",
-                    "CAP_SYS_TTY_CONFIG",
-                    "CAP_MKNOD",
-                    "CAP_LEASE",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_AUDIT_CONTROL",
-                    "CAP_SETFCAP",
-                    "CAP_MAC_OVERRIDE",
-                    "CAP_MAC_ADMIN",
-                    "CAP_SYSLOG",
-                    "CAP_WAKE_ALARM",
-                    "CAP_BLOCK_SUSPEND",
-                    "CAP_AUDIT_READ",
-                    "CAP_PERFMON",
-                    "CAP_BPF",
-                    "CAP_CHECKPOINT_RESTORE"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_DAC_READ_SEARCH",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_LINUX_IMMUTABLE",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_BROADCAST",
-                    "CAP_NET_ADMIN",
-                    "CAP_NET_RAW",
-                    "CAP_IPC_LOCK",
-                    "CAP_IPC_OWNER",
-                    "CAP_SYS_MODULE",
-                    "CAP_SYS_RAWIO",
-                    "CAP_SYS_CHROOT",
-                    "CAP_SYS_PTRACE",
-                    "CAP_SYS_PACCT",
-                    "CAP_SYS_ADMIN",
-                    "CAP_SYS_BOOT",
-                    "CAP_SYS_NICE",
-                    "CAP_SYS_RESOURCE",
-                    "CAP_SYS_TIME",
-                    "CAP_SYS_TTY_CONFIG",
-                    "CAP_MKNOD",
-                    "CAP_LEASE",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_AUDIT_CONTROL",
-                    "CAP_SETFCAP",
-                    "CAP_MAC_OVERRIDE",
-                    "CAP_MAC_ADMIN",
-                    "CAP_SYSLOG",
-                    "CAP_WAKE_ALARM",
-                    "CAP_BLOCK_SUSPEND",
-                    "CAP_AUDIT_READ",
-                    "CAP_PERFMON",
-                    "CAP_BPF",
-                    "CAP_CHECKPOINT_RESTORE"
-                ],
-                "inheritable": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_DAC_READ_SEARCH",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_LINUX_IMMUTABLE",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_BROADCAST",
-                    "CAP_NET_ADMIN",
-                    "CAP_NET_RAW",
-                    "CAP_IPC_LOCK",
-                    "CAP_IPC_OWNER",
-                    "CAP_SYS_MODULE",
-                    "CAP_SYS_RAWIO",
-                    "CAP_SYS_CHROOT",
-                    "CAP_SYS_PTRACE",
-                    "CAP_SYS_PACCT",
-                    "CAP_SYS_ADMIN",
-                    "CAP_SYS_BOOT",
-                    "CAP_SYS_NICE",
-                    "CAP_SYS_RESOURCE",
-                    "CAP_SYS_TIME",
-                    "CAP_SYS_TTY_CONFIG",
-                    "CAP_MKNOD",
-                    "CAP_LEASE",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_AUDIT_CONTROL",
-                    "CAP_SETFCAP",
-                    "CAP_MAC_OVERRIDE",
-                    "CAP_MAC_ADMIN",
-                    "CAP_SYSLOG",
-                    "CAP_WAKE_ALARM",
-                    "CAP_BLOCK_SUSPEND",
-                    "CAP_AUDIT_READ",
-                    "CAP_PERFMON",
-                    "CAP_BPF",
-                    "CAP_CHECKPOINT_RESTORE"
-                ]
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026532795,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026532796,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026533178,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026533284,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026533284,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026532797,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026531835,
-                    "is_host": true
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 2217551,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null,
-            "user": null
-        },
-        "parent": {
-            "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjc3NjE3MzY1MzMzODc2NTQ6MjIxNzI4Ng==",
-            "pid": 2217286,
-            "uid": 0,
-            "cwd": "/",
-            "binary": "/usr/bin/bash",
-            "arguments": "",
-            "flags": "execve rootcwd",
-            "start_time": "2024-08-15T11:14:32.179597219Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian-privileged",
-                "container": {
-                    "id": "cri-o://497809a2cbb0695fbd5383072cfb59e5c3b6905ab1ac336147cccbcf4a2b224e",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "31d5e503c34f4496a263fb3557575cf53e6a40add4c459370120c7454985f7b7",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2024-05-18T19:36:18Z",
-                    "pid": 4012,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian-privileged",
-                "workload_kind": "Pod"
-            },
-            "docker": "497809a2cbb0695fbd5383072cfb59e",
-            "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjc3NjE3MzY1MzE4NzUxMTU6MjIxNzI4Ng==",
-            "refcnt": 0,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_DAC_READ_SEARCH",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_LINUX_IMMUTABLE",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_BROADCAST",
-                    "CAP_NET_ADMIN",
-                    "CAP_NET_RAW",
-                    "CAP_IPC_LOCK",
-                    "CAP_IPC_OWNER",
-                    "CAP_SYS_MODULE",
-                    "CAP_SYS_RAWIO",
-                    "CAP_SYS_CHROOT",
-                    "CAP_SYS_PTRACE",
-                    "CAP_SYS_PACCT",
-                    "CAP_SYS_ADMIN",
-                    "CAP_SYS_BOOT",
-                    "CAP_SYS_NICE",
-                    "CAP_SYS_RESOURCE",
-                    "CAP_SYS_TIME",
-                    "CAP_SYS_TTY_CONFIG",
-                    "CAP_MKNOD",
-                    "CAP_LEASE",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_AUDIT_CONTROL",
-                    "CAP_SETFCAP",
-                    "CAP_MAC_OVERRIDE",
-                    "CAP_MAC_ADMIN",
-                    "CAP_SYSLOG",
-                    "CAP_WAKE_ALARM",
-                    "CAP_BLOCK_SUSPEND",
-                    "CAP_AUDIT_READ",
-                    "CAP_PERFMON",
-                    "CAP_BPF",
-                    "CAP_CHECKPOINT_RESTORE"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_DAC_READ_SEARCH",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_LINUX_IMMUTABLE",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_BROADCAST",
-                    "CAP_NET_ADMIN",
-                    "CAP_NET_RAW",
-                    "CAP_IPC_LOCK",
-                    "CAP_IPC_OWNER",
-                    "CAP_SYS_MODULE",
-                    "CAP_SYS_RAWIO",
-                    "CAP_SYS_CHROOT",
-                    "CAP_SYS_PTRACE",
-                    "CAP_SYS_PACCT",
-                    "CAP_SYS_ADMIN",
-                    "CAP_SYS_BOOT",
-                    "CAP_SYS_NICE",
-                    "CAP_SYS_RESOURCE",
-                    "CAP_SYS_TIME",
-                    "CAP_SYS_TTY_CONFIG",
-                    "CAP_MKNOD",
-                    "CAP_LEASE",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_AUDIT_CONTROL",
-                    "CAP_SETFCAP",
-                    "CAP_MAC_OVERRIDE",
-                    "CAP_MAC_ADMIN",
-                    "CAP_SYSLOG",
-                    "CAP_WAKE_ALARM",
-                    "CAP_BLOCK_SUSPEND",
-                    "CAP_AUDIT_READ",
-                    "CAP_PERFMON",
-                    "CAP_BPF",
-                    "CAP_CHECKPOINT_RESTORE"
-                ],
-                "inheritable": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_DAC_READ_SEARCH",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_LINUX_IMMUTABLE",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_BROADCAST",
-                    "CAP_NET_ADMIN",
-                    "CAP_NET_RAW",
-                    "CAP_IPC_LOCK",
-                    "CAP_IPC_OWNER",
-                    "CAP_SYS_MODULE",
-                    "CAP_SYS_RAWIO",
-                    "CAP_SYS_CHROOT",
-                    "CAP_SYS_PTRACE",
-                    "CAP_SYS_PACCT",
-                    "CAP_SYS_ADMIN",
-                    "CAP_SYS_BOOT",
-                    "CAP_SYS_NICE",
-                    "CAP_SYS_RESOURCE",
-                    "CAP_SYS_TIME",
-                    "CAP_SYS_TTY_CONFIG",
-                    "CAP_MKNOD",
-                    "CAP_LEASE",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_AUDIT_CONTROL",
-                    "CAP_SETFCAP",
-                    "CAP_MAC_OVERRIDE",
-                    "CAP_MAC_ADMIN",
-                    "CAP_SYSLOG",
-                    "CAP_WAKE_ALARM",
-                    "CAP_BLOCK_SUSPEND",
-                    "CAP_AUDIT_READ",
-                    "CAP_PERFMON",
-                    "CAP_BPF",
-                    "CAP_CHECKPOINT_RESTORE"
-                ]
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026532795,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026532796,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026533178,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026533284,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026533284,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026532797,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026531835,
-                    "is_host": true
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 2217286,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null,
-            "user": null
-        },
-        "signal": "",
-        "status": 0,
-        "time": "2024-08-15T11:14:57.231061804Z"
-    },
-    "node_name": "experts-k8s-cs",
-    "time": "2024-08-15T11:14:57.231060954Z",
-    "aggregation_info": null
+// tacticTechniques is a constructor for *api.MitreTactic which makes its initialization less verbose.
+func tacticTechniques(tacticID string, techniqueIDs ...string) *api.MitreTactic {
+	return &api.MitreTactic{
+		Id:         tacticID,
+		Techniques: techniqueIDs,
+	}
 }
-
-
-*/

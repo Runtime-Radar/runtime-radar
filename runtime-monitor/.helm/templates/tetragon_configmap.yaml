@@ -17,7 +17,7 @@ data:
   debug: {{ .Values.tetragon.debug | quote }}
   enable-process-cred: {{ .Values.tetragon.enableProcessCred | quote }}
   enable-process-ns: {{ .Values.tetragon.enableProcessNs | quote }}
-  enable-ancestors: {{ .Values.tetragon.processAncestors.enabled }}
+  enable-ancestors: {{ .Values.tetragon.processAncestors.enabled | quote }}
   process-cache-size: {{ .Values.tetragon.processCacheSize | quote }}
 {{- if .Values.tetragon.exportFilename }}
   export-filename: {{ .Values.exportDirectory}}/{{ .Values.tetragon.exportFilename }}
@@ -91,3 +91,4 @@ data:
 {{- end }}
   enable-cgidmap: {{ .Values.tetragon.cgidmap.enabled | quote }}
   enable-pod-annotations: {{ .Values.tetragon.podAnnotations.enabled | default "false" | quote }}
+  use-perf-ring-buffer: {{ .Values.tetragon.usePerfRingBuffer | default "false" | quote }}

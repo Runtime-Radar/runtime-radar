@@ -4,69 +4,69 @@ metadata:
   name: "io-streams"
 spec:
   kprobes:
-    # SYNOPSIS
-    # int do_dup2(struct files_struct *files, struct file *file, unsigned fd, unsigned flags)
-    #     @files: files related to the new fd (fd that will become a copy)
-    #     @file: file related to the old fd (fd being copied)
-    #     @fd: file descriptor which needs to be copied
-    #     @flags: flags for tweaking function behavior
-    #
-    # DESCRIPTION
-    # This function creates a copy of the file descriptor (fd).
-    #
-    # RETURN VALUE
-    # On success, this function returns the new descriptor. If there is an error, the error code is returned.
-    #
-    # SYSCALLS
-    #     dup2(), dup3()
-    #
-    - call: "do_dup2"
-      syscall: false
-      return: true
-      args:
-        - index: 1
-          type: "file"
-        - index: 2
-          type: "int"
-          label: "fd"
-      returnArg:
-        index: 0
-        type: "int"
-      selectors:
-        - matchArgs:
-            - index: 2
-              operator: "Equal"
-              values:
-                - "0" # stdin
-    # SYNOPSIS
-    # int security_path_mknod(const struct path *dir, struct dentry *dentry, umode_t mode, unsigned int dev)
-    #     @dir: parent directory path
-    #     @dentry: new file path
-    #     @umode_t: new file mode
-    #     @dev: device number
-    #
-    # DESCRIPTION
-    # Check permissions when creating a file (regular and special ones).
-    #
-    # RETURN VALUE
-    # Returns 0 if permission is granted
-    #
-    # SYSCALLS
-    #     mknod(), mknodat()
-    #
-    - call: "security_path_mknod"
-      syscall: false
-      return: false
-      args:
-        - index: 1
-          type: "dentry"
-          label: "new file path"
-        - index: 2
-          type: "uint32" # WA for broken uint16 argument type in actual releases
-          label: "new file mode"
-      selectors:
-        - matchArgs:
-            - index: 2
-              operator: "Mask"
-              values:
-                - "010000" # S_IFIFO file type mask in octal form
+  # SYNOPSIS
+  # int do_dup2(struct files_struct *files, struct file *file, unsigned fd, unsigned flags)
+  #     @files: files related to the new fd (fd that will become a copy)
+  #     @file: file related to the old fd (fd being copied)
+  #     @fd: file descriptor which needs to be copied
+  #     @flags: flags for tweaking function behavior 
+  #
+  # DESCRIPTION
+  # This function creates a copy of the file descriptor (fd).
+  #
+  # RETURN VALUE
+  # On success, this function returns the new descriptor. If there is an error, the error code is returned.
+  # 
+  # SYSCALLS
+  #     dup2(), dup3()
+  # 
+  - call: "do_dup2"
+    syscall: false
+    return: true
+    args:
+    - index: 1
+      type: "file"
+    - index: 2
+      type: "int"
+      label: "fd"
+    returnArg:
+      index: 0
+      type: "int"  
+    selectors:
+    - matchArgs:
+      - index: 2
+        operator: "Equal"
+        values:
+        - "0" # stdin
+  # SYNOPSIS
+  # int security_path_mknod(const struct path *dir, struct dentry *dentry, umode_t mode, unsigned int dev)
+  #     @dir: parent directory path
+  #     @dentry: new file path
+  #     @umode_t: new file mode
+  #     @dev: device number 
+  #
+  # DESCRIPTION
+  # Check permissions when creating a file (regular and special ones).
+  #
+  # RETURN VALUE
+  # Returns 0 if permission is granted
+  # 
+  # SYSCALLS
+  #     mknod(), mknodat()
+  # 
+  - call: "security_path_mknod"
+    syscall: false
+    return: false
+    args:
+    - index: 1
+      type: "dentry"
+      label: "new file path"
+    - index: 2
+      type: "uint32" # WA for broken uint16 argument type in actual releases  
+      label: "new file mode"
+    selectors:
+    - matchArgs:
+      - index: 2
+        operator: "Mask"
+        values:
+        - "010000" # S_IFIFO file type mask in octal form

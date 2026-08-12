@@ -171,6 +171,13 @@
         },
         "license": {
           "type": "string"
+        },
+        "tacticsCovered": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/detectorMitreTactic"
+          }
         }
       }
     },
@@ -189,6 +196,22 @@
           "format": "int64"
         }
       }
+    },
+    "detectorMitreTactic": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "techniques": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of techniques' ids"
+        }
+      },
+      "description": "MitreTactic represents a tactic from Mitre matrix that are covered by a detector.\nSince it's possible for detector to cover only specific techniques, their ids are listed explicitly."
     },
     "protobufAny": {
       "type": "object",

@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gobwas/glob"
 	"github.com/runtime-radar/runtime-radar/event-processor/detector/api"
@@ -21,13 +22,30 @@ const (
 )
 
 const (
-	// File access permissions
-	// https://elixir.bootlin.com/linux/v6.10-rc6/source/include/linux/fs.h#L101
-	MAY_READ = 4
 
-	// Memory page access permissions
-	// https://elixir.bootlin.com/linux/v6.10-rc6/source/include/uapi/asm-generic/mman-common.h#L10
-	PROT_READ = 1
+	// Account
+	KprobeUtilsReadAccountsNoArgs  = "Detected that the `%s` file with accounts was read by the `%s` utility"
+	KprobeUtilsReadAccountsDefault = "Detected that the `%s` file with accounts was read by the `%s` utility, which was started using the `%s` arguments"
+	KprobeDirsReadAccountsNoArgs   = "Detected that the `%s` file with accounts was read by the executable file `%s` from the `%s` directory"
+	KprobeDirsReadAccountsDefault  = "Detected that the `%s` file with accounts was read by the executable file `%s` from the `%s` directory started using the `%s` arguments"
+
+	// PAM
+	KprobeUtilsReadPamNoArgs       = "Detected that the `%s` file with the system authentication and authorization settings was read by the `%s` utility"
+	KprobeUtilsReadPamDefault      = "Detected that the `%s` file with the system authentication and authorization settings was read by the `%s` utility started using the `%s` arguments"
+	KprobeDirsReadPamNoArgs        = "Detected that the `%s` file with the system authentication and authorization settings was read by the executable file `%s` from the `%s` directory"
+	KprobeDirsReadPamDefault       = "Detected that the `%s` file with the system authentication and authorization settings was read by the executable file `%s` from the `%s` directory, which was started using the `%s` arguments"
+
+	// SystemInfo
+	KprobeUtilsReadSysInfoNoArgs   = "Detected that the `%s` file with system information was read by the `%s` utility"
+	KprobeUtilsReadSysInfoDefault  = "Detected that the `%s` file with system information was read by the `%s` utility started using the `%s` arguments"
+	KprobeDirsReadSysInfoNoArgs    = "Detected that the `%s` file with system information was read by the executable file `%s` from the `%s` directory"
+	KprobeDirsReadSysInfoDefault   = "Detected that the `%s` file with system information was read by the executable file `%s` from the `%s` directory, which was started using the `%s` arguments"
+
+	// EnvironmentVariables
+	KprobeUtilsReadEnvVarNoArgs    = "Detected that the `%s` file with environment variables was read by the `%s` utility"
+	KprobeUtilsReadEnvVarDefault   = "Detected that the `%s` file with environment variables was read by the `%s` utility started using the `%s` arguments"
+	KprobeDirsReadEnvVarNoArgs     = "Detected that the `%s` file with environment variables was read by the executable file `%s` from the `%s` directory"
+	KprobeDirsReadEnvVarDefault    = "Detected that the `%s` file with environment variables was read by the executable file `%s` from the `%s` directory, which was started using the `%s` arguments"
 )
 
 var (
@@ -49,14 +67,166 @@ var (
 )
 
 var (
-	sensitiveFiles = []glob.Glob{
-		glob.MustCompile("/etc/shadow"),                  // users shadow info
-		glob.MustCompile("/etc/sudoers*"),                // superuser security policies
-		glob.MustCompile("/etc/pam.*"),                   // authentication module settings
-		glob.MustCompile("/etc/security/pwquality.conf"), // password policy (pam)
-		glob.MustCompile("/etc/*-release"),               // distribution info
-		glob.MustCompile("/usr/lib/os-release"),          // distribution info (for the most distributions /etc/os-release is a symlink to /usr/lib/os-release)
-		glob.MustCompile("/proc/*/environ"),              // environment variables
+	mitreTactics = []*api.MitreTactic{
+		{
+			Id: "TA0001",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0003",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0004",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0005",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0006",
+			Techniques: []string{
+				"T1003.008",
+				"T1552.001",
+			},
+		},
+		{
+			Id: "TA0007",
+			Techniques: []string{
+				"T1087.001",
+				"T1083",
+				"T1201",
+				"T1069.001",
+			},
+		},
+		{
+			Id: "TA0009",
+			Techniques: []string{
+				"T1005",
+			},
+		},
+	}
+
+	mitreTacticsPam = []*api.MitreTactic{
+		{
+			Id: "TA0007",
+			Techniques: []string{
+				"T1083",
+				"T1201",
+			},
+		},
+		{
+			Id: "TA0009",
+			Techniques: []string{
+				"T1005",
+			},
+		},
+	}
+
+	mitreTacticsAccounts = []*api.MitreTactic{
+		{
+			Id: "TA0001",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0003",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0004",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0005",
+			Techniques: []string{
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0006",
+			Techniques: []string{
+				"T1003.008",
+				"T1552.001",
+			},
+		},
+		{
+			Id: "TA0007",
+			Techniques: []string{
+				"T1087.001",
+				"T1083",
+				"T1069.001",
+			},
+		},
+		{
+			Id: "TA0009",
+			Techniques: []string{
+				"T1005",
+			},
+		},
+	}
+
+	mitreTacticsOther = []*api.MitreTactic{
+		{
+			Id: "TA0007",
+			Techniques: []string{
+				"T1083",
+			},
+		},
+		{
+			Id: "TA0009",
+			Techniques: []string{
+				"T1005",
+			},
+		},
+	}
+)
+
+const (
+	// File access permissions
+	// https://elixir.bootlin.com/linux/v6.10-rc6/source/include/linux/fs.h#L101
+	MAY_READ = 4
+
+	// Memory page access permissions
+	// https://elixir.bootlin.com/linux/v6.10-rc6/source/include/uapi/asm-generic/mman-common.h#L10
+	PROT_READ = 1
+)
+
+type sensitiveFile struct {
+	pattern glob.Glob
+	class   string
+}
+
+var (
+	sensitiveFiles = []sensitiveFile{
+		// Accounts password info
+		{pattern: glob.MustCompile("/etc/shadow"), class: "Accounts"},
+		// Superuser security policies
+		{pattern: glob.MustCompile("/etc/sudoers*"), class: "Accounts"},
+		// Authentication module settings
+		{pattern: glob.MustCompile("/etc/pam.*"), class: "PAM"},
+		// Password policy (PAM)
+		{pattern: glob.MustCompile("/etc/security/pwquality.conf"), class: "PAM"},
+		// Distribution info
+		{pattern: glob.MustCompile("/etc/*-release"), class: "SystemInfo"},
+		// Distribution info (for the most distributions /etc/os-release is a symlink to /usr/lib/os-release)
+		{pattern: glob.MustCompile("/usr/lib/os-release"), class: "SystemInfo"},
+		// Environment variables
+		{pattern: glob.MustCompile("/proc/*/environ"), class: "EnvironmentVariables"},
 	}
 
 	readUtils = []glob.Glob{
@@ -106,8 +276,8 @@ var (
 	}
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 
@@ -115,12 +285,13 @@ type Detector struct{}
 
 func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
 	return &api.InfoResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-		License:     License,
+		Id:             ID,
+		Name:           Name,
+		Description:    Description,
+		Version:        Version,
+		Author:         Author,
+		License:        License,
+		TacticsCovered: mitreTactics,
 	}, nil
 }
 
@@ -155,8 +326,11 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	case *tetragon.GetEventsResponse_ProcessKprobe:
 		kprobe := ev.ProcessKprobe
 		binary := kprobe.GetProcess().GetBinary()
+		binaryArgs := kprobe.GetProcess().GetArguments()
 		function := kprobe.GetFunctionName()
 		args := kprobe.GetArgs()
+		var affectedFile sensitiveFile
+		sensitiveFile := false
 
 		switch function {
 		// trigger when security function check for file read access
@@ -181,12 +355,20 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 
 		path := args[0].GetFileArg().GetPath()
 
-		sensitiveFile := false
-
 		for _, file := range sensitiveFiles {
-			if file.Match(path) {
+			switch {
+			case file.pattern.Match(path) && (file.class == "Accounts"):
+				resp.TacticsCovered = mitreTacticsAccounts
+				affectedFile = file
 				sensitiveFile = true
-				break
+			case file.pattern.Match(path) && (file.class == "PAM"):
+				resp.TacticsCovered = mitreTacticsPam
+				affectedFile = file
+				sensitiveFile = true
+			case file.pattern.Match(path):
+				resp.TacticsCovered = mitreTacticsOther
+				affectedFile = file
+				sensitiveFile = true
 			}
 		}
 
@@ -197,20 +379,59 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		// find out sensitive file reading method
 		// trigger on specific utils reading sensitive files
 		for _, util := range readUtils {
-			if util.Match(binary) {
-				resp.Severity = api.DetectResp_HIGH // <-- threat detected
-
-				return resp, nil
+			if !util.Match(binary) {
+				continue
 			}
+			switch {
+			case (affectedFile.class == "Accounts") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadAccountsNoArgs, path, binary)
+			case (affectedFile.class == "Accounts") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadAccountsDefault, path, binary, binaryArgs)
+			case (affectedFile.class == "PAM") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadPamNoArgs, path, binary)
+			case (affectedFile.class == "PAM") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadPamDefault, path, binary, binaryArgs)
+			case (affectedFile.class == "SystemInfo") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadSysInfoNoArgs, path, binary)
+			case (affectedFile.class == "SystemInfo") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadSysInfoDefault, path, binary, binaryArgs)
+			case (affectedFile.class == "EnvironmentVariables") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadEnvVarNoArgs, path, binary)
+			case (affectedFile.class == "EnvironmentVariables") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeUtilsReadEnvVarDefault, path, binary, binaryArgs)
+			}
+			resp.Severity = api.DetectResp_HIGH // <-- threat detected
+
+			return resp, nil
 		}
 
 		// trigger on utils from suspicious directories
 		for _, dir := range suspDirs {
-			if dir.Match(binary) {
-				resp.Severity = api.DetectResp_MEDIUM // <-- threat detected
-
-				return resp, nil
+			if !dir.Match(binary) {
+				continue
 			}
+			binDir := binary[0 : strings.LastIndex(binary, "/")+1]
+			switch {
+			case (affectedFile.class == "Accounts") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadAccountsNoArgs, path, binary, binDir)
+			case (affectedFile.class == "Accounts") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadAccountsDefault, path, binary, binDir, binaryArgs)
+			case (affectedFile.class == "PAM") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadPamNoArgs, path, binary, binDir)
+			case (affectedFile.class == "PAM") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadPamDefault, path, binary, binDir, binaryArgs)
+			case (affectedFile.class == "SystemInfo") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadSysInfoNoArgs, path, binary, binDir)
+			case (affectedFile.class == "SystemInfo") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadSysInfoDefault, path, binary, binDir, binaryArgs)
+			case (affectedFile.class == "EnvironmentVariables") && (binaryArgs == ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadEnvVarNoArgs, path, binary, binDir)
+			case (affectedFile.class == "EnvironmentVariables") && (binaryArgs != ""):
+				resp.Reason = fmt.Sprintf(KprobeDirsReadEnvVarDefault, path, binary, binDir, binaryArgs)
+			}
+			resp.Severity = api.DetectResp_MEDIUM // <-- threat detected
+
+			return resp, nil
 		}
 
 		return resp, nil
@@ -222,266 +443,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	return resp, nil
 }
 
-/* Example event (JSON):
-
-{
-    "process_kprobe": {
-        "process": {
-            "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjM0NDI1Nzk5OTE2NjMzNDQ6MzI1OTM0MA==",
-            "pid": 3259340,
-            "uid": 0,
-            "cwd": "/",
-            "binary": "/usr/bin/head",
-            "arguments": "/etc/shadow",
-            "flags": "execve rootcwd clone",
-            "start_time": "2024-03-24T07:30:06.785114023Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian",
-                "labels": [],
-                "container": {
-                    "id": "cri-o://332cff0fb99f03f8b4fb9633f245ba21ad43339eeafd3b0ac3e5d9a38371262c",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2024-02-27T13:26:02Z",
-                    "pid": 70734,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian",
-                "workload_kind": "Pod"
-            },
-            "docker": "332cff0fb99f03f8b4fb9633f245ba2",
-            "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjM0NDE2OTY2NzQwOTM2OTM6MzI1MDU5MQ==",
-            "refcnt": 1,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026534978,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026534979,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026535073,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026534980,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026535075,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 3259340,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null
-        },
-        "parent": {
-            "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjM0NDE2OTY2NzQwOTM2OTM6MzI1MDU5MQ==",
-            "pid": 3250591,
-            "uid": 0,
-            "cwd": "/",
-            "binary": "/usr/bin/bash",
-            "arguments": "",
-            "flags": "execve rootcwd",
-            "start_time": "2024-03-24T07:15:23.467544178Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian",
-                "labels": [],
-                "container": {
-                    "id": "cri-o://332cff0fb99f03f8b4fb9633f245ba21ad43339eeafd3b0ac3e5d9a38371262c",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2024-02-27T13:26:02Z",
-                    "pid": 70721,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian",
-                "workload_kind": "Pod"
-            },
-            "docker": "332cff0fb99f03f8b4fb9633f245ba2",
-            "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjM0NDE2OTY2NzI2NjUwMDI6MzI1MDU5MQ==",
-            "refcnt": 0,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026534978,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026534979,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026535073,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026534980,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026535075,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 3250591,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null
-        },
-        "function_name": "security_file_permission",
-        "args": [
-            {
-                "file_arg": {
-                    "mount": "",
-                    "path": "/etc/shadow",
-                    "flags": ""
-                },
-                "label": ""
-            },
-            {
-                "int_arg": 4,
-                "label": ""
-            }
-        ],
-        "return": {
-            "int_arg": 0,
-            "label": ""
-        },
-        "action": "KPROBE_ACTION_POST",
-        "stack_trace": [],
-        "policy_name": "file-monitoring"
-    },
-    "node_name": "experts-k8s-cs",
-    "time": "2024-03-24T07:30:06.785822196Z",
-    "aggregation_info": null
+// tacticTechniques is a constructor for *api.MitreTactic which makes its initialization less verbose.
+func tacticTechniques(tacticID string, techniqueIDs ...string) *api.MitreTactic {
+	return &api.MitreTactic{
+		Id:         tacticID,
+		Techniques: techniqueIDs,
+	}
 }
-
-*/
