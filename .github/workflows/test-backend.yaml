@@ -13,6 +13,7 @@ on:
       - policy-enforcer/**
       - public-api/**
       - runtime-monitor/**
+      - kube-manager/**
   pull_request:
     paths:
       - auth-center/**
@@ -24,6 +25,7 @@ on:
       - policy-enforcer/**
       - public-api/**
       - runtime-monitor/**
+      - kube-manager/**
 
 env:
   TASK_VERSION: '3.38.0'
@@ -52,6 +54,7 @@ jobs:
             policy-enforcer: ./policy-enforcer/**
             public-api: ./public-api/**
             runtime-monitor: ./runtime-monitor/**
+            kube-manager: ./kube-manager/**
 
   test-backend:
     runs-on: ubuntu-latest

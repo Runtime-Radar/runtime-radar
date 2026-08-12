@@ -122,6 +122,13 @@
 			reverse_proxy /api/v1/cluster {args[0]}://cluster-manager:9000
 			reverse_proxy /api/v1/cluster/* {args[0]}://cluster-manager:9000
 
+			# kube-manager
+			reverse_proxy /api/v1/config/kube-manager {args[0]}://kube-manager:9000
+			reverse_proxy /api/v1/pod {args[0]}://kube-manager:9000
+			reverse_proxy /api/v1/pod/* {args[0]}://kube-manager:9000
+			reverse_proxy /api/v1/node {args[0]}://kube-manager:9000
+			reverse_proxy /api/v1/node/* {args[0]}://kube-manager:9000
+
 			# public-api
 			reverse_proxy /api/v1/access-token {args[0]}://public-api:9000
 			reverse_proxy /api/v1/access-token/* {args[0]}://public-api:9000

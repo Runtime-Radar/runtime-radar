@@ -51,6 +51,9 @@ includes:
   cs-manager:
     taskfile: ./cs-manager/Taskfile.yml
     dir: ./cs-manager
+  kube-manager:
+    taskfile: ./kube-manager/Taskfile.yml
+    dir: ./kube-manager
 
 tasks:
   proto:
@@ -65,7 +68,7 @@ tasks:
           - event-processor
           - runtime-monitor
           - cs-manager
-          - public-api
+          - kube-manager
         task: "{{.ITEM}}:proto"
 
   proto-clean:
@@ -87,6 +90,7 @@ tasks:
           - runtime-monitor
           - public-api
           - cs-manager
+          - kube-manager
           - reverse-proxy
         task: "{{.ITEM}}:docker-build"
 

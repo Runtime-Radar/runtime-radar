@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package kube;
+
+option go_package = "./api";
+
+message Sort {
+  string field = 1;
+  string key = 2;
+}

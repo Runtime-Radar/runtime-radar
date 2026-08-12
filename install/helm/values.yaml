@@ -233,6 +233,13 @@ cs-manager:
   # -- Token for cluster registration
   registrationToken: ""
 
+# @section Kube-manager component parameters
+kube-manager:
+  # -- Template to specify the labels of nodes for pod assignment
+  nodeSelector: {}
+  # -- Number of replicas for the kube-manager component
+  replicas: 1
+
 # @section Runtime-monitor component parameters
 runtime-monitor:
   # -- Template to specify the labels of nodes for pod assignment

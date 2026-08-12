@@ -29,6 +29,9 @@ func New(
 	accessTokenSvc service.AccessToken,
 	ruleSvc service.Rule,
 	runtimeHistorySvc service.RuntimeHistory,
+	configSvc service.Config,
+	nodeSvc service.Node,
+	podSvc service.Pod,
 ) *http.Server {
 	r := mux.NewRouter()
 
@@ -36,7 +39,7 @@ func New(
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		Addr:         httpAddr,
-		Handler:      setupRouter(r, accessTokenSvc, ruleSvc, runtimeHistorySvc),
+		Handler:      setupRouter(r, accessTokenSvc, ruleSvc, runtimeHistorySvc, configSvc, nodeSvc, podSvc),
 		TLSConfig:    tlsConfig,
 	}
 }
@@ -67,6 +70,9 @@ func setupRouter(
 	accessTokenSvc service.AccessToken,
 	ruleSvc service.Rule,
 	runtimeHistorySvc service.RuntimeHistory,
+	configSvc service.Config,
+	nodeSvc service.Node,
+	podSvc service.Pod,
 ) http.Handler {
 	r.StrictSlash(true)
 
@@ -104,6 +110,16 @@ func setupRouter(
 	r.Handle("/api/v1/public-api/runtime-event/slice/{direction:left|right}", constructor.RuntimeHistoryListEventsSlice(runtimeHistorySvc)).
 		Methods(http.MethodGet).
 		Queries("cursor", `{cursor:[a-zA-Z0-9\-:.]+}`)
+
+	// kube-manager
+	r.Handle("/api/v1/public-api/config/kube-manager", constructor.ConfigAdd(configSvc)).Methods(http.MethodPost)
+	r.Handle("/api/v1/public-api/config/kube-manager", constructor.ConfigRead(configSvc)).Methods(http.MethodGet)
+	r.Handle("/api/v1/public-api/node", constructor.NodeGet(nodeSvc)).Methods(http.MethodGet)
+	r.Handle("/api/v1/public-api/node/list", constructor.NodeListMeta(nodeSvc)).Methods(http.MethodGet)
+	r.Handle("/api/v1/public-api/node/page/{page_num:[0-9]+}", constructor.NodeListPage(nodeSvc)).Methods(http.MethodGet)
+	r.Handle("/api/v1/public-api/pod", constructor.PodGet(podSvc)).Methods(http.MethodGet)
+	r.Handle("/api/v1/public-api/pod/list", constructor.PodListMeta(podSvc)).Methods(http.MethodGet)
+	r.Handle("/api/v1/public-api/pod/page/{page_num:[0-9]+}", constructor.PodListPage(podSvc)).Methods(http.MethodGet)
 
 	return h
 }

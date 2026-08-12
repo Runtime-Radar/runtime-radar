@@ -27,6 +27,7 @@ The chart deploys the following components:
 - **reverse-proxy**: Ingress and routing layer
 - **cs-manager**: Central management service
 - **public-api**: External API gateway
+- **kube-manager**: Kubernetes management service
 
 ### Runtime Components
 
@@ -620,6 +621,13 @@ clickhouse:
 | `cs-manager.nodeSelector`      | Template to specify the labels of nodes for pod assignment | `{}`  |
 | `cs-manager.replicas`          | Number of replicas for the cs-manager component            | `1`   |
 | `cs-manager.registrationToken` | Token for cluster registration                             | `""`  |
+
+### Kube-manager component parameters
+
+| Name                        | Description                                                | Value |
+|-----------------------------|------------------------------------------------------------| ----- |
+| `kube-manager.nodeSelector` | Template to specify the labels of nodes for pod assignment | `{}`  |
+| `kube-manager.replicas`     | Number of replicas for the kube-manager component           | `1`   |
 
 ### Runtime-monitor component parameters
 
