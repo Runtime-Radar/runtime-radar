@@ -334,6 +334,7 @@ func TestMain(m *testing.M) {
 	// processor.worker.go before the report is dropped, accumulating against
 	// per-fixture deadlines.
 	go func() {
+		//nolint:revive,empty-block
 		for range pool.Reports() {
 		}
 	}()
