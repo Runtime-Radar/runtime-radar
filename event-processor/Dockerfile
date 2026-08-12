@@ -27,6 +27,7 @@ COPY history-api/pkg/model/ history-api/pkg/model/
 COPY notifier/api/ notifier/api/
 COPY policy-enforcer/api/ policy-enforcer/api/
 COPY policy-enforcer/pkg/model/ policy-enforcer/pkg/model/
+COPY kube-manager/api/ kube-manager/api/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d event-processor build
 
