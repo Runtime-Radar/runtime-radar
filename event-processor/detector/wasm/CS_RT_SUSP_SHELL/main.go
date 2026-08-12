@@ -4,6 +4,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/gobwas/glob"
 	"github.com/runtime-radar/runtime-radar/event-processor/detector/api"
@@ -17,6 +19,11 @@ const (
 	Version     = 1
 	Author      = "Runtime Radar Team"
 	License     = "Apache License 2.0"
+)
+
+const (
+	ExecNoArgs  = "Detected a suspicious startup of the `%s` command shell whose parent process was created by the executable file `%s` from the `%s` directory"
+	ExecDefault = "Detected a suspicious startup of the `%s` command shell with the `%s` arguments. The parent process of the shell was created by the executable file `%s` from the `%s` directory."
 )
 
 var (
@@ -34,6 +41,39 @@ var (
 		// "PROCESS_EXEC": {},
 		// same as:
 		// "PROCESS_EXEC": {"*"},
+	}
+)
+
+var (
+	mitreTactics = []*api.MitreTactic{
+		{
+			Id: "TA0001",
+			Techniques: []string{
+				"T1190",
+			},
+		},
+		{
+			Id: "TA0002",
+			Techniques: []string{
+				"T1059.004",
+				"T1059.006",
+				"T1059.011",
+			},
+		},
+		{
+			Id: "TA0003",
+			Techniques: []string{
+				"T1543",
+			},
+		},
+		{
+			Id: "TA0004",
+			Techniques: []string{
+				"T1543",
+				"T1611",
+				"T1068",
+			},
+		},
 	}
 )
 
@@ -185,8 +225,8 @@ var (
 	}
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 
@@ -194,12 +234,13 @@ type Detector struct{}
 
 func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
 	return &api.InfoResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-		License:     License,
+		Id:             ID,
+		Name:           Name,
+		Description:    Description,
+		Version:        Version,
+		Author:         Author,
+		License:        License,
+		TacticsCovered: mitreTactics,
 	}, nil
 }
 
@@ -229,8 +270,8 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	switch ev := event.(type) {
 	case *tetragon.GetEventsResponse_ProcessExec:
 		exec := ev.ProcessExec
-
 		binary := exec.GetProcess().GetBinary()
+		args := exec.GetProcess().GetArguments()
 		parentBinary := exec.GetParent().GetBinary()
 
 		shell := false
@@ -265,6 +306,13 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		}
 
 		if suspParent || suspDir {
+			resp.TacticsCovered = mitreTactics
+			parentBinaryDir := parentBinary[0 : strings.LastIndex(parentBinary, "/")+1]
+			if args == "" {
+				resp.Reason = fmt.Sprintf(ExecNoArgs, binary, parentBinary, parentBinaryDir)
+			} else {
+				resp.Reason = fmt.Sprintf(ExecDefault, binary, args, parentBinary, parentBinaryDir)
+			}
 			resp.Severity = api.DetectResp_HIGH
 		}
 
@@ -281,245 +329,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	return resp, nil
 }
 
-/* Example event (JSON):
-
-{
-    "process_exec": {
-        "process": {
-            "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODkzODA1NzY1NDI3Mjc6MTczODQ2NA==",
-            "pid": 1738464,
-            "uid": 0,
-            "cwd": "/",
-            "binary": "/usr/bin/bash",
-            "arguments": "",
-            "flags": "execve rootcwd clone",
-            "start_time": "2024-03-22T12:56:47.369992957Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian",
-                "labels": [],
-                "container": {
-                    "id": "cri-o://332cff0fb99f03f8b4fb9633f245ba21ad43339eeafd3b0ac3e5d9a38371262c",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2024-02-27T13:26:02Z",
-                    "pid": 62632,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian",
-                "workload_kind": "Pod"
-            },
-            "docker": "332cff0fb99f03f8b4fb9633f245ba2",
-            "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODkzNzUyOTI1MDExMDY6MTczNzA5OA==",
-            "refcnt": 0,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026534978,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026534979,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026535073,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026534980,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026535075,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 1738464,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null
-        },
-        "parent": {
-            "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODkzNzUyOTI1MDExMDY6MTczNzA5OA==",
-            "pid": 1737098,
-            "uid": 0,
-            "cwd": "/",
-            "binary": "/tmp/linpeas.sh",
-            "arguments": "/tmp/linpeas.sh",
-            "flags": "execve rootcwd clone",
-            "start_time": "2024-03-22T12:56:42.085951573Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian",
-                "labels": [],
-                "container": {
-                    "id": "cri-o://332cff0fb99f03f8b4fb9633f245ba21ad43339eeafd3b0ac3e5d9a38371262c",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2024-02-27T13:26:02Z",
-                    "pid": 61338,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian",
-                "workload_kind": "Pod"
-            },
-            "docker": "332cff0fb99f03f8b4fb9633f245ba2",
-            "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjMyODY1NjA1MDI5Mzg4NDQ6MTcwODI4Mg==",
-            "refcnt": 0,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026534978,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026534979,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026535073,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026535074,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026534980,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026535075,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 1737098,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null
-        },
-        "ancestors": []
-    },
-    "node_name": "experts-k8s-cs",
-    "time": "2024-03-22T12:56:47.369992646Z",
-    "aggregation_info": null
+// tacticTechniques is a constructor for *api.MitreTactic which makes its initialization less verbose.
+func tacticTechniques(tacticID string, techniqueIDs ...string) *api.MitreTactic {
+	return &api.MitreTactic{
+		Id:         tacticID,
+		Techniques: techniqueIDs,
+	}
 }
-
-*/

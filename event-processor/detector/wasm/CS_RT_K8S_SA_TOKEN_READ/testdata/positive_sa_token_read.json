@@ -1,0 +1,292 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MzM0NjUyMTQ0MDc6MjQ4Mjc1MA==",
+        "pid": 2482750,
+        "uid": 0,
+        "cwd": "/",
+        "binary": "/usr/bin/cat",
+        "arguments": "/var/run/secrets/kubernetes.io/serviceaccount/token",
+        "flags": "execve rootcwd clone",
+        "start_time": "2024-03-18T12:39:20.258664559Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian-cap",
+          "container": {
+            "id": "cri-o://635bb04d5b6d67585f78358b6d54d0373576ed0e0e24cf02c21c86a88549b903",
+            "name": "test-pod-debian-cap",
+            "image": {
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2024-03-06T11:01:56Z",
+            "pid": 3662,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-debian-cap",
+          "workload_kind": "Pod"
+        },
+        "docker": "635bb04d5b6d67585f78358b6d54d03",
+        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MTQxMDQ5ODA2ODg6MjQ4MjUzNg==",
+        "refcnt": 1,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_CHROOT",
+            "CAP_SYS_ADMIN",
+            "CAP_SETFCAP"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_CHROOT",
+            "CAP_SYS_ADMIN",
+            "CAP_SETFCAP"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026534057,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026534058,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026535084,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026535085,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026535085,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026534059,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026535086,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 2482750,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null
+      },
+      "parent": {
+        "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MTQxMDQ5ODA2ODg6MjQ4MjUzNg==",
+        "pid": 2482536,
+        "uid": 0,
+        "cwd": "/",
+        "binary": "/usr/bin/bash",
+        "arguments": "",
+        "flags": "execve rootcwd",
+        "start_time": "2024-03-18T12:39:00.898431349Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian-cap",
+          "container": {
+            "id": "cri-o://635bb04d5b6d67585f78358b6d54d0373576ed0e0e24cf02c21c86a88549b903",
+            "name": "test-pod-debian-cap",
+            "image": {
+              "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2024-03-06T11:01:56Z",
+            "pid": 3653,
+            "maybe_exec_probe": false
+          },
+          "pod_labels": {},
+          "workload": "test-pod-debian-cap",
+          "workload_kind": "Pod"
+        },
+        "docker": "635bb04d5b6d67585f78358b6d54d03",
+        "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MTQxMDI3NDQ4NDg6MjQ4MjUzNg==",
+        "refcnt": 0,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_CHROOT",
+            "CAP_SYS_ADMIN",
+            "CAP_SETFCAP"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_SYS_CHROOT",
+            "CAP_SYS_ADMIN",
+            "CAP_SETFCAP"
+          ],
+          "inheritable": []
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026534057,
+            "is_host": false
+          },
+          "ipc": {
+            "inum": 4026534058,
+            "is_host": false
+          },
+          "mnt": {
+            "inum": 4026535084,
+            "is_host": false
+          },
+          "pid": {
+            "inum": 4026535085,
+            "is_host": false
+          },
+          "pid_for_children": {
+            "inum": 4026535085,
+            "is_host": false
+          },
+          "net": {
+            "inum": 4026534059,
+            "is_host": false
+          },
+          "time": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "time_for_children": {
+            "inum": 4026531834,
+            "is_host": true
+          },
+          "cgroup": {
+            "inum": 4026535086,
+            "is_host": false
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 2482536,
+        "process_credentials": {
+          "uid": 0,
+          "gid": 0,
+          "euid": 0,
+          "egid": 0,
+          "suid": 0,
+          "sgid": 0,
+          "fsuid": 0,
+          "fsgid": 0,
+          "securebits": [],
+          "caps": null,
+          "user_ns": null
+        },
+        "binary_properties": null
+      },
+      "function_name": "security_file_permission",
+      "args": [
+        {
+          "file_arg": {
+            "mount": "",
+            "path": "/run/secrets/kubernetes.io/serviceaccount/..2024_03_18_12_27_42.2985670933/token",
+            "flags": ""
+          },
+          "label": ""
+        },
+        {
+          "int_arg": 4,
+          "label": ""
+        }
+      ],
+      "return": {
+        "int_arg": 0,
+        "label": ""
+      },
+      "action": "KPROBE_ACTION_POST",
+      "policy_name": "pt-cs-file-monitoring"
+    },
+    "node_name": "test-k8s-cluster",
+    "time": "2024-03-18T12:39:20.259331822Z",
+    "aggregation_info": null
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_K8S_SA_TOKEN_READ",
+      "severity": "HIGH",
+      "reason_contains": "Kubernetes token",
+      "tactics": [
+        "TA0001",
+        "TA0003",
+        "TA0004",
+        "TA0005",
+        "TA0006",
+        "TA0008"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "HIGH",
+      "is_threat": true
+    }
+  }
+}

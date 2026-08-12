@@ -1,0 +1,24 @@
+{
+  "event": {
+    "process_exec": {
+      "process": {
+        "pid": 2988895,
+        "cwd": "/root",
+        "binary": "/usr/bin/chmod",
+        "arguments": "-x /tmp/xmrig"
+      }
+    },
+    "node_name": "test-node",
+    "time": "2024-11-13T10:15:07.462452981Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": null,
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "",
+      "is_threat": false
+    }
+  }
+}

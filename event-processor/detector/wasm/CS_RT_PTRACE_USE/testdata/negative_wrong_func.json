@@ -1,0 +1,32 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "pid": 12345,
+        "binary": "/usr/bin/strace",
+        "arguments": "-p 1234"
+      },
+      "function_name": "__x64_sys_getpid",
+      "args": [
+        {
+          "int_arg": 4
+        },
+        {
+          "int_arg": 4321
+        }
+      ]
+    },
+    "node_name": "test-node",
+    "time": "2025-07-28T13:34:05.422534198Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": null,
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "",
+      "is_threat": false
+    }
+  }
+}

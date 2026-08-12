@@ -10,7 +10,7 @@ import (
 	_ "github.com/google/gops"
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2"
-	_ "github.com/knqyf263/go-plugin/cmd/protoc-gen-go-plugin"
+	_ "github.com/runtime-radar/go-plugin/cmd/protoc-gen-go-plugin"
 	_ "golang.org/x/vuln/cmd/govulncheck"
 	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 	_ "google.golang.org/protobuf/cmd/protoc-gen-go"

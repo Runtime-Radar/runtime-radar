@@ -13,6 +13,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/event-processor/api"
 	detector_api "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
 	"github.com/runtime-radar/runtime-radar/event-processor/pkg/metrics"
+	"github.com/runtime-radar/runtime-radar/event-processor/pkg/model/convert"
 	enf_model "github.com/runtime-radar/runtime-radar/policy-enforcer/pkg/model"
 )
 
@@ -79,14 +80,17 @@ func (c Chain) Detect(ctx context.Context, event *tetragon_api.GetEventsResponse
 
 			res.Threats = append(res.Threats, &api.Threat{
 				Detector: &api.Detector{
-					Id:          d.Info.GetId(),
-					Name:        d.Info.GetName(),
-					Description: d.Info.GetDescription(),
-					Version:     d.Info.GetVersion(),
-					Author:      d.Info.GetAuthor(),
-					Contact:     d.Info.GetContact(),
+					Id:             d.Info.GetId(),
+					Name:           d.Info.GetName(),
+					Description:    d.Info.GetDescription(),
+					Version:        d.Info.GetVersion(),
+					Author:         d.Info.GetAuthor(),
+					Contact:        d.Info.GetContact(),
+					TacticsCovered: d.Info.GetTacticsCovered(),
 				},
-				Severity: s.String(),
+				Severity:       s.String(),
+				Reason:         resp.GetReason(),
+				TacticsCovered: convert.MitreTacticsToProto(resp.GetTacticsCovered()),
 			})
 			metrics.DetectorThreatsCounter.With(prometheus.Labels{metrics.DetectorLabel: d.Info.GetId()}).Inc()
 		}

@@ -1,7 +1,6 @@
 syntax = "proto3";
 package detector;
 
-import "google/protobuf/empty.proto";
 import "tetragon/events.proto";
 
 option go_package = "./api";
@@ -14,6 +13,13 @@ service Detector {
   rpc TriggerCriteria(TriggerCriteriaReq) returns (TriggerCriteriaResp) {}
 }
 
+// MitreTactic represents a tactic from Mitre matrix that are covered by a detector.
+// Since it's possible for detector to cover only specific techniques, their ids are listed explicitly.
+message MitreTactic {
+    string id = 1;
+    repeated string techniques = 2; // list of techniques' ids
+}
+
 message InfoReq {}
 
 message InfoResp {
@@ -24,6 +30,8 @@ message InfoResp {
   string author = 5;
   string contact = 6;
   string license = 7;
+  // tactics_covered is an optional list of Mitre tactics that are covered by the detector.
+  repeated MitreTactic tactics_covered = 8;
 }
 
 message DetectReq {
@@ -39,6 +47,10 @@ message DetectResp {
     CRITICAL = 4;
   }
   Severity severity = 8;
+  // reason is an optional human-readable message that describes what exactly was detected.
+  string reason = 9;
+  // tactics_covered is an optional list of Mitre tactics that are covered via detect.
+  repeated MitreTactic tactics_covered = 10;
 }
 
 message TriggerCriteriaReq {}

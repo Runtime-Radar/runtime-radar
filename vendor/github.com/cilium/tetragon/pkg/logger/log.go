@@ -19,6 +19,7 @@ type LogFormat string
 const (
 	LevelOpt  = "level"
 	FormatOpt = "format"
+	FileOpt   = "file"
 
 	logFormatText          LogFormat = "text"
 	logFormatTextTimestamp LogFormat = "text-ts"
@@ -76,6 +77,10 @@ func (o LogOptions) GetLogFormat() LogFormat {
 	return LogFormat(formatOpt)
 }
 
+func (o LogOptions) GetLogFile() string {
+	return o[FileOpt]
+}
+
 // SetLogLevel updates the DefaultLogger with a new slog.Level
 func SetLogLevel(logLevel slog.Level) {
 	slogLeveler.Set(logLevel)
@@ -92,7 +97,7 @@ func SetLogLevelToDebug() {
 }
 
 // PopulateLogOpts populates the logger options making sure that passed values are valid.
-func PopulateLogOpts(o LogOptions, level string, format string) {
+func PopulateLogOpts(o LogOptions, level, format, file string) {
 	if level != "" {
 		o[LevelOpt] = level
 	}
@@ -100,11 +105,15 @@ func PopulateLogOpts(o LogOptions, level string, format string) {
 	if format != "" {
 		format = strings.ToLower(format)
 		switch LogFormat(format) {
-		case logFormatText, logFormatJSON:
+		case logFormatText, logFormatTextTimestamp, logFormatJSON, logFormatJSONTimestamp:
 			o[FormatOpt] = format
 		default:
 			o[FormatOpt] = string(logFormatText)
 		}
+	}
+
+	if file != "" {
+		o[FileOpt] = file
 	}
 }
 

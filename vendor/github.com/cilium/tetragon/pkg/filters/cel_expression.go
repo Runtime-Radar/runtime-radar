@@ -10,13 +10,14 @@ import (
 	"reflect"
 	"slices"
 
+	"github.com/google/cel-go/cel"
+	celk8s "k8s.io/apiserver/pkg/cel/library"
+
 	"github.com/cilium/tetragon/api/v1/tetragon"
 	"github.com/cilium/tetragon/api/v1/tetragon/codegen/helpers"
 	"github.com/cilium/tetragon/pkg/event"
 	"github.com/cilium/tetragon/pkg/logger"
 	"github.com/cilium/tetragon/pkg/logger/logfields"
-	"github.com/google/cel-go/cel"
-	celk8s "k8s.io/apiserver/pkg/cel/library"
 )
 
 // compile will parse and check an expression `expr` against a given
@@ -49,7 +50,7 @@ func EvalCEL(ctx context.Context, program cel.Program, eventMap map[string]any) 
 	if err != nil {
 		return false, fmt.Errorf("error running CEL program: %w", err)
 	}
-	v, err := out.ConvertToNative(reflect.TypeOf(false))
+	v, err := out.ConvertToNative(reflect.TypeFor[bool]())
 	if err != nil {
 		return false, fmt.Errorf("invalid conversion in CEL program: %w", err)
 	}

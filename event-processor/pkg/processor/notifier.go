@@ -25,12 +25,22 @@ func (wp *WorkersPool) notify(ctx context.Context, ed *eventData, threats []*api
 			sev = tSev
 		}
 
+		tacticsCovered := make([]*notifier_api.RuntimeEvent_Event_MitreTactic, 0, len(t.GetTacticsCovered()))
+		for _, mt := range t.GetTacticsCovered() {
+			tacticsCovered = append(tacticsCovered, &notifier_api.RuntimeEvent_Event_MitreTactic{
+				Id:         mt.GetId(),
+				Techniques: mt.GetTechniques(),
+			})
+		}
+
 		nts = append(nts, &notifier_api.RuntimeEvent_Event_Threat{
 			DetectorId:          t.GetDetector().GetId(),
 			DetectorName:        t.GetDetector().GetName(),
 			DetectorVersion:     t.GetDetector().GetVersion(),
 			DetectorDescription: t.GetDetector().GetDescription(),
 			Severity:            t.GetSeverity(),
+			Reason:              t.GetReason(),
+			TacticsCovered:      tacticsCovered,
 		})
 
 	}

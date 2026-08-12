@@ -30,7 +30,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/googleRpcStatus"
             }
           }
         },
@@ -51,7 +51,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/googleRpcStatus"
             }
           }
         },
@@ -84,7 +84,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/googleRpcStatus"
             }
           }
         },
@@ -106,7 +106,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/googleRpcStatus"
             }
           }
         },
@@ -151,7 +151,7 @@
         }
       }
     },
-    "googlerpcStatus": {
+    "googleRpcStatus": {
       "type": "object",
       "properties": {
         "code": {
@@ -351,6 +351,7 @@
         "PROCESS_UPROBE",
         "PROCESS_THROTTLE",
         "PROCESS_LSM",
+        "PROCESS_USDT",
         "TEST",
         "RATE_LIMIT_INFO"
       ],
@@ -466,6 +467,20 @@
             "type": "string"
           },
           "description": "Filter ancestor processes' binaries using RE2 regular expression syntax."
+        },
+        "containerNameRegex": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Filter by the container name in the process.pod.container field using RE2 regular expression syntax:\nhttps://github.com/google/re2/wiki/Syntax"
+        },
+        "namespaceRegex": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Filter by the namespace in the process.pod.namespace field using RE2 regular expression syntax:\nhttps://github.com/google/re2/wiki/Syntax"
         }
       }
     }

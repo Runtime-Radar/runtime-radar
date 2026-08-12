@@ -52,6 +52,8 @@ message Pod {
   string namespace = 1;
   // Name of the Pod.
   string name = 2;
+  // UID of the Pod.
+  string uid = 3;
   // Container of the Pod from which the process that triggered the event
   // originates.
   Container container = 4;
@@ -184,6 +186,12 @@ message UserRecord {
   string name = 1;
 }
 
+// Environment variable
+message EnvVar {
+  string Key = 1;
+  string Value = 2;
+}
+
 message Process {
   // Exec ID uniquely identifies the process over time across all the nodes in the cluster.
   string exec_id = 1;
@@ -295,6 +303,8 @@ message Process {
   // for example, you wish to discern whether a process was spawned using a
   // tool like nsenter or kubectl exec.
   google.protobuf.BoolValue in_init_tree = 20;
+  // Environment variables passed to the binary at execution.
+  repeated EnvVar environment_variables = 21;
 }
 
 message ProcessExec {
@@ -361,6 +371,11 @@ message KprobeSockaddr {
   uint32 port = 3;
 }
 
+message KprobeSockaddrUn {
+  string family = 1;
+  string path = 2;
+}
+
 message KprobeNetDev {
   string name = 1;
 }
@@ -414,6 +429,12 @@ message KprobeBpfAttr {
   string ProgName = 3;
 }
 
+message KprobeBpfProg {
+  string ProgType = 1;
+  uint32 InsnCnt = 2;
+  string ProgName = 3;
+}
+
 message KprobePerfEvent {
   string KprobeFunc = 1;
   string Type = 2;
@@ -427,6 +448,10 @@ message KprobeBpfMap {
   uint32 ValueSize = 3;
   uint32 MaxEntries = 4;
   string MapName = 5;
+}
+
+message KprobeError {
+  string Message = 1;
 }
 
 message SyscallId {
@@ -465,6 +490,9 @@ message KprobeArgument {
     BpfCmd bpf_cmd_arg = 28;
     SyscallId syscall_id = 29;
     KprobeSockaddr sockaddr_arg = 30;
+    KprobeBpfProg bpf_prog_arg = 31;
+    KprobeError error_arg = 32;
+    KprobeSockaddrUn sockaddrun_arg = 33;
   }
   string label = 18;
 }
@@ -501,6 +529,8 @@ enum KprobeAction {
   KPROBE_ACTION_NOTIFYENFORCER = 13;
   // CleanupEnforcerNotification action cleanups any state left by NotifyEnforcer
   KPROBE_ACTION_CLEANUPENFORCERNOTIFICATION = 14;
+  // Set action sets first USDT argument
+  KPROBE_ACTION_SET = 15;
 }
 
 message ProcessKprobe {
@@ -530,6 +560,8 @@ message ProcessKprobe {
   repeated StackTraceEntry user_stack_trace = 12;
   // Ancestors of the process beyond the immediate parent.
   repeated Process ancestors = 13;
+  // Data definition of the observed kprobe.
+  repeated KprobeArgument data = 14;
 }
 
 message ProcessTracepoint {
@@ -575,6 +607,33 @@ message ProcessUprobe {
   uint64 offset = 10;
   // uprobe ref_ctr_offset
   uint64 ref_ctr_offset = 11;
+  // Action performed when the uprobe hook matched.
+  KprobeAction action = 12;
+  // Data definition of the observed uprobe.
+  repeated KprobeArgument data = 13;
+}
+
+message ProcessUsdt {
+  Process process = 1;
+  Process parent = 2;
+  string path = 3;
+  string provider = 4;
+  string name = 5;
+  // Name of the policy that created that uprobe.
+  string policy_name = 6;
+  // Short message of the Tracing Policy to inform users what is going on.
+  string message = 7;
+  // Arguments definition of the observed uprobe.
+  repeated KprobeArgument args = 8;
+  // Tags of the Tracing Policy to categorize the event.
+  repeated string tags = 9;
+  // Ancestors of the process beyond the immediate parent.
+  repeated Process ancestors = 10;
+  // Action performed when the USDT hook matched.
+  KprobeAction action = 11;
+  // Flags are for debugging purposes only and should not be considered a
+  // reliable source of information.
+  string flags = 12;
 }
 
 message ProcessLsm {
@@ -672,9 +731,16 @@ message GetHealthStatusResponse {
 
 // loader sensor event triggered for loaded binary/library
 message ProcessLoader {
+  // Process that triggered the loader.
   Process process = 1;
+  // File path that is being loaded.
   string path = 2;
+  // Buildid of the file that is being loaded.
   bytes buildid = 3;
+  // Immediate parent of the process.
+  Process parent = 4;
+  // Ancestors of the process beyond the immediate parent.
+  repeated Process ancestors = 5;
 }
 
 // RuntimeHookRequest synchronously propagates information to the agent about run-time state.
@@ -685,6 +751,17 @@ message RuntimeHookRequest {
 }
 
 message RuntimeHookResponse {}
+
+message Mount {
+  // Destination is the absolute path where the mount will be placed in the container.
+  string destination = 1;
+  // Type specifies the mount kind.
+  string type = 2;
+  // Source specifies the source path of the mount.
+  string source = 3;
+  // Options are fstab style mount options.
+  repeated string options = 4;
+}
 
 // CreateContainer informs the agent that a container was created
 // This is intented to be used by OCI hooks (but not limited to them) and corresponds to the
@@ -716,6 +793,8 @@ message CreateContainer {
   string podNamespace = 8;
   // containerImage is the full image location (repo + image)
   string containerImage = 9;
+  // Mounts configures additional mounts (on top of Root).
+  repeated Mount mounts = 10;
 }
 
 message StackTraceEntry {

@@ -1,0 +1,76 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: "socket"
+spec:
+  kprobes:
+    # SYNOPSIS
+    # int inet_csk_listen_start(struct sock *sk)
+    #     @sk: socket information
+    #
+    # DESCRIPTION
+    # Listen for connections on a socket
+    #
+    # RETURN VALUE
+    # Returns 0 if success (https://elixir.bootlin.com/linux/v6.8-rc7/source/net/ipv4/inet_connection_sock.c#L1235)
+    #
+    # SYSCALLS
+    #     listen()
+    #
+    - call: "inet_csk_listen_start"
+      syscall: false
+      return: true
+      args:
+        - index: 0
+          type: "sock"
+      returnArg:
+        index: 0
+        type: "int"
+    #
+    # SYNOPSIS
+    # int security_socket_create(int family, int type, int protocol, int kern)
+    #     @family: protocol family
+    #     @type: communications type
+    #     @protocol: requested protocol
+    #     @kern: set to 1 if a kernel socket is requested
+    #
+    # DESCRIPTION
+    # Check permissions prior to creating a new socket.
+    #
+    # RETURN VALUE
+    # Returns 0 if permission is granted.
+    #
+    # SYSCALLS
+    #      socket()
+    #
+    - call: "security_socket_create"
+      syscall: false
+      return: true
+      args:
+        - index: 0
+          type: int
+          label: "Family"
+        - index: 1
+          type: int
+          label: "Type"
+      returnArg:
+        index: 0
+        type: int
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "38" # AF_ALG
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "2" # AF_INET
+                - "10" # AF_INET6
+                - "17" # AF_PACKET
+            - index: 1
+              operator: "Equal"
+              values:
+                - "3" # SOCK_RAW
+                - "10" # SOCK_PACKET

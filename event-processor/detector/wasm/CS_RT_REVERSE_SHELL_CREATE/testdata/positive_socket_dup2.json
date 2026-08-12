@@ -1,0 +1,43 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "pid": 757344,
+        "binary": "/usr/bin/bash",
+        "arguments": ""
+      },
+      "function_name": "do_dup2",
+      "args": [
+        {
+          "file_arg": {
+            "permission": "srwxrwxrwx"
+          }
+        },
+        {
+          "int_arg": 0,
+          "label": "fd"
+        }
+      ]
+    },
+    "node_name": "test-node",
+    "time": "2024-08-08T14:25:32.798469136Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_REVERSE_SHELL_CREATE",
+      "severity": "HIGH",
+      "reason_contains": "reverse shell",
+      "tactics": [
+        "TA0001",
+        "TA0002"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "HIGH",
+      "is_threat": true
+    }
+  }
+}

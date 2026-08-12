@@ -451,20 +451,74 @@ func (x *RuntimeEvent_Event) GetFunctionReturn() string {
 	return ""
 }
 
+type RuntimeEvent_Event_MitreTactic struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Techniques    []string               `protobuf:"bytes,2,rep,name=techniques,proto3" json:"techniques,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RuntimeEvent_Event_MitreTactic) Reset() {
+	*x = RuntimeEvent_Event_MitreTactic{}
+	mi := &file_notifier_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RuntimeEvent_Event_MitreTactic) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RuntimeEvent_Event_MitreTactic) ProtoMessage() {}
+
+func (x *RuntimeEvent_Event_MitreTactic) ProtoReflect() protoreflect.Message {
+	mi := &file_notifier_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RuntimeEvent_Event_MitreTactic.ProtoReflect.Descriptor instead.
+func (*RuntimeEvent_Event_MitreTactic) Descriptor() ([]byte, []int) {
+	return file_notifier_proto_rawDescGZIP(), []int{2, 0, 0}
+}
+
+func (x *RuntimeEvent_Event_MitreTactic) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RuntimeEvent_Event_MitreTactic) GetTechniques() []string {
+	if x != nil {
+		return x.Techniques
+	}
+	return nil
+}
+
 type RuntimeEvent_Event_Threat struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	DetectorId          string                 `protobuf:"bytes,1,opt,name=detector_id,json=detectorId,proto3" json:"detector_id,omitempty"`
-	DetectorName        string                 `protobuf:"bytes,2,opt,name=detector_name,json=detectorName,proto3" json:"detector_name,omitempty"`
-	DetectorVersion     uint32                 `protobuf:"varint,3,opt,name=detector_version,json=detectorVersion,proto3" json:"detector_version,omitempty"`
-	DetectorDescription string                 `protobuf:"bytes,4,opt,name=detector_description,json=detectorDescription,proto3" json:"detector_description,omitempty"`
-	Severity            string                 `protobuf:"bytes,5,opt,name=severity,proto3" json:"severity,omitempty"`
+	state               protoimpl.MessageState            `protogen:"open.v1"`
+	DetectorId          string                            `protobuf:"bytes,1,opt,name=detector_id,json=detectorId,proto3" json:"detector_id,omitempty"`
+	DetectorName        string                            `protobuf:"bytes,2,opt,name=detector_name,json=detectorName,proto3" json:"detector_name,omitempty"`
+	DetectorVersion     uint32                            `protobuf:"varint,3,opt,name=detector_version,json=detectorVersion,proto3" json:"detector_version,omitempty"`
+	DetectorDescription string                            `protobuf:"bytes,4,opt,name=detector_description,json=detectorDescription,proto3" json:"detector_description,omitempty"`
+	Severity            string                            `protobuf:"bytes,5,opt,name=severity,proto3" json:"severity,omitempty"`
+	Reason              string                            `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	TacticsCovered      []*RuntimeEvent_Event_MitreTactic `protobuf:"bytes,7,rep,name=tactics_covered,json=tacticsCovered,proto3" json:"tactics_covered,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *RuntimeEvent_Event_Threat) Reset() {
 	*x = RuntimeEvent_Event_Threat{}
-	mi := &file_notifier_proto_msgTypes[4]
+	mi := &file_notifier_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -476,7 +530,7 @@ func (x *RuntimeEvent_Event_Threat) String() string {
 func (*RuntimeEvent_Event_Threat) ProtoMessage() {}
 
 func (x *RuntimeEvent_Event_Threat) ProtoReflect() protoreflect.Message {
-	mi := &file_notifier_proto_msgTypes[4]
+	mi := &file_notifier_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -489,7 +543,7 @@ func (x *RuntimeEvent_Event_Threat) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RuntimeEvent_Event_Threat.ProtoReflect.Descriptor instead.
 func (*RuntimeEvent_Event_Threat) Descriptor() ([]byte, []int) {
-	return file_notifier_proto_rawDescGZIP(), []int{2, 0, 0}
+	return file_notifier_proto_rawDescGZIP(), []int{2, 0, 1}
 }
 
 func (x *RuntimeEvent_Event_Threat) GetDetectorId() string {
@@ -527,6 +581,20 @@ func (x *RuntimeEvent_Event_Threat) GetSeverity() string {
 	return ""
 }
 
+func (x *RuntimeEvent_Event_Threat) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *RuntimeEvent_Event_Threat) GetTacticsCovered() []*RuntimeEvent_Event_MitreTactic {
+	if x != nil {
+		return x.TacticsCovered
+	}
+	return nil
+}
+
 var File_notifier_proto protoreflect.FileDescriptor
 
 const file_notifier_proto_rawDesc = "" +
@@ -537,14 +605,15 @@ const file_notifier_proto_rawDesc = "" +
 	"\rruntime_event\x18\x05 \x01(\v2\x16.notifier.RuntimeEventH\x00R\fruntimeEventB\a\n" +
 	"\x05event\"D\n" +
 	"\tNotifyReq\x127\n" +
-	"\rnotifications\x18\x01 \x03(\v2\x11.notifier.MessageR\rnotifications\"\xbf\v\n" +
+	"\rnotifications\x18\x01 \x03(\v2\x11.notifier.MessageR\rnotifications\"\xe9\f\n" +
 	"\fRuntimeEvent\x122\n" +
 	"\x05event\x18\x01 \x01(\v2\x1c.notifier.RuntimeEvent.EventR\x05event\x12\x1a\n" +
 	"\bseverity\x18\x02 \x01(\tR\bseverity\x12?\n" +
 	"\rregistered_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\fregisteredAt\x12\x1b\n" +
 	"\trule_name\x18\x04 \x01(\tR\bruleName\x12\x14\n" +
 	"\x05block\x18\x05 \x01(\bR\x05block\x12\x19\n" +
-	"\bevent_id\x18\x06 \x01(\tR\aeventId\x1a\xcf\t\n" +
+	"\bevent_id\x18\x06 \x01(\tR\aeventId\x1a\xf9\n" +
+	"\n" +
 	"\x05Event\x12=\n" +
 	"\athreats\x18\x01 \x03(\v2#.notifier.RuntimeEvent.Event.ThreatR\athreats\x12\x1d\n" +
 	"\n" +
@@ -574,14 +643,21 @@ const file_notifier_proto_rawDesc = "" +
 	"\tnode_name\x18\x14 \x01(\tR\bnodeName\x12#\n" +
 	"\rfunction_name\x18\x15 \x01(\tR\ffunctionName\x12#\n" +
 	"\rfunction_args\x18\x16 \x01(\tR\ffunctionArgs\x12'\n" +
-	"\x0ffunction_return\x18\x17 \x01(\tR\x0efunctionReturn\x1a\xc8\x01\n" +
+	"\x0ffunction_return\x18\x17 \x01(\tR\x0efunctionReturn\x1a=\n" +
+	"\vMitreTactic\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1e\n" +
+	"\n" +
+	"techniques\x18\x02 \x03(\tR\n" +
+	"techniques\x1a\xb3\x02\n" +
 	"\x06Threat\x12\x1f\n" +
 	"\vdetector_id\x18\x01 \x01(\tR\n" +
 	"detectorId\x12#\n" +
 	"\rdetector_name\x18\x02 \x01(\tR\fdetectorName\x12)\n" +
 	"\x10detector_version\x18\x03 \x01(\rR\x0fdetectorVersion\x121\n" +
 	"\x14detector_description\x18\x04 \x01(\tR\x13detectorDescription\x12\x1a\n" +
-	"\bseverity\x18\x05 \x01(\tR\bseverityB\x0e\n" +
+	"\bseverity\x18\x05 \x01(\tR\bseverity\x12\x16\n" +
+	"\x06reason\x18\x06 \x01(\tR\x06reason\x12Q\n" +
+	"\x0ftactics_covered\x18\a \x03(\v2(.notifier.RuntimeEvent.Event.MitreTacticR\x0etacticsCoveredB\x0e\n" +
 	"\f_process_pidB\x0e\n" +
 	"\f_process_uidB\x11\n" +
 	"\x0f_process_setuidB\x11\n" +
@@ -604,29 +680,31 @@ func file_notifier_proto_rawDescGZIP() []byte {
 	return file_notifier_proto_rawDescData
 }
 
-var file_notifier_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_notifier_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_notifier_proto_goTypes = []any{
-	(*Message)(nil),                   // 0: notifier.Message
-	(*NotifyReq)(nil),                 // 1: notifier.NotifyReq
-	(*RuntimeEvent)(nil),              // 2: notifier.RuntimeEvent
-	(*RuntimeEvent_Event)(nil),        // 3: notifier.RuntimeEvent.Event
-	(*RuntimeEvent_Event_Threat)(nil), // 4: notifier.RuntimeEvent.Event.Threat
-	(*timestamppb.Timestamp)(nil),     // 5: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),             // 6: google.protobuf.Empty
+	(*Message)(nil),                        // 0: notifier.Message
+	(*NotifyReq)(nil),                      // 1: notifier.NotifyReq
+	(*RuntimeEvent)(nil),                   // 2: notifier.RuntimeEvent
+	(*RuntimeEvent_Event)(nil),             // 3: notifier.RuntimeEvent.Event
+	(*RuntimeEvent_Event_MitreTactic)(nil), // 4: notifier.RuntimeEvent.Event.MitreTactic
+	(*RuntimeEvent_Event_Threat)(nil),      // 5: notifier.RuntimeEvent.Event.Threat
+	(*timestamppb.Timestamp)(nil),          // 6: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),                  // 7: google.protobuf.Empty
 }
 var file_notifier_proto_depIdxs = []int32{
 	2, // 0: notifier.Message.runtime_event:type_name -> notifier.RuntimeEvent
 	0, // 1: notifier.NotifyReq.notifications:type_name -> notifier.Message
 	3, // 2: notifier.RuntimeEvent.event:type_name -> notifier.RuntimeEvent.Event
-	5, // 3: notifier.RuntimeEvent.registered_at:type_name -> google.protobuf.Timestamp
-	4, // 4: notifier.RuntimeEvent.Event.threats:type_name -> notifier.RuntimeEvent.Event.Threat
-	1, // 5: notifier.Notifier.Notify:input_type -> notifier.NotifyReq
-	6, // 6: notifier.Notifier.Notify:output_type -> google.protobuf.Empty
-	6, // [6:7] is the sub-list for method output_type
-	5, // [5:6] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	6, // 3: notifier.RuntimeEvent.registered_at:type_name -> google.protobuf.Timestamp
+	5, // 4: notifier.RuntimeEvent.Event.threats:type_name -> notifier.RuntimeEvent.Event.Threat
+	4, // 5: notifier.RuntimeEvent.Event.Threat.tactics_covered:type_name -> notifier.RuntimeEvent.Event.MitreTactic
+	1, // 6: notifier.Notifier.Notify:input_type -> notifier.NotifyReq
+	7, // 7: notifier.Notifier.Notify:output_type -> google.protobuf.Empty
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_notifier_proto_init() }
@@ -644,7 +722,7 @@ func file_notifier_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_notifier_proto_rawDesc), len(file_notifier_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

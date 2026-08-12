@@ -445,6 +445,24 @@ func (o operationKind) String() (ret string) {
 		ret = "operationKindAtomicRMW8Cmpxchg"
 	case operationKindAtomicRMW16Cmpxchg:
 		ret = "operationKindAtomicRMW16Cmpxchg"
+	case operationKindTailCallReturnCall:
+		ret = "operationKindTailCallReturnCall"
+	case operationKindTailCallReturnCallIndirect:
+		ret = "operationKindTailCallReturnCallIndirect"
+	case operationKindThrow:
+		ret = "operationKindThrow"
+	case operationKindThrowRef:
+		ret = "operationKindThrowRef"
+	case operationKindCallRef:
+		ret = "operationKindCallRef"
+	case operationKindReturnCallRef:
+		ret = "operationKindReturnCallRef"
+	case operationKindRefAsNonNull:
+		ret = "operationKindRefAsNonNull"
+	case operationKindBrOnNull:
+		ret = "operationKindBrOnNull"
+	case operationKindBrOnNonNull:
+		ret = "operationKindBrOnNonNull"
 	default:
 		panic(fmt.Errorf("unknown operation %d", o))
 	}
@@ -767,6 +785,27 @@ const (
 	operationKindAtomicRMW8Cmpxchg
 	// operationKindAtomicRMW16Cmpxchg is the kind for NewOperationAtomicRMW16Cmpxchg.
 	operationKindAtomicRMW16Cmpxchg
+
+	// operationKindTailCallReturnCall is the Kind for newOperationTailCallReturnCall.
+	operationKindTailCallReturnCall
+	// operationKindTailCallReturnCallIndirect is the Kind for newOperationKindTailCallReturnCallIndirect.
+	operationKindTailCallReturnCallIndirect
+
+	// operationKindThrow is the Kind for throw instruction.
+	operationKindThrow
+	// operationKindThrowRef is the Kind for throw_ref instruction.
+	operationKindThrowRef
+
+	// operationKindCallRef is the Kind for call_ref instruction.
+	operationKindCallRef
+	// operationKindReturnCallRef is the Kind for return_call_ref instruction.
+	operationKindReturnCallRef
+	// operationKindRefAsNonNull is the Kind for ref.as_non_null instruction.
+	operationKindRefAsNonNull
+	// operationKindBrOnNull is the Kind for br_on_null instruction.
+	operationKindBrOnNull
+	// operationKindBrOnNonNull is the Kind for br_on_non_null instruction.
+	operationKindBrOnNonNull
 
 	// operationKindEnd is always placed at the bottom of this iota definition to be used in the test.
 	operationKindEnd
@@ -1096,6 +1135,33 @@ func (o unionOperation) String() string {
 		operationKindAtomicRMW8Cmpxchg,
 		operationKindAtomicRMW16Cmpxchg:
 		return o.Kind.String()
+
+	case operationKindTailCallReturnCall:
+		return fmt.Sprintf("%s %d %s", o.Kind, o.U1, label(o.U2).String())
+
+	case operationKindTailCallReturnCallIndirect:
+		return fmt.Sprintf("%s %d %d", o.Kind, o.U1, o.U2)
+
+	case operationKindThrow:
+		return fmt.Sprintf("%s %d", o.Kind, o.U1)
+
+	case operationKindThrowRef:
+		return o.Kind.String()
+
+	case operationKindCallRef:
+		return fmt.Sprintf("%s %d", o.Kind, o.U1)
+
+	case operationKindReturnCallRef:
+		return fmt.Sprintf("%s %d", o.Kind, o.U1)
+
+	case operationKindRefAsNonNull:
+		return o.Kind.String()
+
+	case operationKindBrOnNull:
+		return fmt.Sprintf("%s %s %s", o.Kind, label(o.U1).String(), label(o.U2).String())
+
+	case operationKindBrOnNonNull:
+		return fmt.Sprintf("%s %s %s", o.Kind, label(o.U1).String(), label(o.U2).String())
 
 	default:
 		panic(fmt.Sprintf("TODO: %v", o.Kind))
@@ -2809,4 +2875,104 @@ func newOperationAtomicRMW8Cmpxchg(unsignedType unsignedType, arg memoryArg) uni
 //	wasm.OpcodeAtomicI32RMW16CmpxchgUName wasm.OpcodeAtomicI64Rmw16CmpxchgUName
 func newOperationAtomicRMW16Cmpxchg(unsignedType unsignedType, arg memoryArg) unionOperation {
 	return unionOperation{Kind: operationKindAtomicRMW16Cmpxchg, B1: byte(unsignedType), U1: uint64(arg.Alignment), U2: uint64(arg.Offset)}
+}
+
+// newOperationTailCallReturnCall is a constructor for unionOperation with operationKindTailCallReturnCall.
+//
+// This corresponds to
+//
+//	wasm.OpcodeTailCallReturnCall.
+func newOperationTailCallReturnCall(functionIndex uint32) unionOperation {
+	return unionOperation{Kind: operationKindTailCallReturnCall, U1: uint64(functionIndex)}
+}
+
+// NewOperationCallIndirect is a constructor for unionOperation with operationKindTailCallReturnCallIndirect.
+//
+// This corresponds to
+//
+//	wasm.OpcodeTailCallReturnCallIndirect.
+func newOperationTailCallReturnCallIndirect(typeIndex, tableIndex uint32, dropDepth inclusiveRange, l label) unionOperation {
+	return unionOperation{Kind: operationKindTailCallReturnCallIndirect, U1: uint64(typeIndex), U2: uint64(tableIndex), Us: []uint64{dropDepth.AsU64(), uint64(l)}}
+}
+
+// newOperationThrow is a constructor for unionOperation with operationKindThrow.
+// U1 stores the tag index.
+func newOperationThrow(tagIndex uint32) unionOperation {
+	return unionOperation{Kind: operationKindThrow, U1: uint64(tagIndex)}
+}
+
+// newOperationThrowRef is a constructor for unionOperation with operationKindThrowRef.
+func newOperationThrowRef() unionOperation {
+	return unionOperation{Kind: operationKindThrowRef}
+}
+
+// newOperationCallRef is a constructor for operationKindCallRef.
+// U1 = type index.
+func newOperationCallRef(typeIndex uint32) unionOperation {
+	return unionOperation{Kind: operationKindCallRef, U1: uint64(typeIndex)}
+}
+
+// newOperationReturnCallRef is a constructor for operationKindReturnCallRef.
+// U1 = type index, U2 = table index (unused), Us = [dropDepth, label].
+func newOperationReturnCallRef(typeIndex uint32, dropDepth inclusiveRange, l label) unionOperation {
+	return unionOperation{Kind: operationKindReturnCallRef, U1: uint64(typeIndex), Us: []uint64{dropDepth.AsU64(), uint64(l)}}
+}
+
+// newOperationRefAsNonNull is a constructor for operationKindRefAsNonNull.
+func newOperationRefAsNonNull() unionOperation {
+	return unionOperation{Kind: operationKindRefAsNonNull}
+}
+
+// newOperationBrOnNull is a constructor for operationKindBrOnNull.
+// If ref is null, branch to U1 (thenTarget) with drop U3; otherwise continue at U2 (elseTarget).
+func newOperationBrOnNull(thenTarget, elseTarget label, thenDrop inclusiveRange) unionOperation {
+	return unionOperation{
+		Kind: operationKindBrOnNull,
+		U1:   uint64(thenTarget),
+		U2:   uint64(elseTarget),
+		U3:   thenDrop.AsU64(),
+	}
+}
+
+// newOperationBrOnNonNull is a constructor for operationKindBrOnNonNull.
+// If ref is non-null, branch to U1 (thenTarget) with drop U3; otherwise continue at U2 (elseTarget).
+func newOperationBrOnNonNull(thenTarget, elseTarget label, thenDrop inclusiveRange) unionOperation {
+	return unionOperation{
+		Kind: operationKindBrOnNonNull,
+		U1:   uint64(thenTarget),
+		U2:   uint64(elseTarget),
+		U3:   thenDrop.AsU64(),
+	}
+}
+
+// exceptionTableEntry represents one try_table's exception handling scope.
+// Built at compile time and stored per compiledFunction.
+type exceptionTableEntry struct {
+	startPC uint64 // first PC inside the try_table body
+	endPC   uint64 // PC of continuation label (exclusive)
+	clauses []exceptionTableCatchClause
+}
+
+// exceptionTableCatchClause is a single catch clause within an exception table entry.
+type exceptionTableCatchClause struct {
+	kind             byte   // CatchKindCatch, CatchKindCatchRef, CatchKindCatchAll, CatchKindCatchAllRef
+	tagIndex         uint32 // tag index for catch/catch_ref
+	targetPC         uint64 // resolved PC to jump to on match
+	targetStackDepth int    // = targetFrame.originalStackLenWithoutParamUint64
+}
+
+// pendingExceptionTableEntry is an unresolved exception table entry built during compilation.
+// Labels are resolved to final PCs in lowerIR.
+type pendingExceptionTableEntry struct {
+	startOpIndex        int // index in Operations[] of the first instruction inside the try_table body
+	continuationFrameID uint32
+	clauses             []pendingCatchClause
+}
+
+// pendingCatchClause is an unresolved catch clause within a pending exception table entry.
+type pendingCatchClause struct {
+	kind             byte
+	tagIndex         uint32
+	targetLabel      label // unresolved label, resolved in lowerIR
+	targetStackDepth int   // = targetFrame.originalStackLenWithoutParamUint64
 }

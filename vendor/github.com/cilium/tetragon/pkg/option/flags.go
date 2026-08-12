@@ -12,13 +12,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-viper/mapstructure/v2"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+
 	"github.com/cilium/tetragon/pkg/defaults"
 	"github.com/cilium/tetragon/pkg/logger"
 	"github.com/cilium/tetragon/pkg/logger/logfields"
 	"github.com/cilium/tetragon/pkg/strutils"
-	"github.com/go-viper/mapstructure/v2"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -38,9 +39,11 @@ const (
 
 	KeyLogLevel  = "log-level"
 	KeyLogFormat = "log-format"
+	KeyLogFile   = "log-file"
 
-	KeyEnableK8sAPI      = "enable-k8s-api"
-	KeyK8sKubeConfigPath = "k8s-kubeconfig-path"
+	KeyEnableK8sAPI         = "enable-k8s-api"
+	KeyK8sKubeConfigPath    = "k8s-kubeconfig-path"
+	KeyK8sControlPlaneRetry = "k8s-controlplane-retry"
 
 	KeyEnablePodAnnotations = "enable-pod-annotations"
 
@@ -49,13 +52,9 @@ const (
 	KeyServerAddress      = "server-address"
 	KeyGopsAddr           = "gops-address"
 
-	// NOTE: enable-process-ancestors flags are marked as deprecated and
-	// planned to be removed in version 1.6
-	KeyEnableProcessAncestors           = "enable-process-ancestors"
-	KeyEnableProcessKprobeAncestors     = "enable-process-kprobe-ancestors"
-	KeyEnableProcessTracepointAncestors = "enable-process-tracepoint-ancestors"
-	KeyEnableProcessUprobeAncestors     = "enable-process-uprobe-ancestors"
-	KeyEnableProcessLsmAncestors        = "enable-process-lsm-ancestors"
+	KeyEnableProcessEnvironmentVariables = "enable-process-environment-variables"
+
+	KeyFilterEnvironmentVariables = "filter-environment-variables"
 
 	KeyEnableAncestors   = "enable-ancestors"
 	KeyEnableProcessCred = "enable-process-cred"
@@ -90,9 +89,10 @@ const (
 	KeyDisableKprobeMulti = "disable-kprobe-multi"
 	KeyDisableUprobeMulti = "disable-uprobe-multi"
 
-	KeyRBSize      = "rb-size"
-	KeyRBSizeTotal = "rb-size-total"
-	KeyRBQueueSize = "rb-queue-size"
+	KeyUsePerfRingBuffer = "use-perf-ring-buffer"
+	KeyRBSize            = "rb-size"
+	KeyRBSizeTotal       = "rb-size-total"
+	KeyRBQueueSize       = "rb-queue-size"
 
 	KeyEventQueueSize = "event-queue-size"
 
@@ -134,10 +134,16 @@ const (
 	KeyEventCacheRetries    = "event-cache-retries"
 	KeyEventCacheRetryDelay = "event-cache-retry-delay"
 
-	KeyCompatibilitySyscall64SizeType = "enable-compatibility-syscall64-size-type"
-
 	KeyExecveMapEntries = "execve-map-entries"
 	KeyExecveMapSize    = "execve-map-size"
+
+	KeyParentsMapEnabled = "parents-map-enabled"
+	KeyParentsMapEntries = "parents-map-entries"
+	KeyParentsMapSize    = "parents-map-size"
+
+	KeyRetprobesCacheSize = "retprobes-cache-size"
+
+	KeyEnableDeprecatedTPGRPC = "enable-deprecated-tracingpolicy-grpc"
 )
 
 type UsernameMetadaCode int
@@ -170,12 +176,14 @@ func ReadAndSetFlags() error {
 	Config.EnableProcessNs = viper.GetBool(KeyEnableProcessNs)
 	Config.EnableK8s = viper.GetBool(KeyEnableK8sAPI)
 	Config.K8sKubeConfigPath = viper.GetString(KeyK8sKubeConfigPath)
+	Config.K8sControlPlaneRetry = viper.GetInt(KeyK8sControlPlaneRetry)
 
 	Config.DisableKprobeMulti = viper.GetBool(KeyDisableKprobeMulti)
 
 	var err error
 	var enableAncestors []string
 
+	Config.UsePerfRingBuffer = viper.GetBool(KeyUsePerfRingBuffer)
 	if Config.RBSize, err = strutils.ParseSize(viper.GetString(KeyRBSize)); err != nil {
 		return fmt.Errorf("failed to parse rb-size value: %w", err)
 	}
@@ -193,23 +201,29 @@ func ReadAndSetFlags() error {
 		Config.EnableProcessAncestors = true
 		Config.EnableProcessKprobeAncestors = slices.Contains(enableAncestors, "kprobe")
 		Config.EnableProcessTracepointAncestors = slices.Contains(enableAncestors, "tracepoint")
+		Config.EnableProcessLoaderAncestors = slices.Contains(enableAncestors, "loader")
 		Config.EnableProcessUprobeAncestors = slices.Contains(enableAncestors, "uprobe")
 		Config.EnableProcessLsmAncestors = slices.Contains(enableAncestors, "lsm")
-	} else if len(enableAncestors) == 0 && viper.GetBool(KeyEnableProcessAncestors) {
-		// NOTE: enable-process-ancestors flags are marked as deprecated and
-		// planned to be removed in version 1.6
-		Config.EnableProcessAncestors = true
-		Config.EnableProcessKprobeAncestors = viper.GetBool(KeyEnableProcessKprobeAncestors)
-		Config.EnableProcessTracepointAncestors = viper.GetBool(KeyEnableProcessTracepointAncestors)
-		Config.EnableProcessUprobeAncestors = viper.GetBool(KeyEnableProcessUprobeAncestors)
-		Config.EnableProcessLsmAncestors = viper.GetBool(KeyEnableProcessLsmAncestors)
+		Config.EnableProcessUsdtAncestors = slices.Contains(enableAncestors, "usdt")
+	}
+
+	Config.EnableProcessEnvironmentVariables = viper.GetBool(KeyEnableProcessEnvironmentVariables)
+
+	vars := viper.GetStringSlice(KeyFilterEnvironmentVariables)
+	if len(vars) != 0 {
+		filter := make(map[string]struct{})
+		for _, v := range vars {
+			filter[v] = struct{}{}
+		}
+		Config.FilterEnvironmentVariables = filter
 	}
 
 	Config.GopsAddr = viper.GetString(KeyGopsAddr)
 
 	logLevel := viper.GetString(KeyLogLevel)
 	logFormat := viper.GetString(KeyLogFormat)
-	logger.PopulateLogOpts(Config.LogOpts, logLevel, logFormat)
+	logFile := viper.GetString(KeyLogFile)
+	logger.PopulateLogOpts(Config.LogOpts, logLevel, logFormat, logFile)
 
 	Config.ProcessCacheSize = viper.GetInt(KeyProcessCacheSize)
 	Config.DataCacheSize = viper.GetInt(KeyDataCacheSize)
@@ -291,10 +305,17 @@ func ReadAndSetFlags() error {
 	Config.EventCacheNumRetries = viper.GetInt(KeyEventCacheRetries)
 	Config.EventCacheRetryDelay = viper.GetInt(KeyEventCacheRetryDelay)
 
-	Config.CompatibilitySyscall64SizeType = viper.GetBool(KeyCompatibilitySyscall64SizeType)
-
 	Config.ExecveMapEntries = viper.GetInt(KeyExecveMapEntries)
 	Config.ExecveMapSize = viper.GetString(KeyExecveMapSize)
+
+	Config.ParentsMapEnabled = viper.GetBool(KeyParentsMapEnabled)
+	Config.ParentsMapEntries = viper.GetInt(KeyParentsMapEntries)
+	Config.ParentsMapSize = viper.GetString(KeyParentsMapSize)
+
+	Config.RetprobesCacheSize = viper.GetInt(KeyRetprobesCacheSize)
+
+	Config.EnableGRPCDeprecatedTP = viper.GetBool(KeyEnableDeprecatedTPGRPC)
+
 	return nil
 }
 
@@ -345,13 +366,13 @@ func ParseCgroupRate(rate string) CgroupRate {
 // StringToSliceHookFunc returns a DecodeHookFunc that converts string to []string
 // by splitting on the given sep and removing all leading and trailing white spaces.
 func stringToSliceHookFunc(sep string) mapstructure.DecodeHookFunc {
-	return func(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	return func(f reflect.Type, t reflect.Type, data any) (any, error) {
 		if f.Kind() != reflect.String || t != reflect.SliceOf(f) {
 			return data, nil
 		}
 
 		outSlice := []string{}
-		for _, s := range strings.Split(data.(string), sep) {
+		for s := range strings.SplitSeq(data.(string), sep) {
 			s = strings.TrimSpace(s)
 			outSlice = append(outSlice, s)
 		}
@@ -383,8 +404,10 @@ func AddFlags(flags *pflag.FlagSet) {
 	flags.Int(KeyExportRateLimit, -1, "Rate limit (per minute) for event export. Set to -1 to disable")
 	flags.String(KeyLogLevel, "info", "Set log level")
 	flags.String(KeyLogFormat, "text", "Set log format")
+	flags.String(KeyLogFile, "", "Set log file where tetragon agent logs will be written (in addition to stdout or stderr)")
 	flags.Bool(KeyEnableK8sAPI, false, "Access Kubernetes API to associate Tetragon events with Kubernetes pods")
 	flags.String(KeyK8sKubeConfigPath, "", "Absolute path of the kubernetes kubeconfig file")
+	flags.Int(KeyK8sControlPlaneRetry, 1, "Number of attempts for Kubernetes control plane connection (negative for infinite, zero is invalid, positive for max attempts)")
 	flags.String(KeyMetricsServer, "", "Metrics server address (e.g. ':2112'). Disabled by default")
 	flags.String(KeyMetricsLabelFilter, "namespace,workload,pod,binary", "Comma-separated list of enabled metrics labels. Unknown labels will be ignored.")
 	flags.String(KeyServerAddress, "localhost:54321", "gRPC server address (e.g. 'localhost:54321' or 'unix:///var/run/tetragon/tetragon.sock'). An empty address disables the gRPC server")
@@ -393,20 +416,12 @@ func AddFlags(flags *pflag.FlagSet) {
 	flags.Bool(KeyEnableProcessNs, false, "Enable namespace information in process_exec and process_kprobe events")
 	flags.Uint(KeyEventQueueSize, 10000, "Set the size of the internal event queue.")
 	flags.Bool(KeyEnablePodAnnotations, false, "Add pod annotations field to events.")
-	flags.StringSlice(KeyEnableAncestors, []string{}, "Comma-separated list of process event types to enable ancestors for. Supported event types are: base, kprobe, tracepoint, uprobe, lsm. Unknown event types will be ignored. Type 'base' enables ancestors for process_exec and process_exit events and is required by all other supported event types for correct reference counting. An empty string disables ancestors completely")
+	flags.StringSlice(KeyEnableAncestors, []string{}, "Comma-separated list of process event types to enable ancestors for. Supported event types are: base, kprobe, tracepoint, loader, uprobe, lsm, usdt. Unknown event types will be ignored. Type 'base' enables ancestors for process_exec and process_exit events and is required by all other supported event types for correct reference counting. An empty string disables ancestors completely")
 
-	// NOTE: enable-process-ancestors flags are marked as deprecated and
-	// planned to be removed in version 1.6
-	flags.Bool(KeyEnableProcessAncestors, false, "Deprecated, please, use --enable-ancestors=base. Include ancestors in process_exec and process_exit events. Disabled by default. Required by other enable ancestors options for correct reference counting")
-	flags.Bool(KeyEnableProcessKprobeAncestors, false, fmt.Sprintf("Deprecated, please, use --enable-ancestors=base,kprobe. Include ancestors in process_kprobe events. Only used if '%s' is set to 'true'", KeyEnableProcessAncestors))
-	flags.Bool(KeyEnableProcessTracepointAncestors, false, fmt.Sprintf("Deprecated, please, use --enable-ancestors=base,tracepoint. Include ancestors in process_tracepoint events. Only used if '%s' is set to 'true'", KeyEnableProcessAncestors))
-	flags.Bool(KeyEnableProcessUprobeAncestors, false, fmt.Sprintf("Deprecated, please, use --enable-ancestors=base,uprobe. Include ancestors in process_uprobe events. Only used if '%s' is set to 'true'", KeyEnableProcessAncestors))
-	flags.Bool(KeyEnableProcessLsmAncestors, false, fmt.Sprintf("Deprecated, please, use --enable-ancestors=base,lsm. Include ancestors in process_lsm events. Only used if '%s' is set to 'true'", KeyEnableProcessAncestors))
-	flags.MarkDeprecated(KeyEnableProcessAncestors, "please use --enable-ancestors=base")
-	flags.MarkDeprecated(KeyEnableProcessKprobeAncestors, "please use --enable-ancestors=base,kprobe")
-	flags.MarkDeprecated(KeyEnableProcessTracepointAncestors, "please use --enable-ancestors=base,tracepoint")
-	flags.MarkDeprecated(KeyEnableProcessUprobeAncestors, "please use --enable-ancestors=base,uprobe")
-	flags.MarkDeprecated(KeyEnableProcessLsmAncestors, "please use --enable-ancestors=base,lsm")
+	flags.Bool(KeyEnableProcessEnvironmentVariables, false, "Include environment variables in process_exec events. Disabled by default. Note that this option can significantly increase the size of the events and may impact performance, as well as capture sensitive information such as passwords in the events (you can use --redaction-filters to redact the data).")
+
+	// filter option for allowed envs
+	flags.StringSliceP(KeyFilterEnvironmentVariables, "", nil, "Filter for specific environment variables")
 
 	// Tracing policy file
 	flags.String(KeyTracingPolicy, "", "Tracing policy file to load at startup")
@@ -443,9 +458,11 @@ func AddFlags(flags *pflag.FlagSet) {
 	// Allow to disable kprobe multi interface
 	flags.Bool(KeyDisableKprobeMulti, false, "Allow to disable kprobe multi interface")
 
-	// Allow to specify perf ring buffer size
-	flags.String(KeyRBSizeTotal, "0", "Set perf ring buffer size in total for all cpus (default 65k per cpu, allows K/M/G suffix)")
-	flags.String(KeyRBSize, "0", "Set perf ring buffer size for single cpu (default 65k, allows K/M/G suffix)")
+	// Allow to specify ring buffer
+	flags.Bool(KeyUsePerfRingBuffer, false, "Use the perf ring buffer instead of the bpf ring buffer")
+	// Allow to specify ring buffer size
+	flags.String(KeyRBSizeTotal, "0", "Set ring buffer size in total for all cpus (default 65k per cpu, allows K/M/G suffix)")
+	flags.String(KeyRBSize, "0", "Set ring buffer size for single cpu (default 65k, allows K/M/G suffix)")
 
 	// Provide option to remove existing pinned BPF programs and maps in Tetragon's
 	// observer dir on startup. Useful for doing upgrades/downgrades. Set to false to
@@ -493,8 +510,15 @@ func AddFlags(flags *pflag.FlagSet) {
 	flags.Int(KeyEventCacheRetries, defaults.DefaultEventCacheNumRetries, "Number of retries for event cache")
 	flags.Int(KeyEventCacheRetryDelay, defaults.DefaultEventCacheRetryDelay, "Delay in seconds between event cache retries")
 
-	flags.Bool(KeyCompatibilitySyscall64SizeType, false, "syscall64 type will produce output of type size (compatibility flag, will be removed in v1.4)")
-
 	flags.Int(KeyExecveMapEntries, 0, "Set entries for execve_map table (default 32768)")
 	flags.String(KeyExecveMapSize, "", "Set size for execve_map table (allows K/M/G suffix)")
+
+	flags.Bool(KeyParentsMapEnabled, false, "Enable parents_map for matchParentBinaries selector")
+	flags.Int(KeyParentsMapEntries, 0, "Set entries for parents_map table (default 32768)")
+	flags.String(KeyParentsMapSize, "", "Set size for parents_map table (allows K/M/G suffix)")
+
+	flags.Int(KeyRetprobesCacheSize, defaults.DefaultRetprobesCacheSize, "Set {k,u}retprobes events cache maximum size")
+
+	flags.Bool(KeyEnableDeprecatedTPGRPC, false, "Enable deprecated gRPC TracingPolicy APIs")
+
 }

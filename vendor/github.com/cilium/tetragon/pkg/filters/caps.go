@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"strings"
 
+	mapset "github.com/deckarep/golang-set/v2"
+	"google.golang.org/protobuf/reflect/protoreflect"
+
 	"github.com/cilium/tetragon/api/v1/tetragon"
 	"github.com/cilium/tetragon/pkg/event"
 	"github.com/cilium/tetragon/pkg/option"
-	mapset "github.com/deckarep/golang-set/v2"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 func filterSingleCapSet(caps []tetragon.CapabilitiesType, filters *tetragon.CapFilterSet) bool {
@@ -68,7 +69,7 @@ func filterByCaps(filter *tetragon.CapFilter) (FilterFunc, error) {
 
 type CapsFilter struct{}
 
-func ensure_single_set_defined(filter *tetragon.CapFilterSet) error {
+func ensureSingleSetDefined(filter *tetragon.CapFilterSet) error {
 	if filter == nil {
 		return nil
 	}
@@ -97,13 +98,13 @@ func (f *CapsFilter) OnBuildFilter(_ context.Context, ff *tetragon.Filter) ([]Fi
 			return nil, errors.New("capabilities are not enabled in process events, cannot configure capability filter")
 		}
 
-		if err := ensure_single_set_defined(ff.Capabilities.Permitted); err != nil {
+		if err := ensureSingleSetDefined(ff.Capabilities.Permitted); err != nil {
 			return nil, err
 		}
-		if err := ensure_single_set_defined(ff.Capabilities.Effective); err != nil {
+		if err := ensureSingleSetDefined(ff.Capabilities.Effective); err != nil {
 			return nil, err
 		}
-		if err := ensure_single_set_defined(ff.Capabilities.Inheritable); err != nil {
+		if err := ensureSingleSetDefined(ff.Capabilities.Inheritable); err != nil {
 			return nil, err
 		}
 

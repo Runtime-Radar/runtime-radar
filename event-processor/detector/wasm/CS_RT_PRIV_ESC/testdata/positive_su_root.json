@@ -1,0 +1,233 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "exec_id": "a2luZC1jb250cm9sLXBsYW5lOjg2NzQ3MDIxMzk5NjI2NToyMjA1Mzk2",
+        "pid": 2205396,
+        "uid": 5,
+        "cwd": "/usr/games",
+        "binary": "/usr/bin/su",
+        "arguments": "-",
+        "flags": "execve clone",
+        "start_time": "2023-10-26T15:23:43.191924497Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian",
+          "container": {
+            "id": "containerd://f1a282e1a9daf70be7d466c6c064884f5f6cad37add2fa877a94e384b6e13e91",
+            "name": "test-pod-debian",
+            "image": {
+              "id": "docker.io/library/debian@sha256:b55e2651b71408015f8068dd74e1d04404a8fa607dd2cfe284b4824c11f4d9bd",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2023-10-26T15:04:37Z",
+            "pid": 62
+          },
+          "workload": "test-pod-debian"
+        },
+        "docker": "f1a282e1a9daf70be7d466c6c064884",
+        "parent_exec_id": "a2luZC1jb250cm9sLXBsYW5lOjg2NzQ1NzY4MDkxNTE0MToyMjA1Mjc0",
+        "refcnt": 1,
+        "cap": {
+          "permitted": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
+          ],
+          "effective": [
+            "CAP_CHOWN",
+            "DAC_OVERRIDE",
+            "CAP_FOWNER",
+            "CAP_FSETID",
+            "CAP_KILL",
+            "CAP_SETGID",
+            "CAP_SETUID",
+            "CAP_SETPCAP",
+            "CAP_NET_BIND_SERVICE",
+            "CAP_NET_RAW",
+            "CAP_SYS_CHROOT",
+            "CAP_MKNOD",
+            "CAP_AUDIT_WRITE",
+            "CAP_SETFCAP"
+          ]
+        },
+        "ns": {
+          "uts": {
+            "inum": 4026533028
+          },
+          "ipc": {
+            "inum": 4026533029
+          },
+          "mnt": {
+            "inum": 4026533034
+          },
+          "pid": {
+            "inum": 4026533039
+          },
+          "pid_for_children": {
+            "inum": 4026533039
+          },
+          "net": {
+            "inum": 4026532910
+          },
+          "cgroup": {
+            "inum": 4026532390,
+            "is_host": true
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 2205396
+      },
+      "parent": {
+        "exec_id": "a2luZC1jb250cm9sLXBsYW5lOjg2NzQ1NzY4MDkxNTE0MToyMjA1Mjc0",
+        "pid": 2205274,
+        "uid": 5,
+        "cwd": "/usr/games",
+        "binary": "/bin/bash",
+        "flags": "execve clone",
+        "start_time": "2023-10-26T15:23:30.658843773Z",
+        "auid": 4294967295,
+        "pod": {
+          "namespace": "default",
+          "name": "test-pod-debian",
+          "container": {
+            "id": "containerd://f1a282e1a9daf70be7d466c6c064884f5f6cad37add2fa877a94e384b6e13e91",
+            "name": "test-pod-debian",
+            "image": {
+              "id": "docker.io/library/debian@sha256:b55e2651b71408015f8068dd74e1d04404a8fa607dd2cfe284b4824c11f4d9bd",
+              "name": "docker.io/library/debian:12.2-slim"
+            },
+            "start_time": "2023-10-26T15:04:37Z",
+            "pid": 60
+          },
+          "workload": "test-pod-debian"
+        },
+        "docker": "f1a282e1a9daf70be7d466c6c064884",
+        "parent_exec_id": "a2luZC1jb250cm9sLXBsYW5lOjg2NzQ1NzY3ODc3NDM3ODoyMjA1Mjcz",
+        "cap": {},
+        "ns": {
+          "uts": {
+            "inum": 4026533028
+          },
+          "ipc": {
+            "inum": 4026533029
+          },
+          "mnt": {
+            "inum": 4026533034
+          },
+          "pid": {
+            "inum": 4026533039
+          },
+          "pid_for_children": {
+            "inum": 4026533039
+          },
+          "net": {
+            "inum": 4026532910
+          },
+          "cgroup": {
+            "inum": 4026532390,
+            "is_host": true
+          },
+          "user": {
+            "inum": 4026531837,
+            "is_host": true
+          }
+        },
+        "tid": 2205274
+      },
+      "function_name": "commit_creds",
+      "args": [
+        {
+          "process_credentials_arg": {
+            "uid": 0,
+            "gid": 0,
+            "euid": 0,
+            "egid": 60,
+            "suid": 0,
+            "sgid": 60,
+            "fsuid": 0,
+            "fsgid": 60,
+            "caps": {
+              "permitted": [
+                "CAP_CHOWN",
+                "DAC_OVERRIDE",
+                "CAP_FOWNER",
+                "CAP_FSETID",
+                "CAP_KILL",
+                "CAP_SETGID",
+                "CAP_SETUID",
+                "CAP_SETPCAP",
+                "CAP_NET_BIND_SERVICE",
+                "CAP_NET_RAW",
+                "CAP_SYS_CHROOT",
+                "CAP_MKNOD",
+                "CAP_AUDIT_WRITE",
+                "CAP_SETFCAP"
+              ],
+              "effective": [
+                "CAP_CHOWN",
+                "DAC_OVERRIDE",
+                "CAP_FOWNER",
+                "CAP_FSETID",
+                "CAP_KILL",
+                "CAP_SETGID",
+                "CAP_SETUID",
+                "CAP_SETPCAP",
+                "CAP_NET_BIND_SERVICE",
+                "CAP_NET_RAW",
+                "CAP_SYS_CHROOT",
+                "CAP_MKNOD",
+                "CAP_AUDIT_WRITE",
+                "CAP_SETFCAP"
+              ]
+            },
+            "user_ns": {
+              "level": 0,
+              "uid": 0,
+              "gid": 0,
+              "ns": {
+                "inum": 4026531837,
+                "is_host": true
+              }
+            }
+          }
+        }
+      ],
+      "action": "KPROBE_ACTION_POST"
+    },
+    "node_name": "kind-control-plane",
+    "time": "2023-10-26T15:23:46.828531551Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": {
+      "detector_id": "CS_RT_PRIV_ESC",
+      "severity": "CRITICAL",
+      "reason_contains": "privilege escalation",
+      "tactics": [
+        "TA0004"
+      ]
+    },
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "CRITICAL",
+      "is_threat": true
+    }
+  }
+}

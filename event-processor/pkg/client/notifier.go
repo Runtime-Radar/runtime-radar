@@ -1,5 +1,7 @@
 package client
 
+//go:generate minimock -i github.com/runtime-radar/runtime-radar/notifier/api.NotifierClient -o ./notifier_mock.go -n NotifierClientMock -g
+
 import (
 	"crypto/tls"
 

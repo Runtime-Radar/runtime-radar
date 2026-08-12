@@ -167,15 +167,13 @@ func (t *Tetra) initBySelector(ctx context.Context, sel config.Selector, cfg *mo
 			return err
 		}
 	}
-	if sel.TracingPolicies {
-		if err := t.initTracingPolicies(ctx, cfg); err != nil {
-			return err
-		}
-		if err := t.initTracingPolicyStates(ctx, cfg); err != nil {
-			return err
-		}
-	} else if sel.TracingPolicyStates {
-		if err := t.initTracingPolicyStates(ctx, cfg); err != nil {
+	// Tracing policy enable/disable is mapped onto add/delete: an enabled source is a loaded policy,
+	// a disabled one is simply not loaded. A change to either the policy set or the enabled flags is
+	// reconciled by the same delete-all + add-enabled cycle. This replaces the per-policy
+	// EnableTracingPolicy/DisableTracingPolicy gRPC calls, which Tetragon deprecated and, since v1.7.0,
+	// rejects by default (requiring the temporary --enable-deprecated-tracingpolicy-grpc agent option).
+	if sel.TracingPolicies || sel.TracingPolicyStates {
+		if err := t.reconcileTracingPolicies(ctx, cfg); err != nil {
 			return err
 		}
 	}
@@ -215,18 +213,22 @@ func (t *Tetra) initEventsClient(ctx context.Context, cfg *model.Config) error {
 	return nil
 }
 
-func (t *Tetra) initTracingPolicies(ctx context.Context, cfg *model.Config) error {
+func (t *Tetra) reconcileTracingPolicies(ctx context.Context, cfg *model.Config) error {
 	ltpResp, err := t.sensorsClient.ListTracingPolicies(ctx, &tetragon.ListTracingPoliciesRequest{})
 	if err != nil {
 		return fmt.Errorf("can't list tracing policies: %v", err)
 	}
-	log.Debug().Interface("policies", ltpResp.GetPolicies()).Msgf("Tetragon tracing policies before init tracing policies")
+	log.Debug().Interface("policies", ltpResp.GetPolicies()).Msgf("Tetragon tracing policies before reconcile")
 
 	// Re-initialization of tracing policies works in two steps:
 	// 1. Delete existing policies
-	// 2. Add requested policies
+	// 2. Add requested policies that are enabled
 	//
-	// This means that it covers all possible scenarios: addition/update/deletion of tracing policies, and tend to be more "secure",
+	// In Tetragon a loaded policy is an active one, so the "enabled" config flag is expressed by whether the
+	// policy is added at all: enabled sources are added, disabled sources are left unloaded. This replaces the
+	// deprecated EnableTracingPolicy/DisableTracingPolicy gRPC calls (rejected by Tetragon >= v1.7.0).
+	//
+	// This means that it covers all possible scenarios: addition/update/deletion/toggling of tracing policies, and tend to be more "secure",
 	// as effectively everything is being recreated from scratch. This also makes us sure, that nothing is added to Tetragon via CRD,
 	// or with use of some side channel apart from runtime-monitor.
 	// However it could be possible to implement more precise logic and make changes only on added/updated/deleted
@@ -242,42 +244,13 @@ func (t *Tetra) initTracingPolicies(ctx context.Context, cfg *model.Config) erro
 	}
 
 	for name, tp := range cfg.Config.TracingPolicies {
+		if !tp.GetEnabled() {
+			continue
+		}
 		if _, err := t.sensorsClient.AddTracingPolicy(ctx, &tetragon.AddTracingPolicyRequest{Yaml: tp.GetYaml()}); err != nil {
 			return fmt.Errorf("can't add tracing policy '%s': %w", name, err)
 		}
 		log.Info().Str("policy", tp.GetYaml()).Msgf("Tetragon tracing policy '%s' added", name)
-	}
-
-	return nil
-}
-
-func (t *Tetra) initTracingPolicyStates(ctx context.Context, cfg *model.Config) error {
-	ltpResp, err := t.sensorsClient.ListTracingPolicies(ctx, &tetragon.ListTracingPoliciesRequest{})
-	if err != nil {
-		return fmt.Errorf("can't list tracing policies: %v", err)
-	}
-	log.Debug().Interface("policies", ltpResp.GetPolicies()).Msgf("Tetragon tracing policies before init tracing policy states")
-
-	for _, tps := range ltpResp.GetPolicies() {
-		policyName := tps.GetName()
-		policyConfig, ok := cfg.Config.TracingPolicies[policyName]
-		if !ok {
-			return fmt.Errorf("loaded tracing policy '%s' has no configuration", policyName)
-		}
-
-		if isTracingPolicyEnabled(tps) != policyConfig.Enabled {
-			if policyConfig.Enabled {
-				if _, err := t.sensorsClient.EnableTracingPolicy(ctx, &tetragon.EnableTracingPolicyRequest{Name: policyName}); err != nil {
-					return fmt.Errorf("can't enable tracing policy '%s': %w", policyName, err)
-				}
-				log.Info().Msgf("Tetragon tracing policy '%s' enabled", policyName)
-			} else {
-				if _, err := t.sensorsClient.DisableTracingPolicy(ctx, &tetragon.DisableTracingPolicyRequest{Name: policyName}); err != nil {
-					return fmt.Errorf("can't disable tracing policy '%s': %w", policyName, err)
-				}
-				log.Info().Msgf("Tetragon tracing policy '%s' disabled", policyName)
-			}
-		}
 	}
 
 	return nil
@@ -401,12 +374,4 @@ func (t *Tetra) runMetrics(interval time.Duration, stop <-chan struct{}) {
 			metrics.TetragonEventsBufferSizeGauge.Set(float64(len(t.events)))
 		}
 	}
-}
-
-func isTracingPolicyEnabled(tps *tetragon.TracingPolicyStatus) bool {
-	if tps.GetState() == tetragon.TracingPolicyState_TP_STATE_ENABLED {
-		return true
-	}
-
-	return false
 }

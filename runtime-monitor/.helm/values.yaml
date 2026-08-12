@@ -3,7 +3,6 @@ global:
   keys:
     token: random
 image:
-  registry: ghcr.io/runtime-radar
   repository: runtime-monitor
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -71,7 +70,7 @@ startupProbe:
   successThreshold: 1
   failureThreshold: 3
 # tetragon values are copied from tetragon helm chart as-is
-# https://github.com/cilium/tetragon/blob/v1.5.0/install/kubernetes/tetragon/values.yaml
+# https://github.com/cilium/tetragon/blob/v1.7.0/install/kubernetes/tetragon/values.yaml
 # Tetragon agent settings
 priorityClassName: ""
 imagePullPolicy: IfNotPresent
@@ -112,7 +111,8 @@ tetragon:
   image:
     override: ~
     repository: quay.io/cilium/tetragon
-    tag: v1.5.0
+    tag: v1.7.0
+  # Do not change
   resources:
     limits:
       cpu: 1
@@ -130,7 +130,7 @@ tetragon:
   podAnnotations:
     enabled: false
   extraVolumeMounts: []
-  securityContext:
+  containerSecurityContext:
     privileged: true
   # -- Overrides the default livenessProbe for the tetragon container.
   livenessProbe: {}
@@ -230,7 +230,7 @@ tetragon:
   enableProcessNs: false
   processAncestors:
     # -- Comma-separated list of process event types to enable ancestors for.
-    # Supported event types are: base, kprobe, tracepoint, uprobe, lsm. Unknown event types will be ignored.
+    # Supported event types are: base, kprobe, tracepoint, loader, uprobe, lsm, usdt. Unknown event types will be ignored.
     # Type "base" is required by all other supported event types for correct reference counting.
     # Set it to "" to disable ancestors completely.
     enabled: ""
@@ -263,7 +263,8 @@ tetragon:
   grpc:
     # -- Whether to enable exposing Tetragon gRPC.
     enabled: true
-    # -- The address at which to expose gRPC. Examples: localhost:54321, unix:///var/run/cilum/tetragon/tetragon.sock
+    # -- The address at which to expose gRPC. Examples: localhost:54321, unix:///var/run/tetragon/tetragon.sock
+    # Do not change
     address: "localhost:54321"
   gops:
     # -- Whether to enable exposing gops server.
@@ -289,6 +290,7 @@ tetragon:
   enableMsgHandlingLatency: false
   healthGrpc:
     # -- Whether to enable health gRPC server.
+    # Do not change
     enabled: false
     # -- The port at which to expose health gRPC.
     port: 6789
@@ -316,9 +318,11 @@ tetragon:
   # pod association. This feature depends on cri being enabled.
   cgidmap:
     enabled: false
+  usePerfRingBuffer: false
 # Tetragon Operator settings
 tetragonOperator:
   # -- Enables the Tetragon Operator.
+  # Do not change
   enabled: false
   # -- The name of the Tetragon Operator deployment.
   nameOverride: ""
@@ -354,11 +358,16 @@ tetragonOperator:
   # -- securityContext for the Tetragon Operator Deployment Pods.
   podSecurityContext: {}
   # -- securityContext for the Tetragon Operator Deployment Pod container.
-  securityContext:
+  containerSecurityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    runAsNonRoot: true
     allowPrivilegeEscalation: false
     capabilities:
       drop:
         - "ALL"
+  # -- securityContext for the Tetragon Operator Deployment Pod container. (DEPRECATED: Use containerSecurityContext instead. TODO: Remove in v1.6.0)
+  securityContext: {}
   # -- resources for the Tetragon Operator Deployment Pod container.
   resources:
     limits:
@@ -389,7 +398,7 @@ tetragonOperator:
   image:
     override: ~
     repository: quay.io/cilium/tetragon-operator
-    tag: v1.5.0
+    tag: v1.7.0
     pullPolicy: IfNotPresent
   # -- Extra volumes for the Tetragon Operator Deployment.
   extraVolumes: []
@@ -401,6 +410,7 @@ tetragonOperator:
     enabled: false
   tracingPolicy:
     # -- Enables the TracingPolicy and TracingPolicyNamespaced CRD creation.
+    # Do not change
     enabled: false
   prometheus:
     # -- Enables the Tetragon Operator metrics.
@@ -429,11 +439,35 @@ export:
     - tetragon.log
   # stdout specific exporter settings
   stdout:
-    extraEnv: []
+    # -- Extra environment variables to add to the export-stdout container.
+    # Example:
     # extraEnv:
-    #   - name: foo
+    #   - name: FOO
     #     value: bar
-
+    #   - name: SECRET_KEY
+    #     valueFrom:
+    #       secretKeyRef:
+    #         name: my-secret
+    #         key: secret-key
+    extraEnv: []
+    # -- Extra envFrom sources to add to the export-stdout container.
+    # This allows adding any type of envFrom source (configMapRef, secretRef, etc.).
+    # Example:
+    # extraEnvFrom:
+    #   - configMapRef:
+    #       name: my-config-map
+    #   - secretRef:
+    #       name: my-secret
+    #       optional: true
+    extraEnvFrom: []
+    # -- A simplified way to add secret references to envFrom.
+    # Can be specified either as a string (just the secret name) or as an object with additional parameters.
+    # Example:
+    # envFromSecrets:
+    #   - my-simple-secret
+    #   - name: my-optional-secret
+    #     optional: true
+    envFromSecrets: []
     # * When enabledCommand=true and commandOverride is not set, the command inserted will be hubble-export-stdout.
     #   This supports the default for the current deployment instructions to deploy stdout-export sidecar container.
     # * When enabledCommand=true and commandOverride override is set, the command inserted will be the value of commandOverride.
@@ -454,19 +488,23 @@ export:
     image:
       override: ~
       repository: quay.io/cilium/hubble-export-stdout
-      tag: v1.1.0
+      tag: v1.1.1
 crds:
   # -- Method for installing CRDs. Supported values are: "operator", "helm" and "none".
   # The "operator" method allows for fine-grained control over which CRDs are installed and by
   # default doesn't perform CRD downgrades. These can be configured in tetragonOperator section.
   # The "helm" method always installs all CRDs for the chart version.
+  # Do not change
   installMethod: "none"
 # -- Method for installing Tetagon rthooks (tetragon-rthooks) daemonset
 # The tetragon-rthooks daemonset is responsible for installing run-time hooks on the host.
 # See: https://tetragon.io/docs/concepts/runtime-hooks
 rthooks:
   # -- Enable the Tetragon rthooks daemonset
+  # Do not change
   enabled: false
+  # -- tetragon-rthooks name override
+  nameOverride: ""
   # -- Method to use for installing  rthooks. Values:
   #
   #    "oci-hooks":
@@ -481,6 +519,10 @@ rthooks:
   #      Specific configuration for this interface can be found under "nriHook".
   #
   interface: ""
+  # -- Affinity for the Tetragon rthooks pod. If this key is omitted, the chart
+  # falls back to the top-level `affinity` value. Set it explicitly (including
+  # to `{}`) to override the top-level affinity for the rthooks DaemonSet only.
+  # affinity: {}
   # -- Annotations for the Tetragon rthooks daemonset
   annotations: {}
   # -- Extra labels for the Tetrargon rthooks daemonset
@@ -514,7 +556,7 @@ rthooks:
   image:
     override: ~
     repository: quay.io/cilium/tetragon-rthooks
-    tag: v0.5
+    tag: v0.8
   # -- rthooks service account.
   serviceAccount:
     name: ""

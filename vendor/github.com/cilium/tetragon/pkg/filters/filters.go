@@ -139,6 +139,7 @@ var Filters = []OnBuildFilter{
 	&AncestorBinaryRegexFilter{},
 	&HealthCheckFilter{},
 	&NamespaceFilter{},
+	&NamespaceRegexFilter{},
 	&PidFilter{},
 	&PidSetFilter{},
 	&EventTypeFilter{},
@@ -151,6 +152,7 @@ var Filters = []OnBuildFilter{
 	&ContainerIDFilter{},
 	&InInitTreeFilter{},
 	NewCELExpressionFilter(logger.GetLogger()),
+	&ContainerNameFilter{},
 }
 
 func GetProcess(event *event.Event) *tetragon.Process {
@@ -218,8 +220,10 @@ func CheckAncestorsEnabled(types []tetragon.EventType) error {
 			tetragon.EventType_PROCESS_EXIT,
 			tetragon.EventType_PROCESS_KPROBE,
 			tetragon.EventType_PROCESS_TRACEPOINT,
+			tetragon.EventType_PROCESS_LOADER,
 			tetragon.EventType_PROCESS_UPROBE,
 			tetragon.EventType_PROCESS_LSM,
+			tetragon.EventType_PROCESS_USDT,
 		}
 	}
 

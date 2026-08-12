@@ -1,5 +1,7 @@
 package client
 
+//go:generate minimock -i github.com/runtime-radar/runtime-radar/kube-manager/api.PodControllerClient -o ./kube_manager_mock.go -n PodControllerClientMock -g
+
 import (
 	"crypto/tls"
 

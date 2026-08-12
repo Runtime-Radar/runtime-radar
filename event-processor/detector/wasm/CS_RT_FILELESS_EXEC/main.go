@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/runtime-radar/runtime-radar/event-processor/detector/api"
 	"github.com/runtime-radar/runtime-radar/event-processor/detector/api/tetragon"
@@ -16,6 +17,11 @@ const (
 	Version     = 3
 	Author      = "Runtime Radar Team"
 	License     = "Apache License 2.0"
+)
+
+const (
+	ExecNoArgs  = "Detected that a fileless process with PID `%d` was executed by the `%s` parent process"
+	ExecDefault = "Detected that a fileless process with PID `%d` was executed by the `%s` parent process, which was started using the `%s` arguments"
 )
 
 var (
@@ -36,8 +42,20 @@ var (
 	}
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+var (
+	mitreTactics = []*api.MitreTactic{
+		{
+			Id: "TA0005",
+			Techniques: []string{
+				"T1070.004",
+				"T1027.011",
+			},
+		},
+	}
+)
+
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 
@@ -45,12 +63,13 @@ type Detector struct{}
 
 func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
 	return &api.InfoResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-		License:     License,
+		Id:             ID,
+		Name:           Name,
+		Description:    Description,
+		Version:        Version,
+		Author:         Author,
+		License:        License,
+		TacticsCovered: mitreTactics,
 	}, nil
 }
 
@@ -80,11 +99,20 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	switch ev := event.(type) {
 	case *tetragon.GetEventsResponse_ProcessExec:
 		exec := ev.ProcessExec
+		pid := exec.GetProcess().GetPid().GetValue()
+		parentBinary := exec.GetParent().GetBinary()
+		parentArgs := exec.GetParent().GetArguments()
 		inode := exec.GetProcess().GetBinaryProperties().GetFile().GetInode()
 
 		if inode != nil {
-			binLinks := exec.GetProcess().GetBinaryProperties().GetFile().GetInode().GetLinks().GetValue()
+			binLinks := inode.GetLinks().GetValue()
 			if binLinks == 0 {
+				resp.TacticsCovered = mitreTactics
+				if parentArgs == "" {
+					resp.Reason = fmt.Sprintf(ExecNoArgs, pid, parentBinary)
+				} else {
+					resp.Reason = fmt.Sprintf(ExecDefault, pid, parentBinary, parentArgs)
+				}
 				resp.Severity = api.DetectResp_MEDIUM // <-- threat detected
 
 				return resp, nil
@@ -104,276 +132,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	return resp, nil
 }
 
-/* Example event (JSON):
-
-{
-    "process_exec": {
-        "process": {
-            "exec_id": "cHRjcy1tYXN0ZXItbm9kZToxMDI5MDcyMTQxNTA0NTUwOjEyODczODg=",
-            "pid": 1287388,
-            "uid": 0,
-            "cwd": "/root/fileless",
-            "binary": "/proc/self/fd/4",
-            "arguments": "",
-            "flags": "execve",
-            "start_time": "2025-07-07T12:14:01.263533986Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian",
-                "container": {
-                    "id": "containerd://7bcd23290beff948c1f9516218d1e8ae7c21a754ca6c00ac7e261a14e12e989d",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2025-06-25T14:24:35Z",
-                    "pid": 5592,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian",
-                "workload_kind": "Pod"
-            },
-            "docker": "7bcd23290beff948c1f9516218d1e8a",
-            "parent_exec_id": "cHRjcy1tYXN0ZXItbm9kZToxMDI5MDcyMTM3NzQ5ODI1OjEyODczODg=",
-            "refcnt": 1,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_RAW",
-                    "CAP_SYS_CHROOT",
-                    "CAP_MKNOD",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_SETFCAP"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_RAW",
-                    "CAP_SYS_CHROOT",
-                    "CAP_MKNOD",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_SETFCAP"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026533911,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026533912,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026533914,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026533915,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026533915,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026533829,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026533916,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 1287388,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": {
-                "setuid": null,
-                "setgid": null,
-                "privileges_changed": [],
-                "file": {
-                    "inode": {
-                        "number": "202749",
-                        "links": 0
-                    },
-                    "path": ""
-                }
-            },
-            "user": null
-        },
-        "parent": {
-            "exec_id": "cHRjcy1tYXN0ZXItbm9kZToxMDI5MDcyMTM3NzQ5ODI1OjEyODczODg=",
-            "pid": 1287388,
-            "uid": 0,
-            "cwd": "/root/fileless",
-            "binary": "/root/fileless/fileless",
-            "arguments": "memfd",
-            "flags": "execve clone",
-            "start_time": "2025-07-07T12:14:01.259780503Z",
-            "auid": 4294967295,
-            "pod": {
-                "namespace": "default",
-                "name": "test-pod-debian",
-                "container": {
-                    "id": "containerd://7bcd23290beff948c1f9516218d1e8ae7c21a754ca6c00ac7e261a14e12e989d",
-                    "name": "test-pod-debian",
-                    "image": {
-                        "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-                        "name": "docker.io/library/debian:12.2-slim"
-                    },
-                    "start_time": "2025-06-25T14:24:35Z",
-                    "pid": 5592,
-                    "maybe_exec_probe": false
-                },
-                "pod_labels": {},
-                "workload": "test-pod-debian",
-                "workload_kind": "Pod"
-            },
-            "docker": "7bcd23290beff948c1f9516218d1e8a",
-            "parent_exec_id": "cHRjcy1tYXN0ZXItbm9kZToxMDI4MjY0NDU5ODM2NDkzOjEyNjIxODQ=",
-            "refcnt": 0,
-            "cap": {
-                "permitted": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_RAW",
-                    "CAP_SYS_CHROOT",
-                    "CAP_MKNOD",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_SETFCAP"
-                ],
-                "effective": [
-                    "CAP_CHOWN",
-                    "DAC_OVERRIDE",
-                    "CAP_FOWNER",
-                    "CAP_FSETID",
-                    "CAP_KILL",
-                    "CAP_SETGID",
-                    "CAP_SETUID",
-                    "CAP_SETPCAP",
-                    "CAP_NET_BIND_SERVICE",
-                    "CAP_NET_RAW",
-                    "CAP_SYS_CHROOT",
-                    "CAP_MKNOD",
-                    "CAP_AUDIT_WRITE",
-                    "CAP_SETFCAP"
-                ],
-                "inheritable": []
-            },
-            "ns": {
-                "uts": {
-                    "inum": 4026533911,
-                    "is_host": false
-                },
-                "ipc": {
-                    "inum": 4026533912,
-                    "is_host": false
-                },
-                "mnt": {
-                    "inum": 4026533914,
-                    "is_host": false
-                },
-                "pid": {
-                    "inum": 4026533915,
-                    "is_host": false
-                },
-                "pid_for_children": {
-                    "inum": 4026533915,
-                    "is_host": false
-                },
-                "net": {
-                    "inum": 4026533829,
-                    "is_host": false
-                },
-                "time": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "time_for_children": {
-                    "inum": 4026531834,
-                    "is_host": true
-                },
-                "cgroup": {
-                    "inum": 4026533916,
-                    "is_host": false
-                },
-                "user": {
-                    "inum": 4026531837,
-                    "is_host": true
-                }
-            },
-            "tid": 1287388,
-            "process_credentials": {
-                "uid": 0,
-                "gid": 0,
-                "euid": 0,
-                "egid": 0,
-                "suid": 0,
-                "sgid": 0,
-                "fsuid": 0,
-                "fsgid": 0,
-                "securebits": [],
-                "caps": null,
-                "user_ns": null
-            },
-            "binary_properties": null,
-            "user": null
-        },
-        "ancestors": []
-    },
-    "node_name": "cs-master-node",
-    "time": "2025-07-07T12:14:01.263533522Z",
-    "aggregation_info": null
+// tacticTechniques is a constructor for *api.MitreTactic which makes its initialization less verbose.
+func tacticTechniques(tacticID string, techniqueIDs ...string) *api.MitreTactic {
+	return &api.MitreTactic{
+		Id:         tacticID,
+		Techniques: techniqueIDs,
+	}
 }
-
-*/

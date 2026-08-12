@@ -52,7 +52,7 @@ services:
       - local
 
   tetragon:
-    image: quay.io/cilium/tetragon:v1.5.0
+    image: quay.io/cilium/tetragon:v1.7.0
     ports:
       - "54321:54321"
     container_name: tetragon

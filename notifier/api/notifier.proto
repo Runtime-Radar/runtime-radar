@@ -39,12 +39,19 @@ message NotifyReq {
 
 message RuntimeEvent {
   message Event {
+    message MitreTactic {
+      string id = 1;
+      repeated string techniques = 2;
+    }
+
     message Threat {
       string detector_id = 1;
       string detector_name = 2;
       uint32 detector_version = 3;
       string detector_description = 4;
       string severity = 5;
+      string reason = 6;
+      repeated MitreTactic tactics_covered = 7;
     }
 
     repeated Threat threats = 1;

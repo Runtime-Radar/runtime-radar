@@ -24,17 +24,19 @@ const (
 	MSG_OP_EXECVE = 5
 	MSG_OP_EXIT   = 7
 
+	// range below is reserved, place new ops in the next section
 	MSG_OP_GENERIC_KPROBE     = 13
 	MSG_OP_GENERIC_TRACEPOINT = 14
 	MSG_OP_GENERIC_UPROBE     = 15
 	MSG_OP_GENERIC_LSM        = 16
 
 	// MSG_OP_CLONE notifies user-space that a clone() event has occurred.
-	MSG_OP_CLONE    = 23
-	MSG_OP_DATA     = 24
-	MSG_OP_CGROUP   = 25
-	MSG_OP_LOADER   = 26
-	MSG_OP_THROTTLE = 27
+	MSG_OP_CLONE        = 23
+	MSG_OP_DATA         = 24
+	MSG_OP_CGROUP       = 25
+	MSG_OP_LOADER       = 26
+	MSG_OP_THROTTLE     = 27
+	MSG_OP_GENERIC_USDT = 28
 
 	// just for testing
 	MSG_OP_TEST = 254
@@ -78,6 +80,7 @@ var OpCodeStrings = map[OpCode]string{
 	MSG_OP_CGROUP:             "Cgroup",
 	MSG_OP_LOADER:             "Loader",
 	MSG_OP_THROTTLE:           "Throttle",
+	MSG_OP_GENERIC_USDT:       "GenericUSDT",
 	MSG_OP_TEST:               "Test",
 }
 

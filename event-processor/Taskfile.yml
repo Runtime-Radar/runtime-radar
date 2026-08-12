@@ -65,6 +65,7 @@ tasks:
 
   proto-detector:
     deps: [protoc-plugins]
+    dir: detector
     cmds:
       - |
         PATH="{{.TOOLS_BIN}}{{if eq OS "windows"}};{{else}}:{{end}}$PATH"
@@ -72,12 +73,13 @@ tasks:
         --go-plugin_out=api \
         --go-plugin_opt=paths=source_relative \
         \
-        --go-plugin_opt=Mtetragon/bpf.proto="{{.MODULE_NAME}}/api/tetragon" \
-        --go-plugin_opt=Mtetragon/capabilities.proto="{{.MODULE_NAME}}/api/tetragon" \
-        --go-plugin_opt=Mtetragon/events.proto="{{.MODULE_NAME}}/api/tetragon" \
-        --go-plugin_opt=Mtetragon/sensors.proto="{{.MODULE_NAME}}/api/tetragon" \
-        --go-plugin_opt=Mtetragon/stack.proto="{{.MODULE_NAME}}/api/tetragon" \
-        --go-plugin_opt=Mtetragon/tetragon.proto="{{.MODULE_NAME}}/api/tetragon" \
+        --go-plugin_opt=Mtetragon/bpf.proto="{{.MODULE_NAME}}/detector/api/tetragon" \
+        --go-plugin_opt=Mtetragon/capabilities.proto="{{.MODULE_NAME}}/detector/api/tetragon" \
+        --go-plugin_opt=Mtetragon/eventlogservice.proto="{{.MODULE_NAME}}/detector/api/tetragon" \
+        --go-plugin_opt=Mtetragon/events.proto="{{.MODULE_NAME}}/detector/api/tetragon" \
+        --go-plugin_opt=Mtetragon/sensors.proto="{{.MODULE_NAME}}/detector/api/tetragon" \
+        --go-plugin_opt=Mtetragon/stack.proto="{{.MODULE_NAME}}/detector/api/tetragon" \
+        --go-plugin_opt=Mtetragon/tetragon.proto="{{.MODULE_NAME}}/detector/api/tetragon" \
         \
         api/*.proto api/tetragon/*.proto
     sources:
@@ -91,19 +93,16 @@ tasks:
     vars:
       TINYGO_CURRENT_VERSION:
         sh: "tinygo version | cut -d' ' -f3"
-      TINYGO_REQUIRED_VERSION: "0.39.0"
+      TINYGO_REQUIRED_VERSION: "0.41.1"
       DETECTOR_DIR: detector/wasm
+      DETECTORS:
+        sh: find {{.DETECTOR_DIR}} -mindepth 1 -maxdepth 1 -type d -not -name '.*'
       DEPLOY_DIR: deploy
+    preconditions:
+      - {sh: 'test "{{.TINYGO_CURRENT_VERSION}}" = "{{.TINYGO_REQUIRED_VERSION}}"', msg: "Current tinygo version: {{.TINYGO_CURRENT_VERSION}}, required: {{.TINYGO_REQUIRED_VERSION}}"}
     cmds:
-      - |
-        {{if ne .TINYGO_CURRENT_VERSION .TINYGO_REQUIRED_VERSION}}
-          echo "Current tinygo version: {{.TINYGO_CURRENT_VERSION}}, required: {{.TINYGO_REQUIRED_VERSION}}" && exit 1
-        {{end}}
-      - |
-        detectors=`ls {{.DETECTOR_DIR}}`
-        for detector in $detectors; do
-          tinygo build -o {{.DEPLOY_DIR}}/${detector}.wasm -scheduler=none -target=wasip1 -buildmode=wasi-legacy --no-debug ./{{.DETECTOR_DIR}}/${detector}
-        done
+      - for: {var: DETECTORS}
+        cmd:  tinygo build -o {{.DEPLOY_DIR}}/{{base .ITEM}}.wasm -scheduler=none -target=wasip1 -buildmode=c-shared --no-debug ./{{.ITEM}}
     sources:
       - "go.mod"
       - "{{.DETECTOR_DIR}}/**/*.go"
@@ -240,7 +239,7 @@ tasks:
       - GOBIN={{.TOOLS_BIN}} go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
       - GOBIN={{.TOOLS_BIN}} go install google.golang.org/protobuf/cmd/protoc-gen-go
       - GOBIN={{.TOOLS_BIN}} go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-      - GOBIN={{.TOOLS_BIN}} go install github.com/knqyf263/go-plugin/cmd/protoc-gen-go-plugin
+      - GOBIN={{.TOOLS_BIN}} go install github.com/runtime-radar/go-plugin/cmd/protoc-gen-go-plugin
 
   deploy:
     sources:

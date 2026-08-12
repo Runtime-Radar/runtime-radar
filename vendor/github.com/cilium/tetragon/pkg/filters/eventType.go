@@ -5,10 +5,12 @@ package filters
 
 import (
 	"context"
+	"slices"
+
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/cilium/tetragon/api/v1/tetragon"
 	pkgEvent "github.com/cilium/tetragon/pkg/event"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 func filterByEventType(types []tetragon.EventType) FilterFunc {
@@ -27,10 +29,8 @@ func filterByEventType(types []tetragon.EventType) FilterFunc {
 				return false
 			})
 
-			for _, t := range types {
-				if t == eventProtoNum {
-					return true
-				}
+			if slices.Contains(types, eventProtoNum) {
+				return true
 			}
 		}
 		return false

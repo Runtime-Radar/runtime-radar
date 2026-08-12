@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright Authors of Tetragon
 
+//go:build !nok8s
+
 package logger
 
 import (
@@ -12,8 +14,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cilium/tetragon/pkg/logger/logfields"
 	"k8s.io/klog/v2"
+
+	"github.com/cilium/tetragon/pkg/logger/logfields"
 )
 
 var klogErrorOverrides = []logLevelOverride{

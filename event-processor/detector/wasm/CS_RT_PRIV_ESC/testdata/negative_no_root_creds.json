@@ -1,0 +1,35 @@
+{
+  "event": {
+    "process_kprobe": {
+      "process": {
+        "pid": 12345,
+        "uid": 5,
+        "binary": "/usr/bin/su",
+        "arguments": "user2"
+      },
+      "function_name": "commit_creds",
+      "args": [
+        {
+          "process_credentials_arg": {
+            "uid": 5,
+            "gid": 5,
+            "euid": 5,
+            "egid": 5
+          }
+        }
+      ]
+    },
+    "node_name": "test-node",
+    "time": "2023-10-26T15:23:46.828531551Z"
+  },
+  "policy_response": null,
+  "expect": {
+    "policy_call": null,
+    "kill_pod_call": null,
+    "notify_call": null,
+    "history_event": {
+      "severity": "",
+      "is_threat": false
+    }
+  }
+}

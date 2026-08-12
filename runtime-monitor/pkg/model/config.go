@@ -33,8 +33,8 @@ var (
 	//go:embed tracingpolicy/kernel-modules.yaml
 	kernelModules string
 
-	//go:embed tracingpolicy/listen-socket.yaml
-	listenSocket string
+	//go:embed tracingpolicy/socket.yaml
+	socket string
 
 	//go:embed tracingpolicy/io-streams.yaml
 	ioStreams string
@@ -51,55 +51,55 @@ var (
 			TracingPolicies: map[string]*api.TracingPolicy{
 				"connect": {
 					Name:        "Outgoing TCP connections",
-					Description: "This source tracks the tcp_connect, tcp_close, and tcp_sendmsg functions allowing detection of outgoing TCP connections (including the connection establishment, termination, and sending of TCP packets). Enabling this policy can significantly increase the event flow and load on the system. In this case, you should narrow the flow using more accurate filters (for example, specify only certain pods).",
+					Description: "This source tracks calls to the Linux kernel functions tcp_connect(), tcp_close(), and tcp_sendmsg() to detect outgoing TCP connections, including connection establishment, connection termination, and TCP packet transmission. Enabling this source can significantly increase the event flow and system load. To optimize performance, use precise filters, for example, limit monitoring to specific pods.",
 					Yaml:        connect,
 					Enabled:     false,
 				},
 				"permissions": {
-					Name:        "Actions with access permissions for files and processes",
-					Description: "The source tracks calls of the Linux kernel function commit_creds(), which could indicate attempts to elevate process privileges, including obtaining superuser (root) permissions. In addition, the source tracks calls of the LSM function security_path_chmod() with a set of permissions that includes execution permissions",
+					Name:        "File and process permission changes",
+					Description: "This source tracks calls to the Linux kernel function commit_creds(), which may indicate an attacker attempting to escalate process privileges, including obtaining superuser (root) privileges. The source also tracks calls to the LSM function security_path_chmod() with permission sets that include execute permissions.",
 					Yaml:        permissions,
 					Enabled:     false,
 				},
 				"file-monitoring": {
 					Name:        "Access to important system files",
-					Description: "This source tracks the security_file_permission, security_mmap_file, and security_path_truncate calls to a number of files, such as /boot, /root/.ssh, /etc/shadow, /etc/profile, /etc/sudoers, /etc/pam.conf, and others. Some files and directories are tracked for read, others are tracked for write, and others are tracked in all cases. To examine the source in detail, switch to expert mode.",
+					Description: "This source tracks calls to the Linux kernel functions security_file_permission(), security_mmap_file(), security_path_truncate(), security_path_link(), and security_path_rename() targeting important system directories and files. These include, for example, /boot, /root/.ssh, /etc/shadow, /etc/profile, /etc/sudoers, and /etc/pam.conf. Different actions are tracked for different files, including read-only, write-only, read and write, and hard link creation. To examine how the source works in detail, enable expert mode.",
 					Yaml:        fileMonitoring,
 					Enabled:     false,
 				},
 				"ptrace": {
 					Name:        "Using tools for debugging and reverse engineering (ptrace)",
-					Description: "This source tracks the ptrace system call, which may indicate attacker activity in the target system.",
+					Description: "This source tracks the ptrace() system call, which may indicate an attacker attempting to inject malicious code into another process.",
 					Yaml:        ptrace,
 					Enabled:     false,
 				},
 				"mount": {
 					Name:        "Device mounting",
-					Description: "This source tracks the mount() call allowing detection of potentially unwanted events related to device mounting.",
+					Description: "This source tracks the mount() system call to detect suspicious events related to device mounting.",
 					Yaml:        mount,
 					Enabled:     false,
 				},
 				"kernel-modules": {
-					Name:        "Loading and unloading of kernel modules",
-					Description: "This source tracks the do_init_module, free_module, security_kernel_module_request, and security_kernel_read_file calls allowing detection of explicit or implicit (automatic) loading and unloading of modules, as well as attempts to manipulate modules and other malicious activity.",
+					Name:        "Loading and unloading kernel modules",
+					Description: "This source tracks calls to the Linux kernel functions do_init_module(), free_module(), security_kernel_module_request(), and security_kernel_read_file() to record all kernel module loading and unloading events, including automatic events initiated by the system. This helps detect signs of unauthorized module manipulation and other illegitimate activity.",
 					Yaml:        kernelModules,
 					Enabled:     false,
 				},
-				"listen-socket": {
-					Name:        "Opening of a socket for incoming connections",
+				"socket": {
+					Name:        "Socket monitoring",
 					Description: "This source tracks the inet_csk_listen_start call revealing possible activity of unwanted networking tools. The source also detects legitimate activity in a container; therefore, in addition to opening of a socket, detectors must also consider other event parameters.",
-					Yaml:        listenSocket,
+					Yaml:        socket,
 					Enabled:     false,
 				},
 				"io-streams": {
-					Name:        "Actions with standard I/O streams",
-					Description: "The source tracks calls of the Linux kernel function do_dup2(), which copies the standard input file descriptor (STDIN) as well as creation of a named pipe file (S_IFIFO) via the LSM function security_path_mknod(). Such actions often indicate that an attacker is attempting to start a reverse shell, a hidden communication channel, or another attack tool.",
+					Name:        "Standard input/output stream activity",
+					Description: "This source tracks calls to the Linux kernel function do_dup2(), which copies the standard input (STDIN) file descriptor, as well as named pipe (S_IFIFO) file creation through the LSM function security_path_mknod(). Such actions often indicate that an attacker is attempting to run a reverse shell, hidden communication channel, or another attack tool.",
 					Yaml:        ioStreams,
 					Enabled:     false,
 				},
 				"io-uring": {
-					Name:        "Monitoring of the io_uring interface",
-					Description: "This source tracks calls to io_uring_setup and io_uring_enter, providing monitoring of the creation and usage of an io_uring interface instance.",
+					Name:        "Creating and using an io_uring interface instance",
+					Description: "This source tracks the io_uring_setup() and io_uring_enter() system calls, which indicate use of the io_uring interface on the system. This helps detect suspicious activity related to unauthorized access to asynchronous input/output operations or potential exploitation of vulnerabilities in Linux kernel mechanisms.",
 					Yaml:        ioUring,
 					Enabled:     false,
 				},

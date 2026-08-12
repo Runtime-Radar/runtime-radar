@@ -17,8 +17,12 @@ const (
 	Description = "The detector detects reading of the Kubernetes authentication token, which may indicate that the Kubernetes account was compromised."
 	Version     = 1
 	Author      = "Runtime Radar Team"
+	License     = "Apache License 2.0"
+)
 
-	License = "Apache License 2.0"
+const (
+	KprobeReadNoArgs  = "Detected that the Kubernetes token `%s` was read by the `%s` process"
+	KprobeReadDefault = "Detected that the Kubernetes token `%s` was read by the `%s` process, which was started using the `%s` arguments"
 )
 
 var (
@@ -36,6 +40,53 @@ var (
 		// "PROCESS_EXEC": {},
 		// same as:
 		// "PROCESS_EXEC": {"*"},
+	}
+)
+
+var (
+	mitreTactics = []*api.MitreTactic{
+		{
+			Id: "TA0001",
+			Techniques: []string{
+				"T1078.001",
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0003",
+			Techniques: []string{
+				"T1078.001",
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0004",
+			Techniques: []string{
+				"T1078.001",
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0005",
+			Techniques: []string{
+				"T1550.001",
+				"T1078.001",
+				"T1078.003",
+			},
+		},
+		{
+			Id: "TA0006",
+			Techniques: []string{
+				"T1528",
+				"T1552.001",
+			},
+		},
+		{
+			Id: "TA0008",
+			Techniques: []string{
+				"T1550.001",
+			},
+		},
 	}
 )
 
@@ -60,8 +111,8 @@ var (
 	fileRegex = regexp.MustCompile("secrets/kubernetes.io/serviceaccount.+token$")
 )
 
-// main is required for TinyGo to compile to Wasm.
-func main() {
+// init is required for TinyGo to compile to Wasm.
+func init() {
 	api.RegisterDetector(Detector{})
 }
 
@@ -69,12 +120,13 @@ type Detector struct{}
 
 func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
 	return &api.InfoResp{
-		Id:          ID,
-		Name:        Name,
-		Description: Description,
-		Version:     Version,
-		Author:      Author,
-		License:     License,
+		Id:             ID,
+		Name:           Name,
+		Description:    Description,
+		Version:        Version,
+		Author:         Author,
+		License:        License,
+		TacticsCovered: mitreTactics,
 	}, nil
 }
 
@@ -108,12 +160,12 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		// Nothing here
 	case *tetragon.GetEventsResponse_ProcessKprobe:
 		kprobe := ev.ProcessKprobe
-
-		containerIDPart := kprobe.GetProcess().GetDocker()
-
-		// binary := kprobe.GetProcess().GetBinary()
+		binary := kprobe.GetProcess().GetBinary()
+		binaryArgs := kprobe.GetProcess().GetArguments()
 		function := kprobe.GetFunctionName()
 		args := kprobe.GetArgs()
+
+		containerIDPart := kprobe.GetProcess().GetDocker()
 
 		// Process events only from runtime env
 		if containerIDPart == "" {
@@ -147,6 +199,13 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 		path := args[0].GetFileArg().GetPath()
 
 		if fileRegex.MatchString(path) {
+			resp.TacticsCovered = mitreTactics
+			switch {
+			case binaryArgs == "":
+				resp.Reason = fmt.Sprintf(KprobeReadNoArgs, path, binary)
+			case binaryArgs != "":
+				resp.Reason = fmt.Sprintf(KprobeReadDefault, path, binary, binaryArgs)
+			}
 			resp.Severity = api.DetectResp_HIGH // <-- threat detected
 		}
 
@@ -159,277 +218,10 @@ func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectRe
 	return resp, nil
 }
 
-/* Example event (JSON):
-
-{
-  "process_kprobe": {
-    "process": {
-      "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MzM0NjUyMTQ0MDc6MjQ4Mjc1MA==",
-      "pid": 2482750,
-      "uid": 0,
-      "cwd": "/",
-      "binary": "/usr/bin/cat",
-      "arguments": "/var/run/secrets/kubernetes.io/serviceaccount/token",
-      "flags": "execve rootcwd clone",
-      "start_time": "2024-03-18T12:39:20.258664559Z",
-      "auid": 4294967295,
-      "pod": {
-        "namespace": "default",
-        "name": "test-pod-debian-cap",
-        "labels": [],
-        "container": {
-          "id": "cri-o://635bb04d5b6d67585f78358b6d54d0373576ed0e0e24cf02c21c86a88549b903",
-          "name": "test-pod-debian-cap",
-          "image": {
-            "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-            "name": "docker.io/library/debian:12.2-slim"
-          },
-          "start_time": "2024-03-06T11:01:56Z",
-          "pid": 3662,
-          "maybe_exec_probe": false
-        },
-        "pod_labels": {},
-        "workload": "test-pod-debian-cap",
-        "workload_kind": "Pod"
-      },
-      "docker": "635bb04d5b6d67585f78358b6d54d03",
-      "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MTQxMDQ5ODA2ODg6MjQ4MjUzNg==",
-      "refcnt": 1,
-      "cap": {
-        "permitted": [
-          "CAP_CHOWN",
-          "DAC_OVERRIDE",
-          "CAP_FOWNER",
-          "CAP_FSETID",
-          "CAP_KILL",
-          "CAP_SETGID",
-          "CAP_SETUID",
-          "CAP_SETPCAP",
-          "CAP_NET_BIND_SERVICE",
-          "CAP_SYS_CHROOT",
-          "CAP_SYS_ADMIN",
-          "CAP_SETFCAP"
-        ],
-        "effective": [
-          "CAP_CHOWN",
-          "DAC_OVERRIDE",
-          "CAP_FOWNER",
-          "CAP_FSETID",
-          "CAP_KILL",
-          "CAP_SETGID",
-          "CAP_SETUID",
-          "CAP_SETPCAP",
-          "CAP_NET_BIND_SERVICE",
-          "CAP_SYS_CHROOT",
-          "CAP_SYS_ADMIN",
-          "CAP_SETFCAP"
-        ],
-        "inheritable": []
-      },
-      "ns": {
-        "uts": {
-          "inum": 4026534057,
-          "is_host": false
-        },
-        "ipc": {
-          "inum": 4026534058,
-          "is_host": false
-        },
-        "mnt": {
-          "inum": 4026535084,
-          "is_host": false
-        },
-        "pid": {
-          "inum": 4026535085,
-          "is_host": false
-        },
-        "pid_for_children": {
-          "inum": 4026535085,
-          "is_host": false
-        },
-        "net": {
-          "inum": 4026534059,
-          "is_host": false
-        },
-        "time": {
-          "inum": 4026531834,
-          "is_host": true
-        },
-        "time_for_children": {
-          "inum": 4026531834,
-          "is_host": true
-        },
-        "cgroup": {
-          "inum": 4026535086,
-          "is_host": false
-        },
-        "user": {
-          "inum": 4026531837,
-          "is_host": true
-        }
-      },
-      "tid": 2482750,
-      "process_credentials": {
-        "uid": 0,
-        "gid": 0,
-        "euid": 0,
-        "egid": 0,
-        "suid": 0,
-        "sgid": 0,
-        "fsuid": 0,
-        "fsgid": 0,
-        "securebits": [],
-        "caps": null,
-        "user_ns": null
-      },
-      "binary_properties": null
-    },
-    "parent": {
-      "exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MTQxMDQ5ODA2ODg6MjQ4MjUzNg==",
-      "pid": 2482536,
-      "uid": 0,
-      "cwd": "/",
-      "binary": "/usr/bin/bash",
-      "arguments": "",
-      "flags": "execve rootcwd",
-      "start_time": "2024-03-18T12:39:00.898431349Z",
-      "auid": 4294967295,
-      "pod": {
-        "namespace": "default",
-        "name": "test-pod-debian-cap",
-        "labels": [],
-        "container": {
-          "id": "cri-o://635bb04d5b6d67585f78358b6d54d0373576ed0e0e24cf02c21c86a88549b903",
-          "name": "test-pod-debian-cap",
-          "image": {
-            "id": "docker.io/library/debian@sha256:2bc5c236e9b262645a323e9088dfa3bb1ecb16cc75811daf40a23a824d665be9",
-            "name": "docker.io/library/debian:12.2-slim"
-          },
-          "start_time": "2024-03-06T11:01:56Z",
-          "pid": 3653,
-          "maybe_exec_probe": false
-        },
-        "pod_labels": {},
-        "workload": "test-pod-debian-cap",
-        "workload_kind": "Pod"
-      },
-      "docker": "635bb04d5b6d67585f78358b6d54d03",
-      "parent_exec_id": "cHRleHBlcnRzLWs4cy1wdGNzOjI5NDI3MTQxMDI3NDQ4NDg6MjQ4MjUzNg==",
-      "refcnt": 0,
-      "cap": {
-        "permitted": [
-          "CAP_CHOWN",
-          "DAC_OVERRIDE",
-          "CAP_FOWNER",
-          "CAP_FSETID",
-          "CAP_KILL",
-          "CAP_SETGID",
-          "CAP_SETUID",
-          "CAP_SETPCAP",
-          "CAP_NET_BIND_SERVICE",
-          "CAP_SYS_CHROOT",
-          "CAP_SYS_ADMIN",
-          "CAP_SETFCAP"
-        ],
-        "effective": [
-          "CAP_CHOWN",
-          "DAC_OVERRIDE",
-          "CAP_FOWNER",
-          "CAP_FSETID",
-          "CAP_KILL",
-          "CAP_SETGID",
-          "CAP_SETUID",
-          "CAP_SETPCAP",
-          "CAP_NET_BIND_SERVICE",
-          "CAP_SYS_CHROOT",
-          "CAP_SYS_ADMIN",
-          "CAP_SETFCAP"
-        ],
-        "inheritable": []
-      },
-      "ns": {
-        "uts": {
-          "inum": 4026534057,
-          "is_host": false
-        },
-        "ipc": {
-          "inum": 4026534058,
-          "is_host": false
-        },
-        "mnt": {
-          "inum": 4026535084,
-          "is_host": false
-        },
-        "pid": {
-          "inum": 4026535085,
-          "is_host": false
-        },
-        "pid_for_children": {
-          "inum": 4026535085,
-          "is_host": false
-        },
-        "net": {
-          "inum": 4026534059,
-          "is_host": false
-        },
-        "time": {
-          "inum": 4026531834,
-          "is_host": true
-        },
-        "time_for_children": {
-          "inum": 4026531834,
-          "is_host": true
-        },
-        "cgroup": {
-          "inum": 4026535086,
-          "is_host": false
-        },
-        "user": {
-          "inum": 4026531837,
-          "is_host": true
-        }
-      },
-      "tid": 2482536,
-      "process_credentials": {
-        "uid": 0,
-        "gid": 0,
-        "euid": 0,
-        "egid": 0,
-        "suid": 0,
-        "sgid": 0,
-        "fsuid": 0,
-        "fsgid": 0,
-        "securebits": [],
-        "caps": null,
-        "user_ns": null
-      },
-      "binary_properties": null
-    },
-    "function_name": "security_file_permission",
-    "args": [
-      {
-        "file_arg": {
-          "mount": "",
-          "path": "/run/secrets/kubernetes.io/serviceaccount/..2024_03_18_12_27_42.2985670933/token",
-          "flags": ""
-        },
-        "label": ""
-      },
-      {
-        "int_arg": 4,
-        "label": ""
-      }
-    ],
-    "return": {
-      "int_arg": 0,
-      "label": ""
-    },
-    "action": "KPROBE_ACTION_POST",
-    "stack_trace": [],
-    "policy_name": "file-monitoring"
-  },
-  "node_name": "experts-k8s-cs",
-  "time": "2024-03-18T12:39:20.259331822Z",
-  "aggregation_info": null
+// tacticTechniques is a constructor for *api.MitreTactic which makes its initialization less verbose.
+func tacticTechniques(tacticID string, techniqueIDs ...string) *api.MitreTactic {
+	return &api.MitreTactic{
+		Id:         tacticID,
+		Techniques: techniqueIDs,
+	}
 }
-*/
