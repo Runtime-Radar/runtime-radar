@@ -34,56 +34,93 @@ export class RuntimeFeatureUploadDetectorModalComponent {
         private readonly toastService: KbqToastService
     ) {}
 
-    upload(event: any) {
-        const files: FileList = event.target.files || {};
-        Object.keys(files).forEach((key) => {
-            const file = files.item(key as unknown as number);
-            if (file && file.type === 'application/wasm') {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onloadstart = () => {
-                    this.isUploadInProgress$.next(true);
-                };
-                reader.onloadend = () => {
-                    this.isUploadInProgress$.next(false);
-                };
-                reader.onload = () => {
-                    const result = reader.result;
-                    if (typeof result === 'string') {
-                        /* eslint @typescript-eslint/no-magic-numbers: "off" */
-                        const values = this.getPatchedFiles(file, result.substring(29));
+    upload(event: Event): void {
+        const input = event.target as HTMLInputElement;
+
+        if (!input) {
+            return;
+        }
+
+        const fileList = input.files;
+        const selectedFiles = fileList ? Array.from(fileList) : [];
+
+        input.value = '';
+
+        const wasmFiles = selectedFiles.filter((file) => this.isWasmFile(file));
+
+        if (wasmFiles.length === 0) {
+            this.warnInvalidFile();
+            return;
+        }
+
+        this.isUploadInProgress$.next(true);
+
+        let completed = 0;
+
+        wasmFiles.forEach((file) => {
+            const reader = new FileReader();
+
+            reader.onload = () => {
+                const result = reader.result;
+
+                if (typeof result === 'string') {
+                    const commaIndex = result.indexOf(',');
+                    const base64 = commaIndex >= 0 ? result.slice(commaIndex + 1) : '';
+
+                    if (this.isWasmBase64(base64)) {
+                        const values = this.getPatchedFiles(file, base64);
                         this.files$.next(values);
+                    } else {
+                        this.warnInvalidFile(file.name);
                     }
-                };
-                reader.onerror = () => {
-                    console.warn('file must be valid');
-                };
-            }
-        });
-
-        event.target.value = '';
-    }
-
-    delete(id: string) {
-        this.files$.next(
-            this.files$.value.map((item) => {
-                if (item.id === id) {
-                    item.isDeleted = true;
                 }
+            };
 
-                return item;
-            })
-        );
+            reader.onerror = () => {
+                this.warnInvalidFile(file.name);
+            };
+
+            reader.onloadend = () => {
+                completed += 1;
+
+                if (completed === wasmFiles.length) {
+                    this.isUploadInProgress$.next(false);
+                }
+            };
+
+            reader.readAsDataURL(file);
+        });
     }
 
-    dispatch(isSuccessful: boolean) {
+    delete(id: string): void {
+        this.files$.next(this.files$.value.map((item) => (item.id === id ? { ...item, isDeleted: true } : item)));
+    }
+
+    dispatch(isSuccessful: boolean): void {
         const base64values = this.files$.value.filter((item) => !item.isDeleted).map((item) => item.base64);
+
         this.modal.destroy(isSuccessful ? base64values : undefined);
+    }
+
+    private warnInvalidFile(fileName?: string): void {
+        const message = fileName ? `File "${fileName}" is not a valid WASM` : 'No valid WASM files selected';
+
+        console.warn(message);
+    }
+
+    private isWasmFile(file: File): boolean {
+        return file.type === 'application/wasm' || file.name.toLowerCase().endsWith('.wasm');
+    }
+
+    // WASM magic bytes: 0x0061736d -> Base64: AGFzbQ
+    private isWasmBase64(base64: string): boolean {
+        return base64.startsWith('AGFzbQ');
     }
 
     private getPatchedFiles(file: File, base64: string): RuntimeDetectorFile[] {
         const files = this.files$.value;
         const item = files.find((obj) => obj.base64 === base64 && obj.name === file.name);
+
         const value: RuntimeDetectorFile = {
             id: utils.generateUuid(),
             name: file.name,
@@ -100,13 +137,7 @@ export class RuntimeFeatureUploadDetectorModalComponent {
                 });
             }
 
-            return files.map((obj) => {
-                if (obj.id === item.id) {
-                    obj.isDeleted = false;
-                }
-
-                return obj;
-            });
+            return files.map((obj) => (obj.id === item.id ? { ...obj, isDeleted: false } : obj));
         }
 
         return [...files, value];
