@@ -74,15 +74,14 @@ export class SharedSortPopoverComponent<T extends AbstractSorts> implements OnIn
         Object.entries(this.config).forEach(([key, value]) => {
             this.sortForm.addControl(key, this.formBuilder.control(value, { nonNullable: true }));
         });
+
+        const values = utils.getFormValues<T>(this.sortForm.controls);
+        this.calculateCounterStates(values);
     }
 
     confirm() {
         const values = utils.getFormValues<T>(this.sortForm.controls);
-        this.filtersCounter$.next(
-            Object.entries(values).filter(([key, value]) => value !== (this.originConfig[key as SortField] as SortKey))
-                .length
-        );
-        this.isResetIconVisible$.next(!utils.isEqual(this.originConfig, values));
+        this.calculateCounterStates(values);
         this.sortChange.emit(values);
         this.popover.hide();
     }
@@ -90,5 +89,13 @@ export class SharedSortPopoverComponent<T extends AbstractSorts> implements OnIn
     reset() {
         this.sortForm.setValue(this.originConfig, { onlySelf: true });
         this.confirm();
+    }
+
+    private calculateCounterStates(values: T) {
+        this.filtersCounter$.next(
+            Object.entries(values).filter(([key, value]) => value !== (this.originConfig[key as SortField] as SortKey))
+                .length
+        );
+        this.isResetIconVisible$.next(!utils.isEqual(this.originConfig, values));
     }
 }

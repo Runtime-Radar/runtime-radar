@@ -32,18 +32,6 @@
                         testId="rule-filter-type-select" />
             </section>
 
-            <section class="kbq-form__row kbq-form-row_margin">
-                <label for="block" class="kbq-form__label">
-                    {{ tRule('Rule.ListPage.Filter.Label.Block') }}
-                </label>
-                <cs-multiple-select-component
-                        id="block"
-                        formControlName="blockSeverity"
-                        [options]="ruleSeverityOptions"
-                        [localizationFn]="tCommon"
-                        testId="rule-filter-block-severity-select" />
-            </section>
-
             <section class="kbq-form__row">
                 <label for="notify" class="kbq-form__label">
                     {{ tRule('Rule.ListPage.Filter.Label.Notify') }}
