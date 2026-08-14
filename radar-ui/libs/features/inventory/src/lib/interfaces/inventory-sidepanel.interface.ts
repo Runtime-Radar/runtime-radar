@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 
 import {
+    KubeManagerContainer,
     KubeManagerNamespace,
     KubeManagerNode,
     KubeManagerPodDetectorRating,
@@ -51,12 +52,12 @@ export type InventorySidepanelPodOutputs = {
 };
 
 export interface InventorySidepanelContainerProps {
-    container: string;
+    container: KubeManagerContainer;
     pod: KubeManagerPodExtended;
     detectors$: Observable<KubeManagerPodDetectorRating[]>;
 }
 
 export interface InventorySidepanelContainerOutputs {
-    container: string;
+    container: KubeManagerContainer;
     pod: KubeManagerPodExtended;
 }

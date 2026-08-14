@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, map, startWith } from 'rxjs';
 
@@ -10,9 +10,14 @@ import { SignInForm } from '../../interfaces/sign-in-form.interface';
 @Component({
     templateUrl: './sign-in-page.container.html',
     styleUrl: './sign-in-page.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SignInFeaturePageContainer {
+    private readonly formBuilder = inject(FormBuilder);
+
+    private readonly authStoreService = inject(AuthStoreService);
+
     readonly isSignInProgress$ = this.authStoreService.loadStatus$.pipe(
         map((loadStatus) => loadStatus === LoadStatus.IN_PROGRESS)
     );
@@ -30,11 +35,6 @@ export class SignInFeaturePageContainer {
         distinctUntilChanged(),
         map(() => utils.isFormValid(this.form.controls))
     );
-
-    constructor(
-        private readonly formBuilder: FormBuilder,
-        private readonly authStoreService: AuthStoreService
-    ) {}
 
     signIn() {
         const formValues = utils.getFormValues<SignInForm>(this.form.controls);

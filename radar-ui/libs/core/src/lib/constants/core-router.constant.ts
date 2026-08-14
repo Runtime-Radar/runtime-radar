@@ -1,8 +1,8 @@
 export enum RouterName {
-    DEFAULT = '',
     CLUSTERS = 'clusters',
-    FORBIDDEN = 'forbidden',
+    DEFAULT = '',
     ERROR = 'error',
+    FORBIDDEN = 'forbidden',
     INTEGRATIONS = 'integrations',
     INVENTORY = 'inventory',
     RULES = 'rules',
@@ -16,8 +16,8 @@ export enum RouterName {
 
 export enum TranslationDict {
     AUTH = 'auth',
-    COMMON = 'common',
     CLUSTER = 'cluster',
+    COMMON = 'common',
     INTEGRATION = 'integration',
     INVENTORY = 'inventory',
     REPORT = 'report',

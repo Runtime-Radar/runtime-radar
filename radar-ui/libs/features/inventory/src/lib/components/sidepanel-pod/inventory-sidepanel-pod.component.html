@@ -15,8 +15,8 @@
                     <kbq-dt>{{ tInventory('Inventory.EntitySidepanel.Label.Status') }}</kbq-dt>
                     <kbq-dd>
                         <kbq-badge [badgeColor]="badgeColors.FadeContrast"
-                                   [ngClass]="{ 'inventory-abstract-feature-header-unavailable': props.pod.phase === podPhase.PENDING }">
-                            <i kbq-icon="{{ props.pod.phase === podPhase.PENDING ? 'kbq-ban_16' : 'kbq-check-circle_16' }}"></i>
+                                   [class]="{ 'inventory-abstract-feature-header-unavailable': props.pod.phase === podPhase.PENDING }">
+                            <i kbq-icon="{{ props.pod.phase === podPhase.PENDING ? 'kbq-ban_16' : 'kbq-circle-check_16' }}"></i>
                             <span>{{ tInventory(props.pod.phase === podPhase.PENDING ? 'Inventory.EntitySidepanel.Text.Unbind' : 'Inventory.EntitySidepanel.Text.Bind') }}</span>
                         </kbq-badge>
                     </kbq-dd>
@@ -37,7 +37,7 @@
                                  (click)="props.containerHandler({ container, pod: props.pod })"
                                  data-testid="inventory-container-open-button">
                             <i kbq-icon="kbq-bucket-s3_16"></i>
-                            <span class="kbq-mono-normal-strong inventory-feature-sidepanel-pod-container-name">{{ container }}</span>
+                            <span class="kbq-mono-normal-strong cs-text-overflow">{{ container.name }}</span>
                         </article>
                     }
                 </section>
@@ -52,7 +52,7 @@
                 <ng-container *ngrxLet="props.detectors$ as detectors">
                     <cs-inventory-feature-detector-table-component
                             class="layout-margin-top-xxl"
-                            [detectors]="detectors"></cs-inventory-feature-detector-table-component>
+                            [detectors]="detectors" />
 
                     @if (detectors?.length) {
                         <footer class="layout-row layout-align-end-center layout-margin-top-l">
@@ -72,16 +72,14 @@
                 </ng-template>
 
                 @if (codeConfigFiles$ | async; as codeConfigFiles) {
-                    <kbq-code-block
-                            class="inventory-feature-sidepanel-pod-code"
+                    <kbq-code-block class="inventory-feature-sidepanel-pod-code"
                             canCopy
                             canDownload
                             canToggleSoftWrap
                             [lineNumbers]="true"
                             [softWrap]="false"
                             [filled]="false"
-                            [files]="codeConfigFiles">
-                    </kbq-code-block>
+                            [files]="codeConfigFiles" />
                 }
             </kbq-tab>
         </kbq-tab-group>

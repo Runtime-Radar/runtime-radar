@@ -3,6 +3,8 @@
     "Cluster.Pseudo.Notification.CreationFailed" : "Could not connect the cluster. Check the connection settings or try again later.",
     "Cluster.Pseudo.Notification.Updated": "The cluster name is changed",
     "Cluster.Pseudo.Notification.Deleted": "The cluster is deleted",
+    "Cluster.Pseudo.Duration.Days": "{count, plural, one{day} other{days}}",
+    "Cluster.Pseudo.Duration.Hours": "{count, plural, one{hour} other{hours}}",
 
     "Cluster.Pseudo.Type.Central": "Central",
     "Cluster.Pseudo.Type.Parent": "Child",
@@ -53,13 +55,13 @@
     "Cluster.CreatePage.Hint.ShowPassword": "Show password",
     "Cluster.CreatePage.Hint.HidePassword": "Hide password",
 
-    "Cluster.CreatePage.RegistryForm.Label.Address": "Image registry",
+    "Cluster.CreatePage.RegistryForm.Label.Address": "Registry address",
     "Cluster.CreatePage.RegistryForm.Placeholder.Address": "registry.com:5000 or update.registry.com/runtime-radar",
     "Cluster.CreatePage.RegistryForm.Hint.Address": "You can specify the address of the Runtime Radar image repository. Leave empty if you want to use ghcr.io/runtime-radar.",
     "Cluster.CreatePage.RegistryForm.Label.User": "User",
     "Cluster.CreatePage.RegistryForm.Label.Password": "Password",
     "Cluster.CreatePage.RegistryForm.Label.ImageShortName": "Use short names for images",
-    "Cluster.CreatePage.RegistryForm.Hint.ImageShortName": "Required for a GitLab artifactory",
+    "Cluster.CreatePage.RegistryForm.Hint.ImageShortName": "Required for a GitLab registry",
 
     "Cluster.CreatePage.DataBaseForm.SubHeading.Clickhouse": "ClickHouse",
     "Cluster.CreatePage.DataBaseForm.SubHeading.Postgres": "PostgreSQL",
@@ -156,10 +158,10 @@
     "Cluster.CreatePage.AccessForm.Label.Name": "Cluster name",
     "Cluster.CreatePage.AccessForm.Hint.Name": "This will be displayed in the list of all clusters",
 
-    "Cluster.DeleteModal.Title.Unregistered": "Delete the as yet not installed cluster?",
-    "Cluster.DeleteModal.Title.Registered": "Delete the installed cluster?",
+    "Cluster.DeleteModal.Title.Unregistered": "Delete unconnected cluster?",
+    "Cluster.DeleteModal.Title.Registered": "Delete connected cluster?",
     "Cluster.DeleteModal.Text.Unregistered": "The cluster will be deleted permanently.",
-    "Cluster.DeleteModal.Text.Registered": "Deleting the installed cluster also deletes the cluster-related events. It is recommended that you first back up the database. To delete the cluster, copy the command, and execute it in the command-line interface.",
+    "Cluster.DeleteModal.Text.Registered": "Deleting the connected cluster also deletes the cluster-related events. It is recommended that you first back up the database. To delete the cluster, copy the command, and execute it in the command-line interface.",
     "Cluster.DeleteModal.Button.Confirm": "Delete",
     "Cluster.DeleteModal.Button.Copy": "Copy",
     "Cluster.DeleteModal.Button.Cancel": "Cancel",

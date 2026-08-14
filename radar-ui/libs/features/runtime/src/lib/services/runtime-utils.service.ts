@@ -18,7 +18,7 @@ export class RuntimeFeatureConfigUtilsService {
         const permissionsValues = Object.values(formValues.permissions);
         const tracingPoliciesValues = Object.entries(formValues.policies)
             .filter(([key, _]) => key !== RUNTIME_SETTINGS_TRACING_POLICIES_PROCESSES_KEY)
-            .reduce((acc, [key, value]) => {
+            .reduce<RuntimeMonitorTracingPolicies>((acc, [key, value]) => {
                 acc[key] = {
                     name: value.name,
                     enabled: value.isEnabled,
@@ -27,7 +27,7 @@ export class RuntimeFeatureConfigUtilsService {
                 };
 
                 return acc;
-            }, {} as RuntimeMonitorTracingPolicies);
+            }, {});
 
         return {
             version: '1', // @todo: create environment constant

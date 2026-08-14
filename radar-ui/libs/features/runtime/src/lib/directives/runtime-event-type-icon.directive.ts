@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, Input, OnInit, Renderer2, inject } from '@angular/core';
 
 import { RuntimeEventType } from '@cs/domains/runtime';
 
@@ -12,15 +12,14 @@ const RUNTIME_EVENT_TYPE_ICONS = new Map<RuntimeEventType, string>([
 ]);
 
 @Directive({
-    selector: '[runtimeEventTypeIcon]'
+    selector: '[runtimeEventTypeIcon]',
+    standalone: false
 })
 export class RuntimeFeatureEventTypeIconDirective implements OnInit {
-    @Input({ required: true }) type!: RuntimeEventType;
+    private readonly el = inject(ElementRef);
+    private readonly renderer = inject(Renderer2);
 
-    constructor(
-        private readonly el: ElementRef,
-        private readonly renderer: Renderer2
-    ) {}
+    @Input({ required: true }) type!: RuntimeEventType;
 
     ngOnInit() {
         if (RUNTIME_EVENT_TYPE_ICONS.get(this.type)) {

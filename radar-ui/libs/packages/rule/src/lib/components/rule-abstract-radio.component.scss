@@ -1,0 +1,131 @@
+@mixin input-checked-state($border-color) {
+    border-width: 5px;
+    border-color: $border-color;
+    box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+@mixin none-severity-gradient($deg) {
+    background-image: linear-gradient($deg, #fff calc(100% - 1px), transparent 1px), linear-gradient(#bdc7d1 100%, transparent 1px);
+    background-size: 5px 1px;
+}
+
+.rule-abstract-package-radio {
+    position: relative;
+    z-index: 1;
+
+    &::after,
+    &::before {
+        width: 50%;
+        height: 16px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #d7dee4;
+        z-index: 1;
+        content: '';
+    }
+
+    &::before {
+        left: 0;
+    }
+
+    &:first-child::after,
+    &:last-child::before {
+        display: none;
+    }
+
+    &:nth-last-child(-n+2)::before {
+        @include none-severity-gradient(-90deg);
+    }
+
+    &:last-child::after {
+        @include none-severity-gradient(90deg);
+    }
+
+    &-input {
+        display: block;
+        width: 16px;
+        height: 16px;
+        position: relative;
+        z-index: 2;
+        margin: 0 auto;
+
+        &::after {
+            display: block;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            background-color: #fff;
+            border: 1px solid #bdc7d1;
+            border-radius: 50%;
+            transition: border 0.3s, background-color 0.3s;
+            cursor: pointer;
+            content: '';
+        }
+    }
+
+    &-caption {
+        text-align: center;
+        white-space: nowrap;
+        visibility: hidden;
+        opacity: 0;
+        transition: all 0.3s;
+    }
+
+    &.active::before,
+    &.active ~ div::before,
+    &.active ~ div::after {
+        background-color: #fbd6d6;
+    }
+
+    &.active:not(:last-child) &-input::after,
+    &.active ~ div:not(:last-child) &-input::after {
+        @include input-checked-state(#f00);
+    }
+
+    &.active:last-child &-input::after {
+        @include input-checked-state(#4187ff);
+    }
+
+    &.active:last-child &-caption,
+    &.active:not(:last-child) &-caption,
+    &.active ~ div:not(:last-child) &-caption {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    &.disabled &-input::after {
+        border-color: #8c99a5 !important;
+        cursor: auto;
+    }
+}
+
+// @todo: replace ::ng-deep to class props
+::ng-deep .rule-abstract-package-radio {
+    &.disabled {
+        .shared-severity.critical {
+            background-color: #8c99a5;
+        }
+
+        .shared-severity:not(.critical) path {
+            fill: #8c99a5 !important;
+            stroke: #8c99a5 !important;
+        }
+    }
+
+    &-icon .shared-severity {
+        filter: brightness(0);
+        opacity: 0.3;
+
+        &.critical {
+            filter: brightness(1);
+        }
+    }
+
+    &:last-child &-icon .shared-severity,
+    &.active &-icon .shared-severity,
+    &.active ~ div:not(:last-child) &-icon .shared-severity {
+        filter: none;
+        opacity: 1;
+    }
+}

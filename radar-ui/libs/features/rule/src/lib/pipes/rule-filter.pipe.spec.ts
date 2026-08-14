@@ -1,7 +1,7 @@
 import { RULE, Rule, RuleType } from '@cs/domains/rule';
 
 import { RuleFeatureFilterPipe } from './rule-filter.pipe';
-import { RuleFilters } from '../interfaces/rule-form.interface';
+import { RuleFilters } from '../interfaces/rule-filter.interface';
 
 describe('RuleFeatureFilterPipe', () => {
     let pipe: RuleFeatureFilterPipe;
@@ -26,8 +26,13 @@ describe('RuleFeatureFilterPipe', () => {
             blockSeverity: [],
             notifySeverity: []
         };
+
         const rules: Rule[] = [
-            RULE,
+            {
+                ...RULE,
+                id: 'id1',
+                name: 'name'
+            },
             {
                 ...RULE,
                 id: 'id2',

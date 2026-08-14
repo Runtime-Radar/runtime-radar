@@ -1,7 +1,7 @@
 import { KbqPopoverTrigger } from '@koobiq/components/popover';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild, inject } from '@angular/core';
 import { IModalOptionsForService, KbqModalService, ModalSize } from '@koobiq/components/modal';
 
 import { AuthCredentials } from '@cs/domains/auth';
@@ -14,9 +14,16 @@ import { CoreNavigationStoreService, LoadStatus, NAVIGATION, NavigationMenu, Rou
     selector: 'cs-navbar-component',
     templateUrl: './navbar.component.html',
     styleUrl: './navbar.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class NavbarComponent {
+    private readonly modalService = inject(KbqModalService);
+
+    private readonly coreNavigationStoreService = inject(CoreNavigationStoreService);
+    private readonly licenseStoreService = inject(LicenseStoreService);
+    private readonly userStoreService = inject(UserStoreService);
+
     @ViewChild('kbqPopover', { static: false }) popover!: KbqPopoverTrigger;
 
     @Input({ required: true }) credentials!: AuthCredentials;
@@ -34,13 +41,6 @@ export class NavbarComponent {
     readonly loadStatus = LoadStatus;
 
     readonly routerName = RouterName;
-
-    constructor(
-        private readonly coreNavigationStoreService: CoreNavigationStoreService,
-        private readonly modalService: KbqModalService,
-        private readonly userStoreService: UserStoreService,
-        private readonly licenseStoreService: LicenseStoreService
-    ) {}
 
     hidePopover() {
         this.popover.hide();

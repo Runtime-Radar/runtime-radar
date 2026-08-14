@@ -1,0 +1,95 @@
+<ng-container *transloco="let tCommon; prefix: 'common'">
+    <button kbq-button
+            kbqPopover
+            type="button"
+            #kbqPopover="kbqPopover"
+            [id]="id"
+            [kbqPopoverOffset]="4"
+            [kbqPopoverContent]="popoverContent"
+            [kbqPopoverFooter]="popoverFooter"
+            [kbqPopoverPlacement]="tooltipPlacements.BottomLeft"
+            [kbqPopoverArrow]="false"
+            [attr.data-testid]="testLocator + 'sort-popover-open-button'">
+        <i kbq-icon="kbq-arrow-up-arrow-down-dot_16"></i>
+        <span>{{ tCommon('Common.SortPopover.Button.Sort') }}</span>
+        @if (filtersCounter$ | async; as count) {
+            <kbq-badge class="layout-margin-left-xxs layout-margin-right-xs"
+                       [badgeColor]="badgeColors.Contrast"
+                       [compact]="true">
+                {{ count }}
+            </kbq-badge>
+        }
+        @if ((isResetIconVisible$ | async) === true) {
+            <button type="button"
+                    class="shared-sort-popover-reset-button"
+                    (click)="reset(); $event.stopPropagation()"
+                    [attr.data-testid]="testLocator + 'sort-popover-reset-button'">
+                <i kbq-icon="kbq-xmark-s_16"></i>
+            </button>
+        }
+    </button>
+
+    <ng-template #popoverContent>
+        <form [formGroup]="sortForm" class="kbq-form-vertical layout-column layout-gap-l shared-sort-popover">
+            @if (config[sortField.SEVERITY]) {
+                <section class="kbq-form__row">
+                    <label for="severity" class="kbq-form__label">
+                        {{ tCommon('Common.SortPopover.Label.Severity') }}
+                    </label>
+                    <kbq-form-field class="kbq-form__control">
+                        <kbq-select id="severity"
+                                    formControlName="severity"
+                                    [attr.data-testid]="testLocator + 'sort-popover-severity-select'">
+                            @for (option of sortKeyOptions; track option.id) {
+                                <kbq-option [value]="option.id"
+                                            [attr.data-testid]="tCommon(option.localizationKey)">
+                                    {{ tCommon(option.localizationKey) }}
+                                </kbq-option>
+                            }
+                        </kbq-select>
+                    </kbq-form-field>
+                </section>
+            }
+
+            @if (config[sortField.REGISTERED_AT]) {
+                <section class="kbq-form__row">
+                    <label for="registered_at" class="kbq-form__label">
+                        {{ tCommon('Common.SortPopover.Label.Date') }}
+                    </label>
+                    <kbq-form-field class="kbq-form__control">
+                        <kbq-select id="registered_at"
+                                    formControlName="registered_at"
+                                    [attr.data-testid]="testLocator + 'sort-popover-registeredat-select'">
+                            @for (option of sortKeyOptions; track option.id) {
+                                <kbq-option [value]="option.id"
+                                            [attr.data-testid]="tCommon(option.localizationKey)">
+                                    {{ tCommon(option.localizationKey) }}
+                                </kbq-option>
+                            }
+                        </kbq-select>
+                    </kbq-form-field>
+                </section>
+            }
+        </form>
+    </ng-template>
+
+    <ng-template #popoverFooter>
+        <div class="layout-row layout-align-end-center">
+            <button kbq-button
+                    kbqStyle="outline"
+                    color="theme-fade"
+                    type="button"
+                    class="layout-margin-right-l"
+                    (click)="confirm()"
+                    [attr.data-testid]="testLocator + 'sort-popover-confirm-button'">
+                {{ tCommon('Common.SortPopover.Button.Confirm') }}
+            </button>
+            <button kbq-button
+                    type="button"
+                    (click)="reset()"
+                    [attr.data-testid]="testLocator + 'sort-popover-reset-button'">
+                {{ tCommon('Common.SortPopover.Button.Reset') }}
+            </button>
+        </div>
+    </ng-template>
+</ng-container>   

@@ -1,0 +1,13 @@
+.grid-package-column-view-icon {
+    margin: 0 0 0 2px;
+    padding: 0;
+    border: none;
+    background: none;
+    vertical-align: text-top;
+    cursor: pointer;
+
+    .kbq-icon {
+        font-size: 12px;
+        color: #6d7a86; // @todo: replace to koobiq token
+    }
+}

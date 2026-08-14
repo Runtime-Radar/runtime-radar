@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { GetTokenResponse } from '@cs/domains/auth';
@@ -17,7 +17,7 @@ import {
     providedIn: 'root'
 })
 export class UserRequestService {
-    constructor(private readonly apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     getUsers(): Observable<User[]> {
         return this.apiService.get<ApiEmptyRequest, GetUsersResponse>('user').pipe(map((response) => response.users));

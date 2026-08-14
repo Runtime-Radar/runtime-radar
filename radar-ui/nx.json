@@ -1,14 +1,6 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "npmScope": "runtime-radar",
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "@nx/workspace/tasks-runners/default",
-            "options": {
-                "accessToken": "ZTY4ZjQ2M2MtMThkNS00YTMxLTlmYWEtMGViYTI5YTc0ODBifHJlYWQtd3JpdGU="
-            }
-        }
-    },
     "targetDefaults": {
         "build": {
             "dependsOn": ["^build"],
@@ -18,10 +10,10 @@
         "test": {
             "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
             "executor": "@nx/jest:jest",
+            "cache": true,
             "options": {
                 "maxWorkers": 4
-            },
-            "cache": true
+            }
         },
         "e2e": {
             "inputs": ["default", "^production"],
@@ -62,14 +54,16 @@
             "style": "scss",
             "linter": "eslint",
             "unitTestRunner": "jest",
-            "e2eTestRunner": "cypress"
+            "e2eTestRunner": "cypress",
+            "standalone": false
         },
         "@nx/angular:library": {
             "linter": "eslint",
             "unitTestRunner": "jest"
         },
         "@nx/angular:component": {
-            "style": "scss"
+            "style": "scss",
+            "standalone": false
         }
     },
     "defaultProject": "runtime-radar"

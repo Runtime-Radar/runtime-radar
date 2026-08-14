@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-// eslint-disable-next-line import/no-unresolved
-import { TranslocoLoaderData } from '@jsverse/transloco/lib/transloco.loader';
 import { EMPTY, Observable, catchError, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
 import { Translation, TranslocoLoader } from '@jsverse/transloco';
+
+type TranslocoLoaderData = Parameters<TranslocoLoader['getTranslation']>[1];
 
 @Injectable({
     providedIn: 'root'

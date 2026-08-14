@@ -1,6 +1,6 @@
 import { HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
 
 import { ApiEmptyRequest, ApiService } from '@cs/api';
 
@@ -14,7 +14,7 @@ import {
     providedIn: 'root'
 })
 export class AuthRequestService {
-    constructor(private readonly apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     getLogin(request: GetLoginRequest): Observable<GetLoginResponse> {
         return this.apiService.post<GetLoginRequest, GetLoginResponse>('signin', request);

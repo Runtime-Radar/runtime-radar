@@ -1,5 +1,5 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, FormRecord, Validators } from '@angular/forms';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelRef } from '@koobiq/components/sidepanel';
 import {
@@ -18,7 +18,7 @@ import {
 import { I18nService } from '@cs/i18n';
 import { IntegrationType } from '@cs/domains/integration';
 import { RegisteredCluster } from '@cs/domains/cluster';
-import { FORM_SEPARATOR_KEY_CODES, FORM_VALIDATION_REG_EXP, FormScheme, CoreUtilsService as utils } from '@cs/core';
+import { FORM_VALIDATION_REG_EXP, FormScheme, CoreUtilsService as utils } from '@cs/core';
 import { NotificationRequestService, NotificationWebhookHeadersList } from '@cs/domains/notification';
 
 import { IntegrationSidepanelRecipientFormProps } from '../../interfaces/integration-sidepanel.interface';
@@ -40,9 +40,19 @@ const INTEGRATION_SUBJECT_TEMPLATES = new Map<string, string>([
 @Component({
     templateUrl: './integration-sidepanel-recipient-form.component.html',
     styleUrl: './integration-sidepanel-recipient-form.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationFeatureSidepanelRecipientFormComponent implements OnInit, AfterViewInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+    private readonly sidepanelRef = inject(KbqSidepanelRef);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly notificationRequestService = inject(NotificationRequestService);
+
+    readonly props = inject<IntegrationSidepanelRecipientFormProps>(KBQ_SIDEPANEL_DATA);
+
     readonly form: FormGroup<FormScheme<IntegrationRecipientForm, 'header'>> = this.formBuilder.group({
         name: ['', Validators.required],
         recipients: [[] as string[]],
@@ -144,22 +154,11 @@ export class IntegrationFeatureSidepanelRecipientFormComponent implements OnInit
 
     readonly integrationType = IntegrationType;
 
-    readonly validators = Validators;
-
-    readonly separatorKeyCodes = FORM_SEPARATOR_KEY_CODES;
+    readonly formValidationRegExp = FORM_VALIDATION_REG_EXP;
 
     get headerFormGroup(): FormRecord {
         return this.form.get('header') as FormRecord;
     }
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder,
-        private readonly i18nService: I18nService,
-        private readonly sidepanelRef: KbqSidepanelRef,
-        private readonly notificationRequestService: NotificationRequestService,
-        @Inject(KBQ_SIDEPANEL_DATA) public readonly props: IntegrationSidepanelRecipientFormProps
-    ) {}
 
     ngOnInit() {
         this.formEventTypeSubjectTemplate$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

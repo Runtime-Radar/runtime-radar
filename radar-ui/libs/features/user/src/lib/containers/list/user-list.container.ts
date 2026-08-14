@@ -1,5 +1,5 @@
 import { ActivatedRoute } from '@angular/router';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { Observable, filter, take } from 'rxjs';
 
@@ -17,9 +17,19 @@ import { UserSidepanelFormProps } from '../../interfaces/user-sidepanel.interfac
 @Component({
     templateUrl: './user-list.container.html',
     styleUrl: './user-list.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class UserFeatureListContainer {
+    private readonly route = inject(ActivatedRoute);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly authStoreService = inject(AuthStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly roleStoreService = inject(RoleStoreService);
+    private readonly sharedModalService = inject(SharedModalService);
+    private readonly userStoreService = inject(UserStoreService);
+
     readonly users$: Observable<User[]> = this.userStoreService.users$;
 
     readonly roles$: Observable<Role[]> = this.roleStoreService.roles$;
@@ -32,16 +42,6 @@ export class UserFeatureListContainer {
     readonly permissionType = PermissionType;
 
     readonly permissionName = PermissionName;
-
-    constructor(
-        private readonly authStoreService: AuthStoreService,
-        private readonly i18nService: I18nService,
-        private readonly sharedModalService: SharedModalService,
-        private readonly roleStoreService: RoleStoreService,
-        private readonly route: ActivatedRoute,
-        private readonly sidepanelService: KbqSidepanelService,
-        private readonly userStoreService: UserStoreService
-    ) {}
 
     openCreateSidepanel(roleId?: string) {
         const config: KbqSidepanelConfig<UserSidepanelFormProps> = {

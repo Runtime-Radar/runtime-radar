@@ -1,5 +1,5 @@
-.shared-event-action-item-icon {
-    margin-right: 4px;
-    vertical-align: baseline;
-    transform: translateY(1px);
+.shared-event-action {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
 }

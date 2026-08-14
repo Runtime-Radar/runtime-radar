@@ -8,7 +8,7 @@
                     [clusters]="clusters$ | async"
                     [activeClusterHost]="activeClusterHost$ | async"
                     (selectClusterId)="switchCluster($event)"
-                    testLocator="inventory-cluster-select"></cs-cluster-select-component>
+                    testLocator="inventory-cluster-select" />
         </section>
     </header>
 
@@ -34,11 +34,11 @@
 
                             <!-- @todo: add a11y support for header button -->
                             <span class="dragIgnore kbq-mono-normal-strong cs-text-overflow inventory-abstract-feature-header inventory-feature-map-area-drag-nodes-header"
-                                  [ngClass]="{
+                                  [class]="{
                                     'hidden': rxlet.selectedNode && rxlet.selectedNode !== node.node_name,
                                     'active': rxlet.sidepanelContext.type === sidepanelContextType.NODE && rxlet.sidepanelContext.id === node.node_name
                                   }"
-                                  [ngStyle]="{ 'background-color': nodeBgColors[pairId], 'color': nodeTextColors[pairId] }"
+                                  [style]="{ 'background-color': nodeBgColors[pairId], 'color': nodeTextColors[pairId] }"
                                   [kbqExtendedTooltip]="nodeTooltip"
                                   [kbqPlacement]="tooltipPlacements.Top"
                                   (click)="openViewNodeSidepanel(node)"
@@ -71,7 +71,7 @@
                                                     [pod]="pod"
                                                     [context]="rxlet.sidepanelContext"
                                                     (headerClick)="openViewPodSidepanel($event)"
-                                                    (bucketClick)="openViewContainerSidepanel($event)"></cs-inventory-feature-pod-component>
+                                                    (bucketClick)="openViewContainerSidepanel($event)" />
                                         }
                                     </cs-inventory-feature-namespace-component>
                                 }
@@ -86,7 +86,7 @@
                 <button kbq-button
                         kbqStyle="outline"
                         type="button"
-                        class="kbq-button-icon layout-margin-right-s"
+                        class="kbq-button-icon layout-margin-right-s inventory-feature-map-area-action-el"
                         [disabled]="scale < 0.35"
                         (click)="zoomIn()"
                         data-testid="inventory-zoomout-button">
@@ -95,7 +95,7 @@
                 <button kbq-button
                         kbqStyle="outline"
                         type="button"
-                        class="kbq-button-icon layout-margin-right-s"
+                        class="kbq-button-icon layout-margin-right-s inventory-feature-map-area-action-el"
                         [disabled]="scale > 0.9"
                         (click)="zoomOut()"
                         data-testid="inventory-zoomin-button">
@@ -104,19 +104,82 @@
                 <button kbq-button
                         kbqStyle="outline"
                         type="button"
-                        class="kbq-button-icon"
+                        class="kbq-button-icon inventory-feature-map-area-action-el"
                         (click)="zoomFit()"
                         data-testid="inventory-zoomfit-button">
                     <i kbq-icon="kbq-chevrons-expand_16"></i>
                 </button>
-                <cs-inventory-feature-filter-popover-component
-                        class="layout-margin-left-xxl"
-                        (filterChange)="filterChange($event)"></cs-inventory-feature-filter-popover-component>
+
+                <cs-filter-popover-component
+                        id="inventory"
+                        class="layout-margin-left-xxl inventory-feature-map-area-action-el"
+                        [form]="filterForm"
+                        [formRef]="formRef"
+                        [defaultValues]="defaultFilterValues"
+                        (formChange)="filterChange($event)">
+                    <form [formGroup]="filterForm" #formRef="ngForm" class="kbq-form-vertical">
+                        <section class="kbq-form__row kbq-form-row_margin">
+                            <label for="nodes" class="kbq-form__label">
+                                {{ tInventory('Inventory.FilterPopover.Label.Nodes') }}
+                                <i kbq-icon="kbq-circle-question_16"
+                                   class="cs-help-hover"
+                                   kbqTooltip="{{ tInventory('Inventory.FilterPopover.Hint') }}"></i>
+                            </label>
+                            <cs-tag-input-component
+                                    formControlName="nodes"
+                                    id="nodes"
+                                    testLocator="inventory-filter-popover-nodes-tag"
+                                    placeholder="{{ tInventory('Inventory.FilterPopover.Placeholder.Nodes') }}" />
+                        </section>
+
+                        <section class="kbq-form__row kbq-form-row_margin">
+                            <label for="namespaces" class="kbq-form__label">
+                                {{ tInventory('Inventory.FilterPopover.Label.Namespaces') }}
+                                <i kbq-icon="kbq-circle-question_16"
+                                   class="cs-help-hover"
+                                   kbqTooltip="{{ tInventory('Inventory.FilterPopover.Hint') }}"></i>
+                            </label>
+                            <cs-tag-input-component
+                                    formControlName="namespaces"
+                                    id="namespaces"
+                                    testLocator="inventory-filter-popover-namespaces-tag"
+                                    placeholder="{{ tInventory('Inventory.FilterPopover.Placeholder.Namespaces') }}" />
+                        </section>
+
+                        <section class="kbq-form__row kbq-form-row_margin">
+                            <label for="pods" class="kbq-form__label">
+                                {{ tInventory('Inventory.FilterPopover.Label.Pods') }}
+                                <i kbq-icon="kbq-circle-question_16"
+                                   class="cs-help-hover"
+                                   kbqTooltip="{{ tInventory('Inventory.FilterPopover.Hint') }}"></i>
+                            </label>
+                            <cs-tag-input-component
+                                    formControlName="pods"
+                                    id="pods"
+                                    testLocator="inventory-filter-popover-pods-tag"
+                                    placeholder="{{ tInventory('Inventory.FilterPopover.Placeholder.Pods') }}" />
+                        </section>
+
+                        <section class="kbq-form__row">
+                            <label for="containers" class="kbq-form__label">
+                                {{ tInventory('Inventory.FilterPopover.Label.Containers') }}
+                                <i kbq-icon="kbq-circle-question_16"
+                                   class="cs-help-hover"
+                                   kbqTooltip="{{ tInventory('Inventory.FilterPopover.Hint') }}"></i>
+                            </label>
+                            <cs-tag-input-component
+                                    formControlName="containers"
+                                    id="containers"
+                                    testLocator="inventory-filter-popover-containers-tag"
+                                    placeholder="{{ tInventory('Inventory.FilterPopover.Placeholder.Containers') }}" />
+                        </section>
+                    </form>
+                </cs-filter-popover-component>
             </div>
 
             <cs-inventory-feature-legend-component
                     class="inventory-feature-map-area-legend"
-                    [nodes]="rxlet.nodes"></cs-inventory-feature-legend-component>
+                    [nodes]="rxlet.nodes" />
         </section>
     </ng-container>
 </ng-container>

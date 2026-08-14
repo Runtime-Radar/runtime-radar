@@ -8,7 +8,8 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, map, startWith, tap } from 'rxjs';
@@ -24,9 +25,13 @@ const CLUSTER_ADDRESS_VALIDATION_REG_EXP =
     selector: 'cs-cluster-feature-registry-form-component',
     styleUrl: '../cluster-abstract-form.component.scss',
     templateUrl: './cluster-registry-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureRegistryFormComponent implements AfterViewInit, OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input() values?: ClusterRegistryForm | null;
 
     @Output() formChange = new EventEmitter<ClusterCreateFormOutputs<ClusterRegistryForm>>();
@@ -56,11 +61,6 @@ export class ClusterFeatureRegistryFormComponent implements AfterViewInit, OnIni
     );
 
     readonly tooltipPlacements = PopUpPlacements;
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.onFormChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

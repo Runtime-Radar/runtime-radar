@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { LoadStatus } from '@cs/core';
 
@@ -19,11 +19,11 @@ import { getAuthCredentials, getAuthLoadStatus } from '../stores/auth-selector.s
     providedIn: 'root'
 })
 export class AuthStoreService {
+    private readonly store = inject<Store<AuthState>>(Store);
+
     readonly credentials$: Observable<AuthCredentials> = this.store.select(getAuthCredentials);
 
     readonly loadStatus$: Observable<LoadStatus> = this.store.select(getAuthLoadStatus);
-
-    constructor(private readonly store: Store<AuthState>) {}
 
     getLocationPath(location: Location) {
         this.store.dispatch(

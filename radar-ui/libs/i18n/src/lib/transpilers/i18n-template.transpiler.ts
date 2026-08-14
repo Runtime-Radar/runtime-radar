@@ -1,4 +1,4 @@
-import { ApplicationRef, Injectable, TemplateRef } from '@angular/core';
+import { ApplicationRef, Injectable, TemplateRef, inject } from '@angular/core';
 import { BlockTranspiler, TranslationMarkupRenderer } from 'ngx-transloco-markup';
 
 interface I18nTemplateTranspilerCreateRendererParams {
@@ -10,7 +10,9 @@ interface I18nTemplateTranspilerCreateRendererParams {
     providedIn: 'root'
 })
 export class I18nTemplateTranspiler extends BlockTranspiler {
-    constructor(private readonly applicationRef: ApplicationRef) {
+    private readonly applicationRef = inject(ApplicationRef);
+
+    constructor() {
         super('[template]', '[/template]');
     }
 

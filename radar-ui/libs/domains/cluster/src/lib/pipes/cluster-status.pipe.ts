@@ -5,7 +5,8 @@ import { ClusterStatus } from '../interfaces/contract/cluster-contract.interface
 
 @Pipe({
     name: 'clusterStatusLocalization',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class ClusterStatusLocalizationPipe implements PipeTransform {
     transform(type?: ClusterStatus): string {

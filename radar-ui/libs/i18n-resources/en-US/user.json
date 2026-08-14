@@ -31,7 +31,7 @@
     "User.CreateForm.Button.Confirm": "Add",
     "User.CreateForm.Button.Cancel": "Cancel",
 
-    "User.EditForm.Title.Edit": "Editing the account",
+    "User.EditForm.Title.Edit": "Edit account",
     "User.EditForm.Button.Confirm": "Save",
 
     "User.DeleteModal.Content.Text": "Delete the user?",

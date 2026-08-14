@@ -3,7 +3,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 const HOURS_IN_DAY = 24;
 
 @Pipe({
-    name: 'hoursFormatter'
+    name: 'hoursFormatter',
+    standalone: false
 })
 export class SharedHoursFormatterPipe implements PipeTransform {
     transform(hours: number | null): number {

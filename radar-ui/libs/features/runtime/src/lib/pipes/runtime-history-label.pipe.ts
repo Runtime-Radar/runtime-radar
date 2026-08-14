@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 
 import { I18nService } from '@cs/i18n';
 
@@ -26,20 +26,21 @@ const RUNTIME_HISTORY_LABELS = new Map<string, string>([
 
 @Pipe({
     name: 'runtimeHistoryLabel',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class RuntimeFeatureHistoryLabelPipe implements PipeTransform {
-    constructor(private readonly i18nService: I18nService) {}
+    private readonly i18nService = inject(I18nService);
 
     transform(entity: RuntimeEventFilterEntity | Partial<RuntimeEventFilters> | null, limit?: number): string {
-        const labels = Object.entries(entity || {}).reduce((acc, [key, value]) => {
+        const labels = Object.entries(entity || {}).reduce<string[]>((acc, [key, value]) => {
             const localizationKey = RUNTIME_HISTORY_LABELS.get(key);
             if (!!localizationKey && runtimeConfigUtils.isEventFilterValueValid(value)) {
                 acc.push(this.i18nService.translate(localizationKey));
             }
 
             return acc;
-        }, [] as string[]);
+        }, []);
 
         if (limit && limit < labels.length) {
             return `${labels.slice(0, limit).join(RUNTIME_HISTORY_SEPARATOR) + RUNTIME_HISTORY_SEPARATOR}+${

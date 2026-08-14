@@ -12,7 +12,7 @@ import {
     switchMap,
     tap
 } from 'rxjs';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 
 import { RuntimeRequestService } from '@cs/domains/runtime';
 
@@ -25,9 +25,14 @@ const RUNTIME_COUNTER_THOUSAND_PLACE_LIMIT = 10000;
 @Component({
     selector: 'cs-runtime-feature-event-counter-component',
     templateUrl: './runtime-event-counter.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureEventCounterComponent {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+
+    private readonly runtimeRequestService = inject(RuntimeRequestService);
+
     @Input() set updateCounter(value: string | null) {
         if (value) {
             this.click$.next(value);
@@ -65,11 +70,6 @@ export class RuntimeFeatureEventCounterComponent {
     readonly thousandPlaceLimit = RUNTIME_COUNTER_THOUSAND_PLACE_LIMIT;
 
     isPerSeconds = true;
-
-    constructor(
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly runtimeRequestService: RuntimeRequestService
-    ) {}
 
     private getCounterDateRange(durationInSec: number, todayShiftInSec = 0): RuntimeCounterDateRange {
         const today = this.dateAdapter.today().minus({ seconds: todayShiftInSec });

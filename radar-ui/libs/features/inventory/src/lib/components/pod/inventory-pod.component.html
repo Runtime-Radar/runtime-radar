@@ -3,12 +3,12 @@
          [ngClass]="{ 'hidden': pod.isVisible === false }"
          *transloco="let tInventory; prefix: 'inventory'">
     <!-- @todo: add a11y support for header button -->
-    <header class="dragIgnore kbq-mono-normal-strong inventory-abstract-feature-header inventory-feature-pod-header"
-            [ngClass]="{
+    <header class="dragIgnore kbq-mono-normal-strong cs-text-overflow inventory-abstract-feature-header inventory-feature-pod-header"
+            [class]="{
                 'active': context.type === sidepanelContextType.POD && context.id === pod.uid,
                 'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING
             }"
-            [ngStyle]="{ 'background-color': pod.bgColor, 'color': pod.textColor }"
+            [style]="{ 'background-color': pod.bgColor, 'color': pod.textColor }"
             [kbqExtendedTooltip]="podTooltip"
             [kbqPlacement]="tooltipPlacements.Top"
             (click)="headerClick.emit({ pod })"
@@ -16,15 +16,17 @@
         {{ pod.name }}
     </header>
     <ul class="layout-row layout-align-start-center layout-wrap inventory-feature-pod-containers">
-        @for (container of pod.containers; track container) {
+        @for (container of pod.containers; track container.name) {
+            @let containerPath = pod.node_name + ':' + pod.namespace + ':' + pod.uid + ':' + container.name;
+
             <li class="inventory-feature-pod-containers-item">
                 <button kbq-button
                         kbqStyle="outline"
                         color="contrast-fade"
                         type="button"
-                        [id]="container"
+                        [id]="container.name"
                         class="dragIgnore kbq-button-icon inventory-feature-pod-containers-button"
-                        [ngClass]="{ 'active': context.type === sidepanelContextType.CONTAINER && context.id === pod.name + '' + container }"
+                        [class]="{ 'active': context.type === sidepanelContextType.CONTAINER && context.id === container.name && context.path === containerPath }"
                         [kbqExtendedTooltip]="containerTooltip"
                         [kbqPlacement]="tooltipPlacements.Bottom"
                         (click)="bucketClick.emit({ container, pod })"
@@ -35,11 +37,11 @@
 
             <ng-template #containerTooltip>
                 <p class="layout-margin-no-top layout-margin-bottom-xxs cs-text-gray">{{ tInventory('Inventory.MapPage.Hint.Container') }}</p>
-                <p class="layout-margin-no-top layout-margin-no-bottom">{{ container }}</p>
+                <p class="layout-margin-no-top layout-margin-no-bottom">{{ container.name }}</p>
             </ng-template>
         }
 
-        <span class="inventory-feature-pod-containers-bg" [ngStyle]="{ 'background-color': pod.bgColor }"></span>
+        <span class="inventory-feature-pod-containers-bg" [style]="{ 'background-color': pod.bgColor }"></span>
     </ul>
 
     <ng-template #podTooltip>

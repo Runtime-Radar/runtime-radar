@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, bufferWhen, delay, distinctUntilChanged, map, switchMap } from 'rxjs';
 
@@ -13,9 +13,20 @@ import { Role, RoleStoreService } from '@cs/domains/role';
     selector: 'cs-app-container',
     templateUrl: './app.container.html',
     styleUrl: './app.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class AppContainer implements OnInit {
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly authStoreService = inject(AuthStoreService);
+    private readonly coreNavigationStoreService = inject(CoreNavigationStoreService);
+    private readonly coreWindowService = inject(CoreWindowService);
+    private readonly i18nService = inject(I18nService);
+    private readonly licenseStoreService = inject(LicenseStoreService);
+    private readonly roleStoreService = inject(RoleStoreService);
+
     @ViewChild('clusterToastActionTemplate') clusterToastActionTemplate!: TemplateRef<any>;
 
     readonly activeClusterHost$ = this.apiPathService.host$;
@@ -45,17 +56,6 @@ export class AppContainer implements OnInit {
     readonly loadStatus = LoadStatus;
 
     readonly routerName = RouterName;
-
-    constructor(
-        private readonly apiPathService: ApiPathService,
-        private readonly authStoreService: AuthStoreService,
-        private readonly coreNavigationStoreService: CoreNavigationStoreService,
-        private readonly i18nService: I18nService,
-        private readonly licenseStoreService: LicenseStoreService,
-        private readonly roleStoreService: RoleStoreService,
-        private readonly toastService: KbqToastService,
-        private readonly coreWindowService: CoreWindowService
-    ) {}
 
     ngOnInit() {
         this.apiPathService.error$

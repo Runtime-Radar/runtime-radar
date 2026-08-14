@@ -25,6 +25,14 @@ const routes: Routes = [
         }
     },
     {
+        path: RouterName.INVENTORY,
+        loadChildren: () => import('@cs/features/inventory').then((m) => m.InventoryFeatureModule),
+        canActivate: [authSuccessRouteActivateGuard, i18nTranslationActivateGuard],
+        data: {
+            translateDicts: [TranslationDict.INVENTORY]
+        }
+    },
+    {
         path: RouterName.CLUSTERS,
         loadChildren: () => import('@cs/features/cluster').then((m) => m.ClusterFeatureModule),
         canActivate: [authSuccessRouteActivateGuard, i18nTranslationActivateGuard, rolePermissionActivateGuard],
@@ -35,14 +43,6 @@ const routes: Routes = [
             translateDicts: [TranslationDict.CLUSTER],
             permissions: [PermissionName.CLUSTERS],
             guards: [PermissionName.CLUSTERS]
-        }
-    },
-    {
-        path: RouterName.SWITCH,
-        loadChildren: () => import('@cs/features/switch').then((m) => m.SwitchFeatureModule),
-        canActivate: [i18nTranslationActivateGuard],
-        data: {
-            translateDicts: [TranslationDict.CLUSTER]
         }
     },
     {
@@ -111,12 +111,21 @@ const routes: Routes = [
         data: {
             translateDicts: [TranslationDict.TOKEN],
             permissions: [
+                PermissionName.CLUSTERS,
                 PermissionName.RULES,
                 PermissionName.EVENTS,
                 PermissionName.TOKENS,
                 PermissionName.INVALIDATE_TOKENS
             ],
             guards: [PermissionName.TOKENS]
+        }
+    },
+    {
+        path: RouterName.SWITCH,
+        loadChildren: () => import('@cs/features/switch').then((m) => m.SwitchFeatureModule),
+        canActivate: [i18nTranslationActivateGuard],
+        data: {
+            translateDicts: [TranslationDict.CLUSTER]
         }
     },
     {

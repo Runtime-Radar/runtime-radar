@@ -1,4 +1,3 @@
-import { RuleSeverity } from '@cs/domains/rule';
 import { RuntimeEventProcessorHistoryControl } from '@cs/domains/runtime';
 
 export interface RuntimeSettingPolicyForm {
@@ -32,20 +31,6 @@ export interface RuntimeSettingForm {
 export interface RuntimeSettingPermissionCounter {
     allow: number;
     deny: number;
-}
-
-export interface RuntimeRuleForm {
-    name: string;
-    namespaces: string[];
-    notifySeverity: RuleSeverity;
-    mailIds: string[];
-    detectors: string[];
-    pods: string[];
-    containers: string[];
-    nodes: string[];
-    binaries: string[];
-    imageNames: string[];
-    registries: string[];
 }
 
 export interface RuntimeExpertModeForm {

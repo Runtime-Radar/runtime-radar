@@ -15,8 +15,8 @@ import { getNotificationLastUpdate, getNotificationLoadStatus } from '../stores/
 
 const notificationLazyActivate = (): Observable<boolean> => {
     const dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
-    const store = inject<Store<NotificationState>>(Store);
     const pollingInterval = inject(POLLING_INTERVAL);
+    const store = inject<Store<NotificationState>>(Store);
 
     return store.select(getNotificationLoadStatus).pipe(
         tap((status) => {

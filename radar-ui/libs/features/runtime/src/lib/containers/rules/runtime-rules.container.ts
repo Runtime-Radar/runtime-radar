@@ -2,7 +2,7 @@ import { KbqAlertColors } from '@koobiq/components/alert';
 import { KbqBadgeColors } from '@koobiq/components/badge';
 import { PopUpPlacements } from '@koobiq/components/core';
 import { BehaviorSubject, Observable, filter, forkJoin, map, of, switchMap, take } from 'rxjs';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, Optional } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, inject } from '@angular/core';
 import {
     KbqSidepanelConfig,
     KbqSidepanelPosition,
@@ -12,6 +12,7 @@ import {
 
 import { I18nService } from '@cs/i18n';
 import { PermissionType } from '@cs/domains/role';
+import { SharedModalService } from '@cs/shared';
 import {
     CreateRuleRequest,
     GetRuleResponse,
@@ -24,18 +25,27 @@ import {
 } from '@cs/domains/rule';
 import { LoadStatus, CoreUtilsService as utils } from '@cs/core';
 import { Notification, NotificationStoreService } from '@cs/domains/notification';
-import { SharedModalService, SharedRuleSidepanelFormComponent, SharedRuleSidepanelFormProps } from '@cs/shared';
+import { RuleForm, RulePackageSidepanelFormComponent, RuleSidepanelFormProps } from '@cs/packages/rule';
 
 import { RUNTIME_DETAILS_LIST_ITEMS_LIMIT } from '../../constants/runtime-config.constant';
-import { RuntimeRuleForm } from '../../interfaces/runtime-form.interface';
 
 @Component({
     selector: 'cs-runtime-feature-rules-container',
     templateUrl: './runtime-rules.container.html',
     styleUrl: './runtime-rules.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureRulesContainer implements OnChanges {
+    private readonly sidepanelRef = inject(KbqSidepanelRef, { optional: true });
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly notificationStoreService = inject(NotificationStoreService);
+    private readonly ruleRequestService = inject(RuleRequestService);
+    private readonly ruleStoreService = inject(RuleStoreService);
+    private readonly sharedModalService = inject(SharedModalService);
+
     @Input() ruleIds?: string[];
 
     @Input() permissions = new Map<PermissionType, boolean>();
@@ -96,22 +106,12 @@ export class RuntimeFeatureRulesContainer implements OnChanges {
 
     expandLimit: number | undefined = RUNTIME_DETAILS_LIST_ITEMS_LIMIT;
 
-    constructor(
-        private readonly sidepanelService: KbqSidepanelService,
-        private readonly notificationStoreService: NotificationStoreService,
-        private readonly ruleStoreService: RuleStoreService,
-        private readonly i18nService: I18nService,
-        private readonly ruleRequestService: RuleRequestService,
-        private readonly sharedModalService: SharedModalService,
-        @Optional() readonly sidepanelRef: KbqSidepanelRef
-    ) {}
-
     ngOnChanges() {
         this.ruleIds$.next(this.ruleIds);
     }
 
     openEditRuleSidepanel(rule: Rule) {
-        const config: KbqSidepanelConfig<Partial<SharedRuleSidepanelFormProps>> = {
+        const config: KbqSidepanelConfig<Partial<RuleSidepanelFormProps>> = {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {
@@ -121,10 +121,10 @@ export class RuntimeFeatureRulesContainer implements OnChanges {
         };
 
         this.sidepanelService
-            .open(SharedRuleSidepanelFormComponent, config)
+            .open(RulePackageSidepanelFormComponent, config)
             .afterClosed()
             .pipe(take(1), filter(utils.isDefined))
-            .subscribe((form: RuntimeRuleForm) => {
+            .subscribe((form: RuleForm) => {
                 const request: UpdateRuleRequest = {
                     name: form.name,
                     type: RuleType.TYPE_RUNTIME,
@@ -176,14 +176,14 @@ export class RuntimeFeatureRulesContainer implements OnChanges {
 
     openCreateRuleSidepanel() {
         this.sidepanelService
-            .open(SharedRuleSidepanelFormComponent, {
+            .open(RulePackageSidepanelFormComponent, {
                 position: KbqSidepanelPosition.Right,
                 hasBackdrop: true,
                 data: {}
             })
             .afterClosed()
             .pipe(take(1), filter(utils.isDefined))
-            .subscribe((form: RuntimeRuleForm) => {
+            .subscribe((form: RuleForm) => {
                 const request: CreateRuleRequest = {
                     name: form.name,
                     type: RuleType.TYPE_RUNTIME,

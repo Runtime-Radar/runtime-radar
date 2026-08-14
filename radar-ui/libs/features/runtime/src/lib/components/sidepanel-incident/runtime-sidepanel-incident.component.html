@@ -7,11 +7,11 @@
         <section severityBgColor
                  [severity]="props.severity"
                  class="runtime-feature-sidepanel-incident-card">
-            <cs-severity-label-component
+            <cs-rule-package-severity-label-component
                     class="runtime-feature-sidepanel-incident-card-severity"
                     isLabelColored
                     isWidthAuto
-                    [severity]="props.severity"></cs-severity-label-component>
+                    [severity]="props.severity" />
 
             <kbq-dl [vertical]="false" [wide]="true">
                 <kbq-dt>{{ tRuntime('Runtime.IncidentSidepanel.Label.Type') }}:</kbq-dt>
@@ -35,9 +35,9 @@
                         @if (props.threats | runtimeSeverityThreatsCounter: option.id; as counter) {
                             <span class="layout-margin-right-m">
                                 <span class="layout-margin-right-xs">{{ counter }}</span>
-                                <cs-severity-component
+                                <cs-rule-package-severity-component
                                         isWidthAuto
-                                        [severity]="option.id"></cs-severity-component>
+                                        [severity]="option.id" />
                             </span>
                         }
                     }
@@ -47,6 +47,6 @@
 
         <cs-runtime-feature-rules-container
                 [ruleIds]="props.ruleIds"
-                [permissions]="props.permissions"></cs-runtime-feature-rules-container>
+                [permissions]="props.permissions" />
     </kbq-sidepanel-body>
 </ng-container>

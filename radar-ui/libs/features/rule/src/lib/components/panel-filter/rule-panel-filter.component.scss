@@ -2,15 +2,6 @@
     display: block;
 }
 
-.rule-feature-panel-filter {
-    gap: 32px;
-
-    &-field {
-        max-width: 250px;
-        min-width: 200px;
-
-        &:first-child {
-            margin-top: 28px;
-        }
-    }
+.rule-feature-panel-filter-search {
+    width: 300px;
 }

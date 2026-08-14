@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { LoadStatus } from '@cs/core';
 
@@ -34,6 +34,8 @@ import {
     providedIn: 'root'
 })
 export class IntegrationStoreService {
+    private readonly store = inject<Store<IntegrationState>>(Store);
+
     readonly emailIntegrations$: Observable<IntegrationEmail[]> = this.store.select(getEmailIntegrations);
 
     readonly syslogIntegrations$: Observable<IntegrationSyslog[]> = this.store.select(getSyslogIntegrations);
@@ -41,8 +43,6 @@ export class IntegrationStoreService {
     readonly webhookIntegrations$: Observable<IntegrationWebhook[]> = this.store.select(getWebhookIntegrations);
 
     readonly loadStatus$: Observable<LoadStatus> = this.store.select(getIntegrationLoadStatus);
-
-    constructor(private readonly store: Store<IntegrationState>) {}
 
     createEmailIntegration(item: CreateIntegrationRequest<IntegrationEmail>) {
         this.store.dispatch(CREATE_EMAIL_INTEGRATION_ENTITY_TODO_ACTION({ item }));

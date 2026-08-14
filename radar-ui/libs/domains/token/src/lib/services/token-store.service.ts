@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { LoadStatus } from '@cs/core';
 
@@ -16,11 +16,11 @@ import { getTokenLoadStatus, getTokens } from '../stores/token-selector.store';
     providedIn: 'root'
 })
 export class TokenStoreService {
+    private readonly store = inject<Store<TokenState>>(Store);
+
     readonly tokens$: Observable<Token[]> = this.store.select(getTokens);
 
     readonly loadStatus$: Observable<LoadStatus> = this.store.select(getTokenLoadStatus);
-
-    constructor(private readonly store: Store<TokenState>) {}
 
     createToken(item: CreateTokenRequest) {
         this.store.dispatch(CREATE_TOKEN_ENTITY_TODO_ACTION({ item }));

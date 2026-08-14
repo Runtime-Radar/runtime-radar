@@ -1,9 +1,9 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, concatMap, filter, map, scan, switchMap, take, tap } from 'rxjs/operators';
@@ -45,6 +45,16 @@ import { IntegrationEmail, IntegrationSyslog, IntegrationType, IntegrationWebhoo
     providedIn: 'root'
 })
 export class IntegrationEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly integrationEmailRequestService = inject(IntegrationEmailRequestService);
+    private readonly integrationSyslogRequestService = inject(IntegrationSyslogRequestService);
+    private readonly integrationWebhookRequestService = inject(IntegrationWebhookRequestService);
+    private readonly store = inject<Store<IntegrationState>>(Store);
+
     readonly loadEmailIntegrations$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_INTEGRATION_ENTITIES_TODO_ACTION),
@@ -384,17 +394,6 @@ export class IntegrationEffectStore {
             ])
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService,
-        private readonly integrationEmailRequestService: IntegrationEmailRequestService,
-        private readonly integrationSyslogRequestService: IntegrationSyslogRequestService,
-        private readonly integrationWebhookRequestService: IntegrationWebhookRequestService,
-        private readonly store: Store<IntegrationState>,
-        private readonly toastService: KbqToastService
-    ) {}
 
     private handleWarningToastMessages(error: HttpErrorResponse) {
         if (apiUtils.getReasonCode(error) === ApiErrorCode.NOTIFICATION_IN_USE) {

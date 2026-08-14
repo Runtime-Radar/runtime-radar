@@ -1,13 +1,14 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 
 import { I18nService } from '@cs/i18n';
 
 @Pipe({
     name: 'numberFormatter',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class SharedNumberFormatterPipe implements PipeTransform {
-    constructor(private readonly i18nService: I18nService) {}
+    private readonly i18nService = inject(I18nService);
 
     transform(number: number | null | undefined): string {
         if (number === null || number === undefined) {
