@@ -1,6 +1,6 @@
 import { KbqModalRef } from '@koobiq/components/modal';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 
 import { I18nService } from '@cs/i18n';
@@ -17,9 +17,14 @@ interface RuntimeDetectorFile {
 @Component({
     templateUrl: './runtime-upload-detector-modal.component.html',
     styleUrl: './runtime-upload-detector-modal.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureUploadDetectorModalComponent {
+    private readonly modal = inject(KbqModalRef);
+    private readonly toastService = inject(KbqToastService);
+    private readonly i18nService = inject(I18nService);
+
     private readonly files$ = new BehaviorSubject<RuntimeDetectorFile[]>([]);
 
     readonly isUploadInProgress$ = new BehaviorSubject(false);
@@ -28,25 +33,18 @@ export class RuntimeFeatureUploadDetectorModalComponent {
         map((list) => list.filter((item) => !item.isDeleted))
     );
 
-    constructor(
-        private readonly i18nService: I18nService,
-        private readonly modal: KbqModalRef,
-        private readonly toastService: KbqToastService
-    ) {}
-
-    upload(event: Event): void {
+    upload(event: Event) {
         const input = event.target as HTMLInputElement;
 
         if (!input) {
             return;
         }
 
-        const fileList = input.files;
-        const selectedFiles = fileList ? Array.from(fileList) : [];
+        const files = input.files ? Array.from(input.files) : [];
 
         input.value = '';
 
-        const wasmFiles = selectedFiles.filter((file) => this.isWasmFile(file));
+        const wasmFiles = files.filter((file) => this.isWasmFile(file));
 
         if (wasmFiles.length === 0) {
             this.warnInvalidFile();
@@ -68,8 +66,7 @@ export class RuntimeFeatureUploadDetectorModalComponent {
                     const base64 = commaIndex >= 0 ? result.slice(commaIndex + 1) : '';
 
                     if (this.isWasmBase64(base64)) {
-                        const values = this.getPatchedFiles(file, base64);
-                        this.files$.next(values);
+                        this.files$.next(this.getPatchedFiles(file, base64));
                     } else {
                         this.warnInvalidFile(file.name);
                     }
@@ -92,17 +89,24 @@ export class RuntimeFeatureUploadDetectorModalComponent {
         });
     }
 
-    delete(id: string): void {
-        this.files$.next(this.files$.value.map((item) => (item.id === id ? { ...item, isDeleted: true } : item)));
+    delete(id: string) {
+        this.files$.next(
+            this.files$.value.map((item) => {
+                if (item.id === id) {
+                    item.isDeleted = true;
+                }
+
+                return item;
+            })
+        );
     }
 
-    dispatch(isSuccessful: boolean): void {
+    dispatch(isSuccessful: boolean) {
         const base64values = this.files$.value.filter((item) => !item.isDeleted).map((item) => item.base64);
-
         this.modal.destroy(isSuccessful ? base64values : undefined);
     }
 
-    private warnInvalidFile(fileName?: string): void {
+    private warnInvalidFile(fileName?: string) {
         const message = fileName ? `File "${fileName}" is not a valid WASM` : 'No valid WASM files selected';
 
         console.warn(message);
@@ -137,7 +141,13 @@ export class RuntimeFeatureUploadDetectorModalComponent {
                 });
             }
 
-            return files.map((obj) => (obj.id === item.id ? { ...obj, isDeleted: false } : obj));
+            return files.map((obj) => {
+                if (obj.id === item.id) {
+                    obj.isDeleted = false;
+                }
+
+                return obj;
+            });
         }
 
         return [...files, value];
