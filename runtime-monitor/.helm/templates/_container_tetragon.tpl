@@ -1,7 +1,7 @@
 {{- define "container.tetragon" -}}
 - name: {{ include "container.tetragon.name" . }}
   securityContext:
-    {{- toYaml .Values.tetragon.securityContext | nindent 4 }}
+    {{- toYaml .Values.tetragon.containerSecurityContext | nindent 4 }}
   image: {{ include "common.cs.image" (dict "context" . "image" .Values.tetragon.image) }}
   imagePullPolicy: {{ .Values.image.pullPolicy }}
   terminationMessagePolicy: FallbackToLogsOnError
