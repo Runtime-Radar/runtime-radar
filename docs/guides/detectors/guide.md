@@ -85,7 +85,7 @@ The detector code is logically divided into several sections:
 
 **Setting up the environment**
 
-To develop and compile detectors, you need to set up the environment and use Go version 1.25, TinyGo version 0.39.0, and an IDE that supports Go. We recommend that you use Visual Studio Code as your IDE. Configuration files for this development environment are in the `/event-processor/detector/wasm/.vscode` directory. Before you get started with detector code, you must install recommended extensions for Visual Studio Code and restart the IDE. To employ other IDEs, you must examine the contents of the `.vscode/settings.json` file and set up the environment in the same way.
+To develop and compile detectors, you need to set up the environment and use Go version 1.26, TinyGo version 0.41.1, and an IDE that supports Go. We recommend that you use Visual Studio Code as your IDE. Configuration files for this development environment are in the `/event-processor/detector/wasm/.vscode` directory. Before you get started with detector code, you must install recommended extensions for Visual Studio Code and restart the IDE. To employ other IDEs, you must examine the contents of the `.vscode/settings.json` file and set up the environment in the same way.
 
 To check the TinyGo version,
 
@@ -117,7 +117,7 @@ You can examine the [full source code](#9960038795) of the resulting detector.
 
 **Compiling detectors**
 
-To compile detectors, you need the [TinyGo](https://tinygo.org/getting-started/install) compiler, wasip1 target, and [Task](https://taskfile.dev/docs/installation) utility. The event processor module directory contains the `Taskfile.yml` file with compilation scripts. The current Runtime Radar version only supports detectors compiled by TinyGo version 0.39.0.
+To compile detectors, you need the [TinyGo](https://tinygo.org/getting-started/install) compiler, wasip1 target, and [Task](https://taskfile.dev/docs/installation) utility. The event processor module directory contains the `Taskfile.yml` file with compilation scripts. The current Runtime Radar version only supports detectors compiled by TinyGo version 0.41.1.
 
 To compile all of the available detectors:
 

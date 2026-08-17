@@ -3,6 +3,7 @@ global:
   keys:
     token: random
 image:
+  registry: ghcr.io/runtime-radar
   repository: runtime-monitor
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
