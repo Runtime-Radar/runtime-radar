@@ -5,21 +5,10 @@
 .runtime-feature-filter-popover {
     min-width: 350px;
     max-height: 455px;
-    padding: 1px;
     overflow: auto;
 
-    &-reset-icon {
-        display: inline-block;
-        position: relative;
-        z-index: 1;
-        margin: 0 0 0 4px;
-        padding: 0;
-        border: none;
-        background: none;
-        cursor: pointer;
-    }
-
     &-row {
+        position: relative;
         margin-top: 16px;
 
         &-field {
@@ -27,6 +16,17 @@
 
             &-removed {
                 text-decoration: line-through;
+            }
+        }
+
+        &-datetime {
+            display: block;
+            width: calc(100% - 4px);
+            flex: none;
+
+            & + .kbq-button-icon {
+                position: absolute;
+                right: 0;
             }
         }
 

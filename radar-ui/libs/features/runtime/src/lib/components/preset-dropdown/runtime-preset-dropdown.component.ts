@@ -1,6 +1,6 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 
 import { RUNTIME_FILTER_DATETIME_PERIOD_SEPARATOR } from '../../constants/runtime-filter.constant';
 import { RuntimeEventFilters } from '../../interfaces/runtime-filter.interface';
@@ -8,14 +8,15 @@ import { RuntimeEventFilters } from '../../interfaces/runtime-filter.interface';
 @Component({
     selector: 'cs-runtime-feature-preset-dropdown-component',
     templateUrl: './runtime-preset-dropdown.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeaturePresetDropdownComponent implements OnInit {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+
     @Output() presetChange = new EventEmitter<RuntimeEventFilters>();
 
     readonly presetDropdownFiltersCollection = new Map<RuntimeEventFilters, string>();
-
-    constructor(private readonly dateAdapter: DateAdapter<DateTime>) {}
 
     select(filters: RuntimeEventFilters) {
         this.presetChange.emit(filters);

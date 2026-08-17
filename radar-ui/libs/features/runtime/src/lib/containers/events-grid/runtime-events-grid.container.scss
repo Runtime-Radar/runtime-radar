@@ -1,5 +1,8 @@
 :host {
     display: block;
+    width: calc(100vw - (170px + 64px));
+    min-width: 860px;
+    overflow-x: auto;
 }
 
 .runtime-feature-events-grid {
@@ -10,6 +13,16 @@
         vertical-align: middle;
     }
 
+    .eye-icon {
+        visibility: hidden;
+        opacity: 0;
+    }
+
+    th:hover .eye-icon {
+        visibility: visible;
+        opacity: 1;
+    }
+
     .active {
         background-color: #c0daff; // @todo: replace to koobiq token
     }
@@ -18,19 +31,29 @@
         background-color: #ffe4e1; // @todo: replace to koobiq token
     }
 
+    .active-sidepanel {
+        background-color: #c0daff !important; // @todo: replace to koobiq token
+    }
+
     &-truncate {
-        display: inline-block;
-        max-width: 135px;
-        overflow: hidden;
+        max-width: 350px;
         vertical-align: middle;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     &-severity {
         margin: 0;
         padding: 0;
         list-style: none;
+
+        &-wrapper {
+            min-width: 56px;
+            text-align: right;
+        }
+
+        &-margin {
+            margin-left: 4px;
+            padding-top: 2px;
+        }
     }
 
     &-valign-middle {

@@ -14,8 +14,9 @@ import { getRuleLastUpdate, getRuleLoadStatus } from '../stores/rule-selector.st
 const ruleActivate = (): Observable<boolean> => {
     const dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
     const router = inject(Router);
-    const store = inject<Store<RuleState>>(Store);
+
     const pollingInterval = inject(POLLING_INTERVAL);
+    const store = inject<Store<RuleState>>(Store);
 
     return store.select(getRuleLoadStatus).pipe(
         tap((status) => {

@@ -1,0 +1,35 @@
+.rule-package-severity-grade {
+    width: 120px;
+    margin: 0;
+    padding: 0;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &-item {
+        width: 25%;
+        list-style: none;
+        color: #6d7a86;
+        background-color: #e6e8ea;
+        text-align: center;
+
+        &.low {
+            color: #06f;
+            background-color: #c2d9ff;
+        }
+
+        &.medium {
+            color: #a86b00;
+            background-color: #ffe3b2;
+        }
+
+        &.high {
+            color: #c91a03;
+            background-color: #fecec8;
+        }
+
+        &.critical {
+            color: #fff;
+            background-color: #fc4d36;
+        }
+    }
+}

@@ -1,14 +1,14 @@
 import { DateTime } from 'luxon';
 import { BehaviorSubject, Observable, map, take, tap } from 'rxjs';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { DateAdapter, PopUpPlacements } from '@koobiq/components/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 
 import { ApiPathService } from '@cs/api';
-import { LoadStatus } from '@cs/core';
 import { ClusterStoreService, RegisteredCluster } from '@cs/domains/cluster';
+import { FormScheme, LoadStatus } from '@cs/core';
 import {
-    GetKubeManagerPodsRequest,
     KubeManagerDetectorRatingPeriod,
     KubeManagerNamespaceGroup,
     KubeManagerNode,
@@ -40,10 +40,35 @@ import {
 @Component({
     templateUrl: './inventory-map.container.html',
     styleUrls: ['./inventory-map.container.scss', '../../components/inventory-abstract.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class InventoryFeatureMapContainer implements OnInit, OnDestroy {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly formBuilder = inject(FormBuilder);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly inventoryFeatureSidepanelContextService = inject(InventoryFeatureSidepanelContextService);
+    private readonly kubeManagerRequestService = inject(KubeManagerRequestService);
+    private readonly kubeManagerStoreService = inject(KubeManagerStoreService);
+
     @ViewChild(InventoryFeatureDragAreaDirective) dragAreaDirective!: InventoryFeatureDragAreaDirective;
+
+    readonly filterForm: FormGroup<FormScheme<InventoryFilters>> = this.formBuilder.group({
+        nodes: [[] as string[]],
+        namespaces: [[] as string[]],
+        pods: [[] as string[]],
+        containers: [[] as string[]]
+    });
+
+    readonly defaultFilterValues: InventoryFilters = {
+        nodes: [],
+        namespaces: [],
+        pods: [],
+        containers: []
+    };
 
     readonly selectedNode$ = new BehaviorSubject<string | null>(null);
 
@@ -109,16 +134,6 @@ export class InventoryFeatureMapContainer implements OnInit, OnDestroy {
 
     readonly nodeTextColors = INVENTORY_NODE_TEXT_COLORS;
 
-    constructor(
-        private readonly apiPathService: ApiPathService,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly inventoryFeatureSidepanelContextService: InventoryFeatureSidepanelContextService,
-        private readonly kubeManagerRequestService: KubeManagerRequestService,
-        private readonly kubeManagerStoreService: KubeManagerStoreService,
-        private readonly sidepanelService: KbqSidepanelService
-    ) {}
-
     ngOnInit() {
         this.kubeManagerStoreService.initPods();
     }
@@ -150,15 +165,7 @@ export class InventoryFeatureMapContainer implements OnInit, OnDestroy {
     }
 
     filterChange(filters: InventoryFilters) {
-        const request = Object.entries(filters).reduce((acc, [key, value]) => {
-            if (value.length) {
-                acc[key as keyof InventoryFilters] = value;
-            }
-
-            return acc;
-        }, {} as Partial<GetKubeManagerPodsRequest>);
-
-        this.kubeManagerStoreService.loadPods(request);
+        this.kubeManagerStoreService.loadPods(filters);
     }
 
     openViewNodeSidepanel(node: KubeManagerNode) {
@@ -263,7 +270,7 @@ export class InventoryFeatureMapContainer implements OnInit, OnDestroy {
     }
 
     openViewContainerSidepanel(outputs: InventorySidepanelContainerOutputs) {
-        const uuid = `container:${outputs.pod.name}${outputs.container}`;
+        const uuid = `container:${outputs.pod.name.split('').reverse().join('')}${outputs.container.name}`;
         const config: KbqSidepanelConfig<InventorySidepanelContainerProps> = {
             id: uuid,
             position: KbqSidepanelPosition.Right,
@@ -272,15 +279,15 @@ export class InventoryFeatureMapContainer implements OnInit, OnDestroy {
             data: {
                 container: outputs.container,
                 pod: outputs.pod,
-                detectors$: this.detectorRating$(outputs.pod.namespace, outputs.pod.name, outputs.container)
+                detectors$: this.detectorRating$(outputs.pod.namespace, outputs.pod.name, outputs.container.name)
             }
         };
 
         this.selectedNode$.next(outputs.pod.node_name);
         this.inventoryFeatureSidepanelContextService.slice({
-            id: outputs.pod.name + '' + outputs.container,
+            id: outputs.container.name,
             sidepanelId: uuid,
-            path: `${outputs.pod.node_name}:${outputs.pod.namespace}:${outputs.pod.uid}:${outputs.container}`,
+            path: `${outputs.pod.node_name}:${outputs.pod.namespace}:${outputs.pod.uid}:${outputs.container.name}`,
             type: InventorySidepanelContextType.CONTAINER
         });
         this.sidepanelService
@@ -288,7 +295,7 @@ export class InventoryFeatureMapContainer implements OnInit, OnDestroy {
             .afterClosed()
             .pipe(take(1))
             .subscribe(() => {
-                this.inventoryFeatureSidepanelContextService.remove(outputs.container);
+                this.inventoryFeatureSidepanelContextService.remove(outputs.container.name);
                 if (!this.inventoryFeatureSidepanelContextService.get().length) {
                     this.selectedNode$.next(null);
                 }

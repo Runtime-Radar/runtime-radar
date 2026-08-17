@@ -3,7 +3,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { KubeManagerNamespace, KubeManagerNamespaceGroup } from '@cs/domains/kube-manager';
 
 @Pipe({
-    name: 'kubeManagerGroupNamespacesSort'
+    name: 'kubeManagerGroupNamespacesSort',
+    standalone: false
 })
 export class KubeManagerGroupNamespacesSortPipe implements PipeTransform {
     transform(values?: KubeManagerNamespaceGroup[] | null): KubeManagerNamespaceGroup[] {
@@ -17,6 +18,6 @@ export class KubeManagerGroupNamespacesSortPipe implements PipeTransform {
     }
 
     private getNodes = (namespaces: KubeManagerNamespace[]): string[] => {
-        return namespaces.reduce((acc, item) => [...acc, ...item.nodes], [] as string[]);
+        return namespaces.reduce<string[]>((acc, item) => [...acc, ...item.nodes], []);
     };
 }

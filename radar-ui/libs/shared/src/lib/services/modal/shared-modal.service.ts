@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { KbqModalService } from '@koobiq/components/modal';
 import { take } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
 
 import { SharedModalComponent } from './shared-modal.component';
 import { SharedModalParams } from './shared-modal.interface';
@@ -9,7 +9,7 @@ import { SharedModalParams } from './shared-modal.interface';
     providedIn: 'root'
 })
 export class SharedModalService {
-    constructor(private readonly modalService: KbqModalService) {}
+    private readonly modalService = inject(KbqModalService);
 
     delete(params: SharedModalParams) {
         this.modalService

@@ -1,0 +1,23 @@
+{
+    "name": "package-grid",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/packages/grid/src",
+    "prefix": "runtime-radar",
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "options": {
+                "lintFilePatterns": ["libs/packages/grid/src/**/*.ts", "libs/packages/grid/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/packages/grid"],
+            "options": {
+                "jestConfig": "libs/packages/grid/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

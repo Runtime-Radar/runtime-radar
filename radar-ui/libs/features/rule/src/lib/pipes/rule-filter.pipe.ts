@@ -2,10 +2,11 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 import { Rule, RuleSeverity } from '@cs/domains/rule';
 
-import { RuleFilters } from '../interfaces/rule-form.interface';
+import { RuleFilters } from '../interfaces/rule-filter.interface';
 
 @Pipe({
-    name: 'ruleFilter'
+    name: 'ruleFilter',
+    standalone: false
 })
 export class RuleFeatureFilterPipe implements PipeTransform {
     transform(values?: Rule[] | null, filters?: RuleFilters): Rule[] {
@@ -17,11 +18,11 @@ export class RuleFeatureFilterPipe implements PipeTransform {
             return values;
         }
 
-        const keys = Object.keys(filters).reduce((acc, key: string) => {
+        const keys = Object.keys(filters).reduce<string[]>((acc, key: string) => {
             const value = filters[key as keyof RuleFilters];
 
-            return value !== null && !!value.length ? [...acc, key] : acc;
-        }, [] as string[]);
+            return (typeof value === 'string' || Array.isArray(value)) && !!value.length ? [...acc, key] : acc;
+        }, []);
 
         return values.filter((item) =>
             keys.every((key) => {

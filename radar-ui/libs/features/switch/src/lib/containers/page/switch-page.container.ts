@@ -1,5 +1,5 @@
 import { KbqBadgeColors } from '@koobiq/components/badge';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
 import { LicenseRequestService } from '@cs/domains/license';
@@ -8,9 +8,12 @@ import { Cluster, ClusterStatus } from '@cs/domains/cluster';
 @Component({
     templateUrl: './switch-page.container.html',
     styleUrls: ['./switch-page.container.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SwitchFeaturePageContainer {
+    private readonly licenseRequestService = inject(LicenseRequestService);
+
     readonly url$: Observable<string> = this.licenseRequestService.getCentralUrl().pipe(
         tap((url) => {
             if (!url) {
@@ -24,6 +27,4 @@ export class SwitchFeaturePageContainer {
     readonly clusterStatus = ClusterStatus;
 
     readonly badgeColors = KbqBadgeColors;
-
-    constructor(private readonly licenseRequestService: LicenseRequestService) {}
 }

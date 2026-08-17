@@ -1,5 +1,5 @@
 import { KbqTabChangeEvent } from '@koobiq/components/tabs';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { CoreNavigationStoreService } from '@cs/core';
@@ -13,9 +13,12 @@ interface AbstractTabOption {
     selector: 'cs-tabs-component',
     templateUrl: './shared-tabs.component.html',
     styleUrl: './shared-tabs.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SharedTabsComponent<T extends AbstractTabOption> {
+    private readonly coreNavigationStoreService = inject(CoreNavigationStoreService);
+
     @Input({ required: true }) tabs!: T[];
 
     @Input({ required: true }) localizationFn!: any;
@@ -27,8 +30,6 @@ export class SharedTabsComponent<T extends AbstractTabOption> {
     readonly activeTabIndex$: Observable<number> = this.coreNavigationStoreService.routeSlug$.pipe(
         map((slug) => this.tabs.findIndex((tab) => tab.path === slug))
     );
-
-    constructor(private readonly coreNavigationStoreService: CoreNavigationStoreService) {}
 
     onSelectedTabChange(tab: KbqTabChangeEvent) {
         const item = this.tabs[tab.index];

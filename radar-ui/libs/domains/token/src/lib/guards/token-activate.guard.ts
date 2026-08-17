@@ -14,8 +14,9 @@ import { getTokenLastUpdate, getTokenLoadStatus } from '../stores/token-selector
 const tokenActivate = (): Observable<boolean> => {
     const dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
     const router = inject(Router);
-    const store = inject<Store<TokenState>>(Store);
+
     const pollingInterval = inject(POLLING_INTERVAL);
+    const store = inject<Store<TokenState>>(Store);
 
     return store.select(getTokenLoadStatus).pipe(
         tap((status) => {

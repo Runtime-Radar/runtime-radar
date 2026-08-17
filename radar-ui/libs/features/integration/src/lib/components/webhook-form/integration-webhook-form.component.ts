@@ -7,7 +7,8 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, map, startWith, tap } from 'rxjs';
@@ -26,9 +27,13 @@ import { IntegrationWebhookForm } from '../../interfaces/integration-form.interf
 @Component({
     selector: 'cs-integration-feature-webhook-form-component',
     templateUrl: './integration-webhook-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationFeatureWebhookFormComponent implements AfterViewInit, OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input() values?: IntegrationWebhook;
 
     @Output() formChange = new EventEmitter<IntegrationWebhookForm | undefined>();
@@ -74,11 +79,6 @@ export class IntegrationFeatureWebhookFormComponent implements AfterViewInit, On
         }),
         map(({ isValid }) => isValid)
     );
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.onFormValidChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

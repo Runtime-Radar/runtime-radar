@@ -1,6 +1,6 @@
 import { KbqModalRef } from '@koobiq/components/modal';
 import { BehaviorSubject, Observable, map } from 'rxjs';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 
 import { I18nService } from '@cs/i18n';
@@ -17,9 +17,15 @@ interface RuntimeDetectorFile {
 @Component({
     templateUrl: './runtime-upload-detector-modal.component.html',
     styleUrl: './runtime-upload-detector-modal.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureUploadDetectorModalComponent {
+    private readonly modal = inject(KbqModalRef);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly i18nService = inject(I18nService);
+
     private readonly files$ = new BehaviorSubject<RuntimeDetectorFile[]>([]);
 
     readonly isUploadInProgress$ = new BehaviorSubject(false);
@@ -28,14 +34,8 @@ export class RuntimeFeatureUploadDetectorModalComponent {
         map((list) => list.filter((item) => !item.isDeleted))
     );
 
-    constructor(
-        private readonly i18nService: I18nService,
-        private readonly modal: KbqModalRef,
-        private readonly toastService: KbqToastService
-    ) {}
-
-    upload(event: any) {
-        const files: FileList = event.target.files || {};
+    upload(event: Event) {
+        const files: FileList = (event.target as HTMLInputElement).files || ({} as FileList);
         Object.keys(files).forEach((key) => {
             const file = files.item(key as unknown as number);
             if (file && file.type === 'application/wasm') {
@@ -61,7 +61,7 @@ export class RuntimeFeatureUploadDetectorModalComponent {
             }
         });
 
-        event.target.value = '';
+        (event.target as HTMLInputElement).value = '';
     }
 
     delete(id: string) {

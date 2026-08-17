@@ -1,0 +1,34 @@
+<section (contextmenu)="open($event)">
+    <ng-content></ng-content>
+</section>
+
+@if (isVisible() && isDropdownAvailable) {
+    <div #dropdown
+         class="runtime-feature-filter-context-dropdown"
+         [style.top.px]="position().top"
+         [style.left.px]="position().left"
+         *transloco="let tRuntime; prefix: 'runtime'">
+        <button kbq-button
+                kbqStyle="transparent"
+                color="contrast"
+                type="button"
+                class="runtime-feature-filter-context-dropdown-item"
+                [disabled]="value && constraint === value"
+                (click)="change(dropdownType.ADD); $event.stopPropagation();"
+                data-testid="runtime-context-dropdown-add-button">
+            <i kbq-icon="kbq-circle-plus_16"></i>
+            {{ tRuntime('Runtime.EventsPage.Filter.ContextDrowdown.Button.Add') }}
+        </button>
+        <button kbq-button
+                kbqStyle="transparent"
+                color="contrast"
+                type="button"
+                class="runtime-feature-filter-context-dropdown-item"
+                [disabled]="value && !constraint"
+                (click)="change(dropdownType.REMOVE); $event.stopPropagation();"
+                data-testid="runtime-context-dropdown-remove-button">
+            <i kbq-icon="kbq-trash_16"></i>
+            {{ tRuntime('Runtime.EventsPage.Filter.ContextDrowdown.Button.Remove') }}
+        </button>
+    </div>
+}

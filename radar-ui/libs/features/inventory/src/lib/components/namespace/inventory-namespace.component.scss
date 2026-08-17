@@ -22,9 +22,6 @@
         background-color: var(--kbq-background-bg);
         border: 1px solid #c4c7d4; // @todo: replace to koobiq token
         border-radius: 8px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
         cursor: pointer;
 
         @for $i from 1 through 3 {

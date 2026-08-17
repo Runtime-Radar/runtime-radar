@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 export interface CoreWindowInnerScreen {
     width: number;
@@ -10,6 +10,8 @@ export interface CoreWindowInnerScreen {
     providedIn: 'root'
 })
 export class CoreWindowService {
+    private readonly nativeDocument = inject(DOCUMENT);
+
     readonly document: Document;
 
     private readonly window: Window;
@@ -41,7 +43,7 @@ export class CoreWindowService {
         };
     }
 
-    constructor(@Inject(DOCUMENT) private readonly nativeDocument: Document) {
+    constructor() {
         // it's a workaround to have document property properly typed
         // see: https://github.com/angular/angular/issues/15640
         if (!this.nativeDocument.defaultView) {

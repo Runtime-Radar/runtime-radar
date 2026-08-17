@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, catchError, map, of } from 'rxjs';
 
 import { ApiService } from '@cs/api';
 
@@ -22,7 +22,7 @@ import {
     providedIn: 'root'
 })
 export class KubeManagerRequestService {
-    constructor(private readonly apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     getPods(request: Partial<GetKubeManagerPodsRequest> = {}): Observable<KubeManagerPod[]> {
         return this.apiService
@@ -51,6 +51,9 @@ export class KubeManagerRequestService {
                 GetKubeManagerDetectorRatingRequest,
                 GetKubeManagerDetectorRatingResponse
             >('stats/detector/rating', request)
-            .pipe(map((response) => response.counters));
+            .pipe(
+                map((response) => response.counters),
+                catchError(() => of([]))
+            );
     }
 }

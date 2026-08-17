@@ -1,7 +1,7 @@
 import { KbqCodeBlockFile } from '@koobiq/components/code-block';
 import { KbqModalRef } from '@koobiq/components/modal';
 import { catchError } from 'rxjs/operators';
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { BehaviorSubject, Observable, map, of, switchMap } from 'rxjs';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 
@@ -12,9 +12,17 @@ import { SharedClipboardService } from '@cs/shared';
 @Component({
     templateUrl: './cluster-delete-unregistered-modal.container.html',
     styleUrl: './cluster-delete-unregistered-modal.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureDeleteUnregisteredModalContainer implements AfterViewInit {
+    private readonly modal = inject(KbqModalRef);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly clipboardService = inject(SharedClipboardService);
+    private readonly clusterRequestService = inject(ClusterRequestService);
+    private readonly i18nService = inject(I18nService);
+
     @Input() id?: string;
 
     private id$ = new BehaviorSubject<string | undefined>(undefined);
@@ -46,14 +54,6 @@ export class ClusterFeatureDeleteUnregisteredModalContainer implements AfterView
             );
         })
     );
-
-    constructor(
-        private readonly modal: KbqModalRef,
-        private readonly clusterRequestService: ClusterRequestService,
-        private readonly toastService: KbqToastService,
-        private readonly i18nService: I18nService,
-        private readonly clipboardService: SharedClipboardService
-    ) {}
 
     ngAfterViewInit() {
         if (this.id) {

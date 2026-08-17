@@ -27,11 +27,11 @@
                 <!-- @todo: add a11y support for header button -->
                 <article [id]="pod.uid"
                          class="layout-row layout-align-space-between-center inventory-abstract-feature-header inventory-feature-sidepanel-namespace-pod"
-                         [ngClass]="{ 'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING }"
-                         [ngStyle]="{ 'background-color': pod.bgColor }"
+                         [class]="{ 'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING }"
+                         [style]="{ 'background-color': pod.bgColor }"
                          (click)="props.podHandler({ pod })"
                          data-testid="inventory-pod-open-button">
-                    <span class="kbq-mono-normal-strong inventory-feature-sidepanel-namespace-pod-name">{{ pod.name }}</span>
+                    <span class="kbq-mono-normal-strong cs-text-overflow inventory-feature-sidepanel-namespace-pod-name">{{ pod.name }}</span>
                     <span class="kbq-mono-normal inventory-feature-sidepanel-namespace-pod-count">{{ pod.containers.length }}</span>
                 </article>
             }

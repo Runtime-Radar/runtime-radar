@@ -1,5 +1,5 @@
 import { ActivatedRoute } from '@angular/router';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { Observable, filter, take } from 'rxjs';
 
@@ -22,9 +22,17 @@ import { IntegrationSidepanelFormOutputs } from '../../interfaces/integration-si
 @Component({
     templateUrl: './integration-list.container.html',
     styleUrl: './integration-list.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationFeatureListContainer {
+    private readonly route = inject(ActivatedRoute);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly integrationStoreService = inject(IntegrationStoreService);
+
     readonly loadStatus$: Observable<LoadStatus> = this.integrationStoreService.loadStatus$;
 
     readonly emailIntegrations$: Observable<IntegrationEmail[]> = this.integrationStoreService.emailIntegrations$;
@@ -47,14 +55,6 @@ export class IntegrationFeatureListContainer {
     readonly integrationType = IntegrationType;
 
     readonly loadStatus = LoadStatus;
-
-    constructor(
-        private readonly integrationStoreService: IntegrationStoreService,
-        private readonly route: ActivatedRoute,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly apiPathService: ApiPathService,
-        private readonly sidepanelService: KbqSidepanelService
-    ) {}
 
     openCreateSidepanel() {
         this.sidepanelService

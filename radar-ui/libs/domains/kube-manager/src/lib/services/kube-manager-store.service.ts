@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { LoadStatus } from '@cs/core';
 
@@ -28,6 +28,8 @@ import {
     providedIn: 'root'
 })
 export class KubeManagerStoreService {
+    private readonly store = inject<Store<KubeManagerState>>(Store);
+
     readonly loadStatus$: Observable<LoadStatus> = this.store.select(getKubeManagerLoadStatus);
 
     readonly nodes$: Observable<KubeManagerNode[]> = this.store.select(getKubeManagerNodes);
@@ -40,8 +42,6 @@ export class KubeManagerStoreService {
 
     readonly pods$ = (namespace: string, node?: string): Observable<KubeManagerPodExtended[]> =>
         this.store.select(getKubeManagerPodsByNamespace(namespace, node));
-
-    constructor(private readonly store: Store<KubeManagerState>) {}
 
     initPods() {
         this.store.dispatch(LOAD_KUBE_MANAGER_ENTITIES_TODO_ACTION());

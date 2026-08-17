@@ -6,7 +6,7 @@ import {
     ValidationErrors,
     Validators
 } from '@angular/forms';
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, inject } from '@angular/core';
 
 const MULTIPLE_SELECT_ALL_OPTION_KEY = 'MULTIPLE_SELECT_ALL_OPTION_KEY';
 
@@ -20,6 +20,7 @@ interface AbstractMultipleSelectOption {
     templateUrl: './shared-multiple-select.component.html',
     styleUrl: './shared-multiple-select.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -36,6 +37,8 @@ interface AbstractMultipleSelectOption {
 export class SharedMultipleSelectComponent<T extends AbstractMultipleSelectOption>
     implements ControlValueAccessor, OnInit
 {
+    private readonly cdr = inject(ChangeDetectorRef);
+
     @Input({ required: true }) options!: T[];
 
     @Input({ required: true }) localizationFn!: any;
@@ -88,10 +91,9 @@ export class SharedMultipleSelectComponent<T extends AbstractMultipleSelectOptio
     }
 
     writeValue(selected?: string[] | null) {
-        if (selected) {
-            this.selected = selected;
-            this.selectedItems = selected.length;
-        }
+        this.selected = selected?.length ? selected : [];
+        this.selectedItems = this.selected.length;
+        this.cdr.markForCheck();
     }
 
     validate(control: AbstractControl): ValidationErrors | null {

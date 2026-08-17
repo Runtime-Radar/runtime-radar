@@ -1,8 +1,8 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { Observable, filter, of } from 'rxjs';
 import { catchError, map, switchMap, take } from 'rxjs/operators';
 
@@ -23,6 +23,12 @@ import {
     providedIn: 'root'
 })
 export class KubeManagerEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+
+    private readonly kubeManagerRequestService = inject(KubeManagerRequestService);
+    private readonly store = inject<Store<KubeManagerState>>(Store);
+
     readonly loadPods$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_KUBE_MANAGER_ENTITIES_TODO_ACTION),
@@ -84,11 +90,4 @@ export class KubeManagerEffectStore {
             ])
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly kubeManagerRequestService: KubeManagerRequestService,
-        private readonly store: Store<KubeManagerState>
-    ) {}
 }

@@ -1,18 +1,17 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 
 import { I18nService } from '@cs/i18n';
 
 @Pipe({
     name: 'dateFormatter',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class SharedDateFormatterPipe implements PipeTransform {
-    constructor(
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService
-    ) {}
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly i18nService = inject(I18nService);
 
     transform(originDate: string, format?: Intl.DateTimeFormatOptions | string): string {
         const deserializedDate = this.dateAdapter.deserialize(originDate);

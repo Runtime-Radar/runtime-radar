@@ -6,7 +6,7 @@ import {
     ValidationErrors,
     Validators
 } from '@angular/forms';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ViewChild, inject } from '@angular/core';
 import {
     FlatTreeControl,
     KbqTreeFlatDataSource,
@@ -43,6 +43,7 @@ interface SharedDetectorTreeFlatNode {
     templateUrl: './shared-detector-tree-select.component.html',
     styleUrl: './shared-detector-tree-select.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -57,6 +58,8 @@ interface SharedDetectorTreeFlatNode {
     ]
 })
 export class SharedDetectorTreeSelectComponent implements ControlValueAccessor, OnChanges {
+    private readonly i18nService = inject(I18nService);
+
     @ViewChild(KbqTreeSelection) tree!: KbqTreeSelection;
 
     @ViewChild(KbqTreeSelect) select!: KbqTreeSelect;
@@ -103,8 +106,6 @@ export class SharedDetectorTreeSelectComponent implements ControlValueAccessor, 
 
     // RuntimeExtras input clone which is used for removeOption functionality.
     private runtimeExtrasClone: string[] = [];
-
-    constructor(private readonly i18nService: I18nService) {}
 
     ngOnChanges(changes: SimpleChanges) {
         /* eslint @typescript-eslint/dot-notation: "off" */
@@ -272,7 +273,8 @@ export class SharedDetectorTreeSelectComponent implements ControlValueAccessor, 
             name: id,
             type: DetectorType.RUNTIME,
             description: '',
-            version: defaultVersion
+            version: defaultVersion,
+            tactics_covered: []
         }));
 
         return [...detectors, ...extraDetectors]

@@ -20,78 +20,39 @@
                 <label for="namespaces" class="kbq-form__label">
                     {{ tRuntime('Runtime.PermissionForm.Label.Namespaces') }}
                 </label>
-                <kbq-form-field class="kbq-form__control"
-                                [ngClass]="{ 'ng-invalid': form.get('namespaces')?.invalid && form.value.namespaces?.length }">
-                    <kbq-tag-list #namespacesRef data-testid="runtime-permission-namespaces-tag-list">
-                        @for (namespace of form.value.namespaces; track i; let i = $index) {
-                            <kbq-tag [value]="namespace"
-                                     (removed)="removeEntity(namespacesControl, i)">
-                                {{ namespace }} <i kbq-icon="kbq-xmark-s_16" kbqTagRemove [attr.data-testid]="namespace"></i>
-                            </kbq-tag>
-                        }
-                        <input id="namespaces"
-                               [kbqTagInputFor]="namespacesRef"
-                               [kbqTagInputSeparatorKeyCodes]="separatorKeyCodes"
-                               (kbqTagInputTokenEnd)="addEntity($event, namespacesControl, formValidationRegExp.OBJECT_NAME)"
-                               placeholder="{{ !form.value.namespaces?.length ? tRuntime('Runtime.PermissionForm.Placeholder.Namespaces') : '' }}"
-                               data-testid="runtime-permission-namespaces-input">
-                    </kbq-tag-list>
-                    @if (form.get('namespaces')?.invalid && form.value.namespaces?.length) {
-                        <kbq-hint color="error">{{ tRuntime('Runtime.PermissionForm.Error.Namespaces') }}</kbq-hint>
-                    }
-                </kbq-form-field>
+                <cs-tag-input-component
+                        formControlName="namespaces"
+                        id="namespaces"
+                        testLocator="runtime-permission-namespaces-tag"
+                        error="{{ tRuntime('Runtime.PermissionForm.Error.Namespaces') }}"
+                        placeholder="{{ tRuntime('Runtime.PermissionForm.Placeholder.Namespaces') }}"
+                        [validationRegExp]="formValidationRegExp.OBJECT_NAME" />
             </section>
 
             <section class="kbq-form__row kbq-form-row_margin">
                 <label for="pods" class="kbq-form__label">
                     {{ tRuntime('Runtime.PermissionForm.Label.Pods') }}
                 </label>
-                <kbq-form-field class="kbq-form__control"
-                                [ngClass]="{ 'ng-invalid': form.get('pods')?.invalid && form.value.pods?.length }">
-                    <kbq-tag-list #podsRef data-testid="runtime-permission-pods-tag-list">
-                        @for(pod of form.value.pods; track i; let i = $index) {
-                            <kbq-tag [value]="pod"
-                                     (removed)="removeEntity(podsControl, i)">
-                                {{ pod }} <i kbq-icon="kbq-xmark-s_16" kbqTagRemove [attr.data-testid]="pod"></i>
-                            </kbq-tag>
-                        }
-                        <input id="pods"
-                               [kbqTagInputFor]="podsRef"
-                               [kbqTagInputSeparatorKeyCodes]="separatorKeyCodes"
-                               (kbqTagInputTokenEnd)="addEntity($event, podsControl, formValidationRegExp.REG_EXP)"
-                               placeholder="{{ !form.value.pods?.length ? tRuntime('Runtime.PermissionForm.Placeholder.Pods') : '' }}"
-                               data-testid="runtime-permission-pods-input">
-                    </kbq-tag-list>
-                    @if (form.get('pods')?.invalid && form.value.pods?.length) {
-                        <kbq-hint color="error">{{ tRuntime('Runtime.PermissionForm.Error.Pods') }}</kbq-hint>
-                    }
-                </kbq-form-field>
+                <cs-tag-input-component
+                        formControlName="pods"
+                        id="pods"
+                        testLocator="runtime-permission-pods-tag"
+                        error="{{ tRuntime('Runtime.PermissionForm.Error.Pods') }}"
+                        placeholder="{{ tRuntime('Runtime.PermissionForm.Placeholder.Pods') }}"
+                        [validationRegExp]="formValidationRegExp.REG_EXP" />
             </section>
 
             <section class="kbq-form__row">
                 <label for="labels" class="kbq-form__label">
                     {{ tRuntime('Runtime.PermissionForm.Label.Labels') }}
                 </label>
-                <kbq-form-field class="kbq-form__control"
-                                [ngClass]="{ 'ng-invalid': form.get('labels')?.invalid && form.value.labels?.length }">
-                    <kbq-tag-list #labelsRef data-testid="runtime-permission-labels-tag-list">
-                        @for (label of form.value.labels; track i; let i = $index) {
-                            <kbq-tag [value]="label"
-                                     (removed)="removeEntity(labelsControl, i)">
-                                {{ label }} <i kbq-icon="kbq-xmark-s_16" kbqTagRemove [attr.data-testid]="label"></i>
-                            </kbq-tag>
-                        }
-                        <input id="labels"
-                               [kbqTagInputFor]="labelsRef"
-                               [kbqTagInputSeparatorKeyCodes]="separatorKeyCodes"
-                               (kbqTagInputTokenEnd)="addEntity($event, labelsControl, formValidationRegExp.KEY_VALUE_PAIR)"
-                               placeholder="{{ !form.value.labels?.length ? tRuntime('Runtime.PermissionForm.Placeholder.Labels') : '' }}"
-                               data-testid="runtime-permission-labels-input">
-                    </kbq-tag-list>
-                    @if (form.get('labels')?.invalid && form.value.labels?.length) {
-                        <kbq-hint color="error">{{ tRuntime('Runtime.PermissionForm.Error.Labels') }}</kbq-hint>
-                    }
-                </kbq-form-field>
+                <cs-tag-input-component
+                        formControlName="labels"
+                        id="labels"
+                        testLocator="runtime-permission-labels-tag"
+                        error="{{ tRuntime('Runtime.PermissionForm.Error.Labels') }}"
+                        placeholder="{{ tRuntime('Runtime.PermissionForm.Placeholder.Labels') }}"
+                        [validationRegExp]="formValidationRegExp.KEY_VALUE_PAIR" />
             </section>
         </form>
     </kbq-sidepanel-body>

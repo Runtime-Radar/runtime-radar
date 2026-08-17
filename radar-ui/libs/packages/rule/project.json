@@ -1,0 +1,23 @@
+{
+    "name": "package-rule",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/packages/rule/src",
+    "prefix": "runtime-radar",
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "options": {
+                "lintFilePatterns": ["libs/packages/rule/src/**/*.ts", "libs/packages/rule/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/packages/rule"],
+            "options": {
+                "jestConfig": "libs/packages/rule/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

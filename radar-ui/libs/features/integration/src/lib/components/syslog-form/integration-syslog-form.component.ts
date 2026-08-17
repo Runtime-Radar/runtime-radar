@@ -7,7 +7,8 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, map, startWith, tap } from 'rxjs';
@@ -20,9 +21,13 @@ import { IntegrationSyslogForm } from '../../interfaces/integration-form.interfa
 @Component({
     selector: 'cs-integration-feature-syslog-form-component',
     templateUrl: './integration-syslog-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationFeatureSyslogFormComponent implements AfterViewInit, OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input() values?: IntegrationSyslog;
 
     @Output() formChange = new EventEmitter<IntegrationSyslogForm | undefined>();
@@ -47,11 +52,6 @@ export class IntegrationFeatureSyslogFormComponent implements AfterViewInit, OnI
             }
         })
     );
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.onFormValidChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

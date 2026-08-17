@@ -38,8 +38,8 @@ const dateProviders = [
 ];
 
 describe('RuleEffectStore', () => {
-    let effects: RuleEffectStore;
     let actions$: ReplaySubject<Action>;
+    let effects: RuleEffectStore;
     let i18nService: jest.Mocked<I18nService>;
     let ruleRequestService: jest.Mocked<RuleRequestService>;
     let store: jest.Mocked<Store<RuleState>>;
@@ -61,12 +61,11 @@ describe('RuleEffectStore', () => {
         });
 
         effects = fixture.debugElement.injector.get(RuleEffectStore);
-        ruleRequestService = fixture.debugElement.injector.get(RuleRequestService) as jest.Mocked<RuleRequestService>;
         i18nService = fixture.debugElement.injector.get(I18nService) as jest.Mocked<I18nService>;
+        i18nService.translate.mockReturnValue('message');
+        ruleRequestService = fixture.debugElement.injector.get(RuleRequestService) as jest.Mocked<RuleRequestService>;
         store = fixture.debugElement.injector.get(Store) as jest.Mocked<Store<RuleState>>;
         toastService = fixture.debugElement.injector.get(KbqToastService) as jest.Mocked<KbqToastService>;
-
-        i18nService.translate.mockReturnValue('message');
     });
 
     afterEach(() => {

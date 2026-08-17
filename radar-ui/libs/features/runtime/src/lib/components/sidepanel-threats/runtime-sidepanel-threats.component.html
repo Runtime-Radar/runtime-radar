@@ -4,35 +4,122 @@
     <kbq-sidepanel-body class="runtime-feature-sidepanel-threats">
         @if (isCapSysAdmin) {
             <p class="layout-row layout-align-start-center runtime-feature-sidepanel-threats-cap-sys">
-                <i kbq-icon="kbq-exclamation-triangle_16"></i>
+                <i kbq-icon="kbq-triangle-exclamation_16"></i>
                 {{ tRuntime('Runtime.EventsPage.Hint.Process') }}
             </p>
         }
 
         @if (props.threats.length) {
-            <h4 class="kbq-subheading layout-margin-no-top layout-margin-no-bottom">
+            <h4 class="kbq-subheading layout-margin-no-top layout-margin-bottom-xl">
                 {{ tRuntime('Runtime.ThreatsSidepanel.Title.Threat') }}
             </h4>
-            @for (threat of props.threats; track i; let i = $index) {
-                <article class="runtime-feature-sidepanel-threats-item">
-                    <div class="kbq-text-compact cs-text-gray layout-margin-bottom-xxs">{{ threat.detector.id }}</div>
-                    <div class="kbq-text-compact cs-text-gray layout-margin-bottom-xxs">
-                        {{ tRuntime('Runtime.ThreatsSidepanel.Label.DetectorVersion') }}: {{ threat.detector.version }}
-                    </div>
-                    <h4 class="kbq-subheading layout-margin-no-top">{{ threat.detector.name }}</h4>
-                    <cs-severity-label-component [severity]="threat.severity"></cs-severity-label-component>
-                    <section class="runtime-feature-sidepanel-threats-item-info">
-                        <span class="kbq-text-compact cs-text-gray">{{ tRuntime('Runtime.ThreatsSidepanel.Label.Severity') }}</span>
-                        <p class="runtime-feature-sidepanel-threats-item-info-description">{{ threat.detector.description }}</p>
-                    </section>
-                </article>
-            }
+            <kbq-accordion type="multiple">
+                @for (threat of props.threats; track threat.detector.id) {
+                    <kbq-accordion-item class="runtime-feature-sidepanel-threats-accordion" [expanded]="true">
+                        <button kbq-accordion-trigger
+                                type="button"
+                                class="runtime-feature-sidepanel-threats-accordion-button">
+                            <div class="layout-column layout-align-start-start">
+                                <h4 class="kbq-text-normal-strong runtime-feature-sidepanel-threats-accordion-title">{{ threat.detector.name }}</h4>
+                                <kbq-dl [vertical]="true">
+                                    <kbq-dt><span class="layout-row kbq-text-compact">{{ tRuntime('Runtime.ThreatsSidepanel.Label.Severity') }}</span></kbq-dt>
+                                    <kbq-dd>
+                                        <span class="layout-row">
+                                            <cs-rule-package-severity-label-component [severity]="threat.severity" />
+                                        </span>
+                                    </kbq-dd>
+                                </kbq-dl>
+                            </div>
+                        </button>
+                        <kbq-accordion-content class="layout-padding-no-bottom">
+                            <div class="layout-margin-top-m layout-padding-left-m">
+                                <kbq-dl [vertical]="true">
+                                    <kbq-dt><span class="kbq-text-compact">{{ tRuntime('Runtime.ThreatsSidepanel.Label.Detector') }}</span></kbq-dt>
+                                    <kbq-dd>
+                                        <div class="runtime-feature-sidepanel-threats-accordion-info">
+                                            <span>{{ threat.detector.id }}</span>
+                                            <button kbq-button
+                                                    kbqPopover
+                                                    kbqStyle="outline"
+                                                    color="contrast-fade"
+                                                    type="button"
+                                                    class="kbq-button-icon runtime-feature-sidepanel-threats-accordion-info-help"
+                                                    #kbqPopover="kbqPopover"
+                                                    [kbqPopoverPlacement]="tooltipPlacements.Bottom"
+                                                    [kbqPopoverContent]="popoverContent">
+                                                <i kbq-icon="kbq-circle-info_16"></i>
+                                            </button>
+
+                                            <ng-template #popoverContent>{{ threat.detector.description }}</ng-template>
+                                        </div>
+                                        <span>{{ tRuntime('Runtime.ThreatsSidepanel.Label.DetectorVersion') }}: {{ threat.detector.version }}</span>
+                                    </kbq-dd>
+                                    <kbq-dt><span class="kbq-text-compact">{{ tRuntime('Runtime.ThreatsSidepanel.Label.Reason') }}</span></kbq-dt>
+                                    <kbq-dd>
+                                        @if (threat.reason) {
+                                            <kbq-alert
+                                                    [compact]="true"
+                                                    class="layout-margin-top-xxs layout-margin-right-l runtime-feature-sidepanel-threats-accordion-info-reason">
+                                                <div runtimeHighlightReasonFragment [reason]="threat.reason"></div>
+                                            </kbq-alert>
+                                        } @else {
+                                            <span class="cs-text-gray">—</span>
+                                        }
+                                    </kbq-dd>
+                                    <kbq-dt>
+                                        <span class="kbq-text-normal-strong runtime-feature-sidepanel-threats-accordion-mitre">
+                                            {{ tRuntime('Runtime.DetectorSidepanel.SubTitle.MitreAttack') }}
+                                        </span>
+                                    </kbq-dt>
+                                    <kbq-dd>
+                                        @if (threat.tactics_covered.length) {
+                                            <kbq-accordion type="multiple" class="layout-margin-top-m">
+                                                @for (tactic of threat.tactics_covered; track tactic.id) {
+                                                    <kbq-accordion-item class="runtime-feature-sidepanel-threats-accordion" [expanded]="true">
+                                                        <button kbq-accordion-trigger
+                                                                type="button"
+                                                                class="layout-padding-no-left layout-padding-no-right"
+                                                                [class]="{ 'layout-padding-no-top': $first }">
+                                                            <cs-runtime-feature-mitre-tactic-component
+                                                                    [id]="tactic.id"
+                                                                    [techniques]="tactic.techniques"
+                                                                    [isOutline]="false" />
+                                                        </button>
+                                                        @if (tactic.techniques.length) {
+                                                            <kbq-accordion-content class="layout-padding-no-bottom">
+                                                                <div class="layout-row layout-wrap layout-gap-s layout-padding-left-m">
+                                                                    @for (technique of tactic.techniques; track technique) {
+                                                                        <cs-runtime-feature-mitre-tactic-component
+                                                                                [id]="technique"
+                                                                                [tacticId]="tactic.id" />
+                                                                    }
+                                                                </div>
+                                                            </kbq-accordion-content>
+                                                        }
+                                                    </kbq-accordion-item>
+                                                }
+                                            </kbq-accordion>
+                                        } @else {
+                                            <span class="cs-text-gray">—</span>
+                                        }
+                                    </kbq-dd>
+                                </kbq-dl>
+                            </div>
+                        </kbq-accordion-content>
+                    </kbq-accordion-item>
+
+                    @if (!$last) {
+                        <kbq-divider class="runtime-feature-sidepanel-threats-divider" />
+                    }
+                }
+            </kbq-accordion>
         }
 
         @if (props.errors.length) {
-            <h4 class="kbq-subheading layout-margin-no-top layout-margin-no-bottom" [ngClass]="{ 'layout-margin-top-xxl': props.threats.length }">
+            <h4 class="kbq-subheading layout-margin-no-top layout-margin-no-bottom"
+                [class]="{ 'layout-margin-top-xxl': props.threats.length }">
                 {{ tRuntime('Runtime.ThreatsSidepanel.Title.Error') }}
-                <i kbq-icon="kbq-question-circle_16"
+                <i kbq-icon="kbq-circle-question_16"
                    class="cs-help-hover"
                    kbqTooltip="{{ tRuntime('Runtime.ThreatsSidepanel.Title.Hint') }}"
                    kbqTooltipClass="runtime-feature-sidepanel-threats-tooltip"
@@ -44,8 +131,8 @@
                         [alertStyle]="'colored'"
                         [compact]="true"
                         class="runtime-feature-sidepanel-threats-detect-errors">
-                    <i kbq-icon="kbq-exclamation-triangle_16" class="runtime-feature-sidepanel-threats-detect-errors-icon"></i>
-                    <div kbq-alert-title class="runtime-feature-sidepanel-threats-detect-errors-truncate">{{ error.detector.id }}</div>
+                    <i kbq-icon="kbq-triangle-exclamation_16" class="runtime-feature-sidepanel-threats-detect-errors-icon"></i>
+                    <div kbq-alert-title class="cs-text-overflow runtime-feature-sidepanel-threats-detect-errors-truncate">{{ error.detector.id }}</div>
                     <div class="kbq-text-normal-strong">{{ error.detector.name }}</div>
                     <span class="runtime-feature-sidepanel-threats-detect-errors-break">{{ error.error }}</span>
                 </kbq-alert>

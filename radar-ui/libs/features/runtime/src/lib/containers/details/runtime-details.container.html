@@ -53,7 +53,7 @@
                 @if (eventEntity?.process; as process) {
                     <div class="layout-row layout-align-space-between runtime-feature-details-card-container-section runtime-feature-details-card-container-line">
                         <section class="flex runtime-feature-details-card-container-line"
-                                 [ngClass]="{ 'runtime-feature-details-card-container-line--secondary': eventEntity?.parent }">
+                                 [class]="{ 'runtime-feature-details-card-container-line--secondary': eventEntity?.parent }">
                             <h4 class="kbq-subheading runtime-feature-details-card-container-section-title">{{ tRuntime('Runtime.DetailsPage.SubTitle.Process') }}</h4>
                             @if (process.binary) {
                                 <p class="layout-row kbq-mono-normal layout-margin-top-s layout-margin-bottom-s">
@@ -99,6 +99,7 @@
                             <kbq-dropdown #dropdownContextMenu="kbqDropdown">
                                 @for (option of runtimeContextOptions; track option.id) {
                                     <button kbq-dropdown-item
+                                            type="button"
                                             (click)="goToListPageWithContext(option.id)"
                                             [attr.data-testid]="tRuntime(option.localizationKey)">
                                         {{ tRuntime(option.localizationKey) }}
@@ -109,7 +110,7 @@
                     </div>
                 }
 
-                <div class="layout-row runtime-feature-details-card-entity">
+                <div class="layout-row layout-gap-xxl runtime-feature-details-card-entity">
                     <kbq-dl [vertical]="false" [wide]="false">
                         <kbq-dt>{{ tRuntime('Runtime.DetailsPage.Label.Type') }}:</kbq-dt>
                         <kbq-dd class="layout-row">
@@ -131,7 +132,7 @@
                     </kbq-dl>
                     <kbq-dl [vertical]="false" [wide]="false">
                         <kbq-dt>{{ tRuntime('Runtime.DetailsPage.Label.NodeName') }}:</kbq-dt>
-                        <kbq-dd>{{ event.event.node_name }}</kbq-dd>
+                        <kbq-dd>{{ event.event ? event.event.node_name : '—' }}</kbq-dd>
                         @if (eventEntity?.process?.pod; as pod) {
                             <kbq-dt>{{ tRuntime('Runtime.DetailsPage.Label.Image') }}:</kbq-dt>
                             <kbq-dd>{{ pod.container.image.name }}</kbq-dd>
@@ -153,13 +154,18 @@
                     {{ tRuntime('Runtime.DetailsPage.SubTitle.Sibling') }}
                 </h4>
                 <ng-container *ngrxLet="eventsResponse$ as eventsResponse">
-                    <div class="runtime-feature-details-grid-scroll">
-                        @if (eventsResponse.runtime_events.length) {
-                            <cs-runtime-feature-events-grid-container
-                                    [events]="eventsResponse.runtime_events"
-                                    [rulePermissions]="permissions[permissionName.RULES]"></cs-runtime-feature-events-grid-container>
-                        }
-                    </div>
+                    @if (eventsResponse.runtime_events.length) {
+                        <cs-runtime-feature-events-grid-container
+                                class="runtime-feature-details-grid-scroll"
+                                [events]="eventsResponse.runtime_events"
+                                [rulePermissions]="permissions[permissionName.RULES]" />
+                    } @else {
+                        <cs-empty-screen-component
+                                size="small"
+                                imageUrl="/assets/koobiq/light/empty_256@2x.png"
+                                [title]="tRuntime('Runtime.EventsPage.SubHeading.EmptyResult')"
+                                [description]="tRuntime('Runtime.EventsPage.Text.EmptyResult')" />
+                    }
 
                     @if (eventsResponse.runtime_events.length) {
                         <div class="layout-row layout-align-space-between-center">
@@ -222,18 +228,18 @@
                         {{ tRuntime('Runtime.DetailsPage.Meta.Title.Incident') }}
                     </h4>
 
-                    <section class="layout-column runtime-feature-details-meta-incident-card"
+                    <section class="layout-column layout-gap-m runtime-feature-details-meta-incident-card"
                              severityBgColor
                              [severity]="event.incident_severity">
-                        <cs-severity-label-component
+                        <cs-rule-package-severity-label-component
                                 class="runtime-feature-details-meta-incident-card-severity"
                                 isLabelColored
                                 isWidthAuto
-                                [severity]="event.incident_severity"></cs-severity-label-component>
+                                [severity]="event.incident_severity" />
                         <cs-event-action-component
                                 isIconVisible
                                 [blockIds]="event.block_by"
-                                [notifyIds]="event.notify_by"></cs-event-action-component>
+                                [notifyIds]="event.notify_by" />
                     </section>
                 </section>
             }
@@ -241,12 +247,12 @@
             @if (event.threats.length) {
                 <cs-runtime-feature-rules-container
                         [ruleIds]="ruleIds"
-                        [ngClass]="{ 'runtime-feature-details-meta-connector': event.threats.length }"
-                        [permissions]="permissions[permissionName.RULES]"></cs-runtime-feature-rules-container>
+                        [class]="{ 'runtime-feature-details-meta-connector': event.threats.length }"
+                        [permissions]="permissions[permissionName.RULES]" />
             }
 
             @if (event.detect_errors.length) {
-                <section [ngClass]="{ 'runtime-feature-details-meta-connector': event.threats.length }">
+                <section [class]="{ 'runtime-feature-details-meta-connector': event.threats.length }">
                     <h4 class="kbq-subheading layout-margin-no-top layout-margin-no-bottom">
                         <span>{{ tRuntime('Runtime.DetailsPage.Meta.Title.Error') }}</span>
                         <span class="cs-text-gray layout-margin-left-xxs">({{ event.detect_errors.length }})</span>
@@ -258,8 +264,8 @@
                                     [alertStyle]="'colored'"
                                     [compact]="true"
                                     class="runtime-feature-details-meta-detect-errors">
-                                <i kbq-icon="kbq-exclamation-triangle_16" class="runtime-feature-details-meta-detect-errors-icon"></i>
-                                <div kbq-alert-title class="runtime-feature-details-meta-detect-errors-truncate">{{ error.detector.id }}</div>
+                                <i kbq-icon="kbq-triangle-exclamation_16" class="runtime-feature-details-meta-detect-errors-icon"></i>
+                                <div kbq-alert-title class="cs-text-overflow runtime-feature-details-meta-truncate">{{ error.detector.id }}</div>
                                 <div class="kbq-text-normal-strong">{{ error.detector.name }}</div>
                                 <span class="runtime-feature-details-meta-detect-errors-break">{{ error.error }}</span>
                             </kbq-alert>
@@ -294,14 +300,14 @@
                                 class="layout-row layout-align-space-between-center runtime-feature-details-meta-threat-button"
                                 (click)="openThreatsSidepanel(event.threats, event.detect_errors)"
                                 data-testid="event-details-open-threat-sidepanel-button">
-                            <span class="kbq-text-normal-strong runtime-feature-details-meta-threat-button-truncate">
-                                {{ threat.detector.id }}
+                            <span class="kbq-text-normal-strong cs-text-overflow runtime-feature-details-meta-truncate">
+                                {{ threat.detector.name }}
                             </span>
-                            <cs-severity-component
+                            <cs-rule-package-severity-component
                                     isWidthAuto
                                     [kbqTooltip]="severityTooltip"
                                     [kbqPlacement]="tooltipPlacements.Left"
-                                    [severity]="threat.severity"></cs-severity-component>
+                                    [severity]="threat.severity" />
 
                             <ng-template #severityTooltip>
                                 <ng-container *transloco="let tCommon; prefix: 'common'">

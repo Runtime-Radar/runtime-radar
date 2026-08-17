@@ -8,7 +8,8 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, startWith, tap } from 'rxjs';
@@ -21,9 +22,13 @@ import { ClusterCreateFormOutputs, ClusterRabbitForm } from '../../interfaces/cl
     selector: 'cs-cluster-feature-rabbit-form-component',
     styleUrl: '../cluster-abstract-form.component.scss',
     templateUrl: './cluster-rabbit-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureRabbitFormComponent implements AfterViewInit, OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input() values?: ClusterRabbitForm | null;
 
     @Output() formChange = new EventEmitter<ClusterCreateFormOutputs<ClusterRabbitForm>>();
@@ -84,11 +89,6 @@ export class ClusterFeatureRabbitFormComponent implements AfterViewInit, OnInit 
     );
 
     readonly tooltipPlacements = PopUpPlacements;
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.onFormChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

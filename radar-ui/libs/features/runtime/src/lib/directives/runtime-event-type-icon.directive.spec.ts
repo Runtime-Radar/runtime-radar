@@ -1,18 +1,34 @@
 import { ElementRef, Renderer2 } from '@angular/core';
+import { createEnvironmentInjector, runInInjectionContext } from '@angular/core';
 
 import { RuntimeEventType } from '@cs/domains/runtime';
 
 import { RuntimeFeatureEventTypeIconDirective } from './runtime-event-type-icon.directive';
 
 describe('RuntimeFeatureEventTypeIconDirective', () => {
-    let elRef: ElementRef;
+    let elementRef: ElementRef<HTMLElement>;
     let directive: RuntimeFeatureEventTypeIconDirective;
 
     const renderer = { setStyle: jest.fn() } as unknown as Renderer2;
 
     beforeEach(() => {
-        elRef = new ElementRef(document.createElement('span'));
-        directive = new RuntimeFeatureEventTypeIconDirective(elRef, renderer);
+        elementRef = new ElementRef(document.createElement('span'));
+
+        const injector = createEnvironmentInjector(
+            [
+                {
+                    provide: ElementRef,
+                    useValue: elementRef
+                },
+                {
+                    provide: Renderer2,
+                    useValue: renderer
+                }
+            ],
+            null as any
+        );
+
+        directive = runInInjectionContext(injector, () => new RuntimeFeatureEventTypeIconDirective());
     });
 
     afterEach(() => {
@@ -25,7 +41,7 @@ describe('RuntimeFeatureEventTypeIconDirective', () => {
         directive.ngOnInit();
 
         expect(renderer.setStyle).toHaveBeenCalledWith(
-            elRef.nativeElement,
+            elementRef.nativeElement,
             'background',
             `center / cover no-repeat url('/assets/images/runtime/icon-kprobe.svg')`
         );

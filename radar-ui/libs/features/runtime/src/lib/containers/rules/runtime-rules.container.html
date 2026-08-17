@@ -9,7 +9,7 @@
                     [size]="'compact'"
                     class="runtime-feature-rules-overlay"></kbq-loader-overlay>
         } @else if (rxlet.rulesResponse && rxlet.rulesResponse.length) {
-            <h4 class="kbq-subheading layout-margin-no-top layout-margin-no-bottom">
+            <h4 class="kbq-subheading layout-margin-no-top">
                 <span>{{ tRuntime('Runtime.Rules.SubTitle.Rules') }}</span>
                 <span class="cs-text-gray layout-margin-left-xs">({{ rxlet.rulesResponse.length }})</span>
             </h4>
@@ -17,7 +17,7 @@
             @for (ruleResponse of rxlet.rulesResponse | slice: 0:expandLimit; track ruleResponse.rule.id) {
                 <article class="layout-row layout-align-space-between-start runtime-feature-rules-item"
                          *transloco="let tCommon; prefix: 'common'">
-                    <section class="runtime-feature-rules-item-section">
+                    <section>
                         @if (ruleResponse.deleted) {
                             <span class="kbq-text-compact cs-text-gray">{{ tRuntime('Runtime.Rules.Hint.Deleted') }}</span>
                         }
@@ -36,7 +36,7 @@
                                 @for (notification of notifications | slice: 0:ruleNotificationsLimit; track notification.id) {
                                     <li class="runtime-feature-rules-item-badges-item">
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
-                                            <span class="runtime-feature-rules-item-badges-item-truncate">{{ notification.name }}</span>
+                                            <span class="cs-text-overflow runtime-feature-rules-item-badges-item-truncate">{{ notification.name }}</span>
                                         </kbq-badge>
                                     </li>
                                 }
@@ -44,7 +44,7 @@
                                 @if (notifications.length > ruleNotificationsLimit) {
                                     <li class="runtime-feature-rules-item-badges-limit">
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
-                                            <span class="runtime-feature-rules-item-badges-item-truncate">+{{ notifications.length - ruleNotificationsLimit }}</span>
+                                            <span class="cs-text-overflow runtime-feature-rules-item-badges-item-truncate">+{{ notifications.length - ruleNotificationsLimit }}</span>
                                         </kbq-badge>
                                     </li>
                                 }
@@ -55,7 +55,7 @@
                                 @for (threat of ruleResponse.rule.rule.whitelist.threats.slice(0, 5); track threat) {
                                     <li class="runtime-feature-rules-item-badges-item">
                                         <kbq-badge [badgeColor]="badgeColors.FadeTheme">
-                                            <span class="runtime-feature-rules-item-badges-item-truncate">{{ threat }}</span>
+                                            <span class="cs-text-overflow runtime-feature-rules-item-badges-item-truncate">{{ threat }}</span>
                                             @if (!ruleResponse.deleted) {
                                                 <button type="button"
                                                         class="runtime-feature-rules-item-badges-item-remove"
@@ -79,7 +79,7 @@
                                 @for (binary of ruleResponse.rule.rule.whitelist.binaries.slice(0, 5); track binary) {
                                     <li class="runtime-feature-rules-item-badges-item">
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast">
-                                            <span class="runtime-feature-rules-item-badges-item-truncate">{{ binary }}</span>
+                                            <span class="cs-text-overflow runtime-feature-rules-item-badges-item-truncate">{{ binary }}</span>
                                             @if (!ruleResponse.deleted) {
                                                 <button type="button"
                                                         class="runtime-feature-rules-item-badges-item-remove"
@@ -101,15 +101,15 @@
                     </section>
 
                     <div class="layout-row layout-align-space-between-center runtime-feature-rules-item-info-actions">
-                        <section class="layout-column runtime-feature-rules-item-section">
+                        <section class="layout-column layout-gap-s">
                             @if (ruleResponse.rule.rule.notify) {
                                 <div class="layout-row layout-align-start-center">
                                     <i kbq-icon="kbq-envelope_16" class="layout-margin-right-s"></i>
-                                    <span kbqTooltip="{{ tCommon(ruleResponse.rule.rule.notify.severity | severityLocalization) }}"
+                                    <span kbqTooltip="{{ tCommon(ruleResponse.rule.rule.notify.severity | ruleSeverityLocalization) }}"
                                           [kbqPlacement]="tooltipPlacements.Right">
-                                        <cs-severity-component
+                                        <cs-rule-package-severity-component
                                                 isWidthAuto
-                                                [severity]="ruleResponse.rule.rule.notify.severity"></cs-severity-component>
+                                                [severity]="ruleResponse.rule.rule.notify.severity" />
                                     </span>
                                 </div>
                             }

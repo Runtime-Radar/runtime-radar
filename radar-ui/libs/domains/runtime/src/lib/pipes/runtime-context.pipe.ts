@@ -5,7 +5,8 @@ import { RuntimeContext } from '../interfaces/runtime-form.interface';
 
 @Pipe({
     name: 'runtimeContextLocalization',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class RuntimeContextLocalizationPipe implements PipeTransform {
     transform(context?: RuntimeContext): string {

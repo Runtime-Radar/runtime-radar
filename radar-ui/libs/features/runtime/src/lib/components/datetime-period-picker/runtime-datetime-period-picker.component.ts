@@ -8,7 +8,7 @@ import {
     ValidationErrors,
     Validators
 } from '@angular/forms';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 
 import { RuntimeEventDateTimePeriod } from '../../interfaces/runtime-filter.interface';
 import {
@@ -21,6 +21,7 @@ import {
     templateUrl: './runtime-datetime-period-picker.component.html',
     styleUrl: './runtime-datetime-period-picker.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -35,6 +36,8 @@ import {
     ]
 })
 export class RuntimeFeatureDateTimePeriodPickerComponent implements ControlValueAccessor {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+
     @Input() id?: string;
 
     @Input() testLocator?: string;
@@ -58,8 +61,6 @@ export class RuntimeFeatureDateTimePeriodPickerComponent implements ControlValue
 
     /* eslint @typescript-eslint/no-empty-function: "off" */
     onTouched = () => {};
-
-    constructor(private readonly dateAdapter: DateAdapter<DateTime>) {}
 
     registerOnChange(fn: any) {
         this.onChange = fn;

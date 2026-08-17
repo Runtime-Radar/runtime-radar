@@ -15,7 +15,7 @@
             <cs-cluster-feature-registry-form-component
                     class="cluster-feature-create-form cluster-feature-create-form--registry"
                     [values]="registryForm$ | async"
-                    (formChange)="changeRegistryForm($event)"></cs-cluster-feature-registry-form-component>
+                    (formChange)="changeRegistryForm($event)" />
         </ng-template>
 
         <ng-template #step>
@@ -24,37 +24,37 @@
                     type="clickhouse"
                     [values]="clickhouseForm$ | async"
                     [title]="tCluster('Cluster.CreatePage.DataBaseForm.SubHeading.Clickhouse')"
-                    (formChange)="changeClickhouseForm($event)"></cs-cluster-feature-database-form-component>
+                    (formChange)="changeClickhouseForm($event)" />
             <cs-cluster-feature-database-form-component
                     class="cluster-feature-create-form"
                     type="postgres"
                     [values]="postgresForm$ | async"
                     [title]="tCluster('Cluster.CreatePage.DataBaseForm.SubHeading.Postgres')"
-                    (formChange)="changePostgresForm($event)"></cs-cluster-feature-database-form-component>
+                    (formChange)="changePostgresForm($event)" />
             <cs-cluster-feature-database-form-component
                     class="cluster-feature-create-form"
                     type="redis"
                     [values]="redisForm$ | async"
                     [title]="tCluster('Cluster.CreatePage.DataBaseForm.SubHeading.Redis')"
-                    (formChange)="changeRedisForm($event)"></cs-cluster-feature-database-form-component>
+                    (formChange)="changeRedisForm($event)" />
             <cs-cluster-feature-rabbit-form-component
                     class="cluster-feature-create-form"
                     [values]="rabbitForm$ | async"
-                    (formChange)="changeRabbitForm($event)"></cs-cluster-feature-rabbit-form-component>
+                    (formChange)="changeRabbitForm($event)" />
         </ng-template>
 
         <ng-template #step>
             <cs-cluster-feature-metric-form-component
                     class="cluster-feature-create-form"
                     [values]="metricForm$ | async"
-                    (formChange)="changeMetricForm($event)"></cs-cluster-feature-metric-form-component>
+                    (formChange)="changeMetricForm($event)" />
         </ng-template>
 
         <ng-template #step>
             <cs-cluster-feature-ingress-form-component
                     class="cluster-feature-create-form"
                     [values]="ingressForm$ | async"
-                    (formChange)="changeIngressForm($event)"></cs-cluster-feature-ingress-form-component>
+                    (formChange)="changeIngressForm($event)" />
         </ng-template>
 
         <ng-template #step>
@@ -62,7 +62,7 @@
                     class="cluster-feature-create-form"
                     [values]="accessForm$ | async"
                     [centralUrl]="centralUrl$ | async"
-                    (formChange)="changeAccessForm($event)"></cs-cluster-feature-access-form-component>
+                    (formChange)="changeAccessForm($event)" />
         </ng-template>
     </cs-cluster-feature-stepper-component>
 </ng-container>

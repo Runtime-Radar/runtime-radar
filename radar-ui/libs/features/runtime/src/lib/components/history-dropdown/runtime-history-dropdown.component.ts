@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import { PopUpPlacements } from '@koobiq/components/core';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { CoreUtilsService as utils } from '@cs/core';
 
@@ -10,7 +10,9 @@ import { RuntimeEventContext, RuntimeEventFilters } from '../../interfaces/runti
 
 @Component({
     selector: 'cs-runtime-feature-history-dropdown-component',
-    templateUrl: './runtime-history-dropdown.component.html'
+    templateUrl: './runtime-history-dropdown.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureHistoryDropdownComponent {
     @Input() history?: RuntimeEventFilterEntity[] | null;
@@ -27,7 +29,7 @@ export class RuntimeFeatureHistoryDropdownComponent {
         const filters = utils.omit<
             RuntimeEventFilterEntity,
             keyof (RuntimeEventContext & Pick<RuntimeEventFilterEntity, 'id'>)
-        >(item, ['id', 'context', 'execId', 'parentExecId']);
+        >(item, ['id', 'context', 'execId', 'parentExecId']) as RuntimeEventFilters;
         this.historyChange.emit(filters);
     }
 }
