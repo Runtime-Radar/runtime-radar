@@ -8,7 +8,8 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, startWith, tap } from 'rxjs';
@@ -21,9 +22,13 @@ import { ClusterCreateFormOutputs, ClusterIngressForm } from '../../interfaces/c
     selector: 'cs-cluster-feature-ingress-form-component',
     styleUrl: '../cluster-abstract-form.component.scss',
     templateUrl: './cluster-ingress-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureIngressFormComponent implements AfterViewInit, OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input() values?: ClusterIngressForm | null;
 
     @Output() formChange = new EventEmitter<ClusterCreateFormOutputs<ClusterIngressForm>>();
@@ -76,11 +81,6 @@ export class ClusterFeatureIngressFormComponent implements AfterViewInit, OnInit
     );
 
     readonly tooltipPlacements = PopUpPlacements;
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.onFormChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

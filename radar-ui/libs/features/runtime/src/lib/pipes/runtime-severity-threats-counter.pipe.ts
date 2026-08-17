@@ -4,7 +4,8 @@ import { RuleSeverity } from '@cs/domains/rule';
 import { RuntimeEventThreat } from '@cs/domains/runtime';
 
 @Pipe({
-    name: 'runtimeSeverityThreatsCounter'
+    name: 'runtimeSeverityThreatsCounter',
+    standalone: false
 })
 export class RuntimeFeatureSeverityThreatsCounterPipe implements PipeTransform {
     transform(threats?: RuntimeEventThreat[], type?: RuleSeverity): number {

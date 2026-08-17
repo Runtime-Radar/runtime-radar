@@ -1,11 +1,25 @@
-import { AfterViewInit, Directive, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import {
+    AfterViewInit,
+    Directive,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnInit,
+    Output,
+    inject
+} from '@angular/core';
 
 import { CoreWindowService } from '@cs/core';
 
 @Directive({
-    selector: '[dragArea]'
+    selector: '[dragArea]',
+    standalone: false
 })
 export class InventoryFeatureDragAreaDirective implements OnInit, AfterViewInit {
+    private readonly coreWindowService = inject(CoreWindowService);
+    private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
     @Input({ required: true }) dragContent!: HTMLElement;
 
     @Input() dragIgnoreClassName?: string;
@@ -25,11 +39,6 @@ export class InventoryFeatureDragAreaDirective implements OnInit, AfterViewInit 
     maxScale = 1;
 
     isDraggable = false;
-
-    constructor(
-        private readonly elRef: ElementRef<HTMLElement>,
-        private readonly coreWindowService: CoreWindowService
-    ) {}
 
     ngOnInit() {
         this.el = this.elRef.nativeElement;

@@ -1,6 +1,5 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { Injectable } from '@angular/core';
 import { catchError } from 'rxjs/operators';
 import {
     HttpErrorResponse,
@@ -10,12 +9,16 @@ import {
     HttpRequest,
     HttpStatusCode
 } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, throwError } from 'rxjs';
 
 import { CoreWindowService } from '@cs/core';
 import { I18nService } from '@cs/i18n';
-import { ApiErrorCode, ApiPathService, ApiUtilsService as apiUtils } from '@cs/api';
+
+import { ApiErrorCode } from '../interfaces/contract/api-error-contract.interface';
+import { ApiPathService } from '../services/api-path.service';
+import { ApiUtilsService as apiUtils } from '../services/api-utils.service';
 
 const API_NOTIFICATION_DEBOUNCE_INTERVAL = 3000;
 
@@ -23,15 +26,14 @@ const API_NOTIFICATION_DEBOUNCE_INTERVAL = 3000;
     providedIn: 'root'
 })
 export class ApiErrorInterceptor implements HttpInterceptor {
-    private readonly notificationTimestamps = new Map<string, number>();
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly toastService = inject(KbqToastService);
 
-    constructor(
-        private readonly i18nService: I18nService,
-        private readonly apiPathService: ApiPathService,
-        private readonly toastService: KbqToastService,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly coreWindowService: CoreWindowService
-    ) {}
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly coreWindowService = inject(CoreWindowService);
+    private readonly i18nService = inject(I18nService);
+
+    private readonly notificationTimestamps = new Map<string, number>();
 
     intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
         return next.handle(request).pipe(
@@ -41,7 +43,7 @@ export class ApiErrorInterceptor implements HttpInterceptor {
                 }
 
                 if (error.status === 0) {
-                    this.apiPathService.setError('ERR_CERT_AUTHORITY_INVALID');
+                    this.apiPathService.setError('ERR_NETWORK_UNKNOWN');
                 }
 
                 if (this.shouldToastShown(error)) {

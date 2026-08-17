@@ -18,3 +18,10 @@
 .cs-help-hover {
     cursor: help;
 }
+
+.cs-text-overflow {
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}

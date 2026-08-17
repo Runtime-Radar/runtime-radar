@@ -2,7 +2,7 @@ import { ActivatedRoute } from '@angular/router';
 import { DateTime } from 'luxon';
 import { KbqBadgeColors } from '@koobiq/components/badge';
 import { KbqCodeBlockFile } from '@koobiq/components/code-block';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { Observable, map, of, switchMap } from 'rxjs';
 
 import { RouterName } from '@cs/core';
@@ -11,9 +11,14 @@ import { CLUSTER_CREATE_FRAGMENT, ClusterRequestService, ClusterStatus, GetClust
 @Component({
     templateUrl: './cluster-details.container.html',
     styleUrl: './cluster-details.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureDetailsContainer implements OnInit {
+    private readonly route = inject(ActivatedRoute);
+
+    private readonly clusterRequestService = inject(ClusterRequestService);
+
     /* eslint @typescript-eslint/dot-notation: "off" */
     readonly clusterResponse = this.route.snapshot.data['cluster'] as GetClusterResponse;
 
@@ -46,11 +51,6 @@ export class ClusterFeatureDetailsContainer implements OnInit {
     readonly dateShortFormat = DateTime.DATE_SHORT;
 
     isCurrentlyCreated = false;
-
-    constructor(
-        private readonly clusterRequestService: ClusterRequestService,
-        private readonly route: ActivatedRoute
-    ) {}
 
     ngOnInit() {
         if (this.route.snapshot.fragment === CLUSTER_CREATE_FRAGMENT) {

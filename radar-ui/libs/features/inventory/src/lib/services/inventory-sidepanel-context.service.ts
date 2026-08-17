@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 import { KbqSidepanelService } from '@koobiq/components/sidepanel';
 
@@ -17,11 +17,11 @@ export const DEFAULT_CONTEXT: InventorySidepanelContext = {
     providedIn: 'root'
 })
 export class InventoryFeatureSidepanelContextService {
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
     private context: InventorySidepanelContext[] = [];
 
     readonly context$ = new BehaviorSubject<InventorySidepanelContext>(DEFAULT_CONTEXT);
-
-    constructor(private readonly sidepanelService: KbqSidepanelService) {}
 
     get(): InventorySidepanelContext[] {
         return this.context;

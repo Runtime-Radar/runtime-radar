@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { UserState } from '../interfaces/state/user-state.interface';
 import { getUsers } from '../stores/user-selector.store';
@@ -16,9 +16,9 @@ import { CreateUserRequest, User, UserEditRequest } from '../interfaces';
     providedIn: 'root'
 })
 export class UserStoreService {
-    readonly users$: Observable<User[]> = this.store.select(getUsers);
+    private readonly store = inject<Store<UserState>>(Store);
 
-    constructor(private readonly store: Store<UserState>) {}
+    readonly users$: Observable<User[]> = this.store.select(getUsers);
 
     createUser(item: CreateUserRequest) {
         this.store.dispatch(CREATE_USER_ENTITY_TODO_ACTION({ item }));

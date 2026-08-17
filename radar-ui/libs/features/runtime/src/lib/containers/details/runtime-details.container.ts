@@ -14,7 +14,7 @@ import {
     take,
     tap
 } from 'rxjs';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { DateAdapter, PopUpPlacements } from '@koobiq/components/core';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
@@ -52,9 +52,20 @@ const RUNTIME_DETAILS_PAGINATOR_PAGE_SIZE = 5;
 @Component({
     templateUrl: './runtime-details.container.html',
     styleUrl: './runtime-details.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureDetailsContainer {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly runtimeFeatureRequestAdapterService = inject(RuntimeFeatureRequestAdapterService);
+    private readonly runtimeRequestService = inject(RuntimeRequestService);
+
     readonly loadStatus$ = new BehaviorSubject<LoadStatus>(LoadStatus.INIT);
 
     readonly cardLoadStatus$ = new BehaviorSubject<LoadStatus>(LoadStatus.INIT);
@@ -172,17 +183,6 @@ export class RuntimeFeatureDetailsContainer {
     expandThreatsLimit: number | undefined = RUNTIME_DETAILS_LIST_ITEMS_LIMIT;
 
     expandErrorsLimit: number | undefined = RUNTIME_DETAILS_LIST_ITEMS_LIMIT;
-
-    constructor(
-        private readonly sidepanelService: KbqSidepanelService,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService,
-        private readonly runtimeRequestService: RuntimeRequestService,
-        private readonly runtimeFeatureRequestAdapterService: RuntimeFeatureRequestAdapterService,
-        private readonly route: ActivatedRoute,
-        private readonly router: Router,
-        private readonly toastService: KbqToastService
-    ) {}
 
     goToStartPage() {
         this.activeCursor$.next({

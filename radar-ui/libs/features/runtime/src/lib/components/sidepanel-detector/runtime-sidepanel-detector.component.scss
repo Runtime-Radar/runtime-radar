@@ -1,0 +1,24 @@
+:host {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+}
+
+.runtime-feature-sidepanel-detector {
+    position: relative;
+
+    &-subheading {
+        margin: 16px 0;
+        text-transform: uppercase;
+    }
+
+    &-icon-link {
+        margin-left: 2px;
+        font-size: 13px;
+    }
+
+    &-accordion {
+        border: none;
+    }
+}

@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { NEVER, Observable } from 'rxjs';
 import { ROUTER_CANCEL, ROUTER_ERROR, ROUTER_NAVIGATED, ROUTER_NAVIGATION, ROUTER_REQUEST } from '@ngrx/router-store';
 import { concatMap, switchMap, tap } from 'rxjs/operators';
@@ -16,6 +16,13 @@ import { CoreNavigationState, getLocalizationTitleKey } from './core-navigation-
     providedIn: 'root'
 })
 export class CoreNavigationEffectStore {
+    private readonly actions$ = inject(Actions);
+
+    private readonly coreMetaService = inject(CoreMetaService);
+    private readonly coreNavigationStoreService = inject(CoreNavigationStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly store = inject<Store<CoreNavigationState>>(Store);
+
     readonly updateTitle$: Observable<Action> = createEffect(
         () =>
             this.actions$.pipe(
@@ -66,12 +73,4 @@ export class CoreNavigationEffectStore {
             ),
         { dispatch: false }
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly i18nService: I18nService,
-        private readonly coreMetaService: CoreMetaService,
-        private readonly coreNavigationStoreService: CoreNavigationStoreService,
-        private readonly store: Store<CoreNavigationState>
-    ) {}
 }

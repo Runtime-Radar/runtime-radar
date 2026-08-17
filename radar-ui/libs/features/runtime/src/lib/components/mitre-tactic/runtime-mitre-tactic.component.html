@@ -1,0 +1,15 @@
+<kbq-badge class="runtime-feature-mitre-tactic"
+           [badgeColor]="badgeColors.FadeContrast"
+           [outline]="isOutline"
+           [compact]="isCompact">
+    <span [class]="{ 'cs-text-overflow runtime-feature-mitre-tactic-name': isCompact }">
+        {{ (tacticId ? technique$(id, tacticId) : tactic$(id)) | async }}
+    </span>
+    @if (techniques && techniques.length) {
+        <span class="layout-margin-left-xxs cs-text-gray">{{ techniques.length }}</span>
+    }
+    @if (!isCompact) {
+        <span class="kbq-text-compact layout-margin-left-xs layout-margin-right-xs">|</span>
+        <span>{{ id }}</span>
+    }
+</kbq-badge>

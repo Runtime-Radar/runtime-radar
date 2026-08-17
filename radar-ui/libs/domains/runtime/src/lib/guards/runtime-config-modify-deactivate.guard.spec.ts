@@ -9,12 +9,12 @@ import { runtimeConfigModifyDeactivateGuard } from './runtime-config-modify-deac
 import { RuntimeConfigStatus, RuntimeState } from '../interfaces';
 
 describe('runtimeConfigModifyDeactivateGuard', () => {
-    let store: jest.Mocked<Store<RuntimeState>>;
-    let status$: ReplaySubject<RuntimeConfigStatus>;
     let injector: EnvironmentInjector;
+    let configStatus$: ReplaySubject<RuntimeConfigStatus>;
+    let store: jest.Mocked<Store<RuntimeState>>;
 
     beforeEach(async () => {
-        status$ = new ReplaySubject(RuntimeConfigStatus.MODIFY);
+        configStatus$ = new ReplaySubject(RuntimeConfigStatus.MODIFY);
 
         const { fixture } = await render('<div></div>', {
             providers: [provideAutoSpy(Store<RuntimeState>)]
@@ -22,8 +22,7 @@ describe('runtimeConfigModifyDeactivateGuard', () => {
 
         injector = fixture.componentRef.injector.get(EnvironmentInjector);
         store = fixture.debugElement.injector.get(Store) as jest.Mocked<Store<RuntimeState>>;
-
-        store.select.mockReturnValue(status$.asObservable());
+        store.select.mockReturnValue(configStatus$.asObservable());
     });
 
     afterEach(() => {
@@ -42,8 +41,8 @@ describe('runtimeConfigModifyDeactivateGuard', () => {
             });
         });
 
-        status$.next(RuntimeConfigStatus.MODIFY);
-        status$.next(RuntimeConfigStatus.STAY);
+        configStatus$.next(RuntimeConfigStatus.MODIFY);
+        configStatus$.next(RuntimeConfigStatus.STAY);
     });
 
     it('should emit UPDATE_RUNTIME_STATE_DOC_ACTION when status is STAY', (done) => {
@@ -59,6 +58,6 @@ describe('runtimeConfigModifyDeactivateGuard', () => {
             });
         });
 
-        status$.next(RuntimeConfigStatus.STAY);
+        configStatus$.next(RuntimeConfigStatus.STAY);
     });
 });

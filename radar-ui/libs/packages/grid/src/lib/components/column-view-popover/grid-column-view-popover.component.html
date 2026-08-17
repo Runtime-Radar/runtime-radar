@@ -1,0 +1,48 @@
+<ng-container *transloco="let tCommon; prefix: 'common'">
+    <button kbq-button
+            kbqPopover
+            kbqStyle="outline"
+            color="contrast-fade"
+            type="button"
+            class="kbq-button-icon"
+            #kbqPopover="kbqPopover"
+            [kbqPopoverOffset]="4"
+            [kbqPopoverContent]="popoverContent"
+            [kbqPopoverPlacement]="tooltipPlacements.BottomRight"
+            [kbqPopoverArrow]="false"
+            [kbqPopoverClass]="'grid-package-column-view-popover'"
+            [kbqTooltip]="tCommon('Common.GridColumnViewPopover.Text.Column')"
+            [kbqPlacement]="tooltipPlacements.Left"
+            data-testid="grid-column-view-popover-open-button">
+        @if (hiddenColumnsCounter$ | async) {
+            <span class="grid-package-column-view-popover-badge"></span>
+        }
+        <i kbq-icon="kbq-gear_16" class="layout-margin-no-left layout-margin-no-right"></i>
+    </button>
+
+    <ng-template #popoverContent>
+        <div class="layout-column layout-align-start-start layout-gap-s">
+            @for (option of options; track option.id) {
+                <kbq-checkbox
+                        [checked]="columns[option.id] || false"
+                        [disabled]="columns[option.id] === undefined"
+                        (change)="checkboxChange.emit(option.id)"
+                        [attr.data-testid]="option.id">
+                    {{ localizationFn(option.localizationKey) }}
+                </kbq-checkbox>
+            }
+        </div>
+        <kbq-divider class="grid-package-column-view-popover-divider" />
+        <button kbq-button
+                kbqStyle="transparent"
+                color="contrast"
+                type="button"
+                class="grid-package-column-view-popover-reset"
+                [disabled]="(hiddenColumnsCounter$ | async) === 0"
+                (click)="checkboxesReset.emit()"
+                data-testid="grid-column-view-popover-reset-button">
+            <i kbq-icon="kbq-xmark-s_16" class="layout-margin-right-s"></i>
+            {{ tCommon('Common.GridColumnViewPopover.Button.Reset') }}
+        </button>
+    </ng-template>
+</ng-container>

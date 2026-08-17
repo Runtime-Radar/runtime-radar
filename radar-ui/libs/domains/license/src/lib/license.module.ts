@@ -10,8 +10,8 @@ import { LICENSE_DOMAIN_KEY, licenseDomainReducer } from './stores/license-selec
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(LICENSE_DOMAIN_KEY, licenseDomainReducer),
-        EffectsModule.forFeature([LicenseEffectStore])
+        EffectsModule.forFeature([LicenseEffectStore]),
+        StoreModule.forFeature(LICENSE_DOMAIN_KEY, licenseDomainReducer)
     ]
 })
 export class LicenseDomainModule {}

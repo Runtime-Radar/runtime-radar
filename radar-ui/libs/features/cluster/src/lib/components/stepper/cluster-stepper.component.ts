@@ -19,7 +19,8 @@ import { ClusterStepName } from '../../interfaces/cluster-stepper.interface';
     selector: 'cs-cluster-feature-stepper-component',
     templateUrl: './cluster-stepper.component.html',
     styleUrl: './cluster-stepper.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureStepperComponent {
     @ContentChildren('step', { read: TemplateRef }) steps!: QueryList<TemplateRef<never>>;

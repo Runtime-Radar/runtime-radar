@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, filter, map, switchMap, take } from 'rxjs';
 
 import { ApiEmptyRequest, ApiService } from '@cs/api';
@@ -16,7 +16,7 @@ import {
     providedIn: 'root'
 })
 export class IntegrationSyslogRequestService {
-    constructor(private readonly apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     getSyslogIntegrations(): Observable<IntegrationSyslog[]> {
         return this.apiService

@@ -18,8 +18,9 @@ import {
 const detectorActivate = (type: DetectorType): Observable<boolean> => {
     const dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
     const router = inject<Router>(Router);
-    const store = inject<Store<DetectorState>>(Store);
+
     const pollingInterval = inject(POLLING_INTERVAL);
+    const store = inject<Store<DetectorState>>(Store);
 
     return store.select(getDetectorConfig(type)).pipe(
         map((config) => (config ? config.loadStatus : LoadStatus.INIT)),

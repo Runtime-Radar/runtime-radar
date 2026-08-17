@@ -1,5 +1,5 @@
 import { map } from 'rxjs';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { ClusterStoreService } from '@cs/domains/cluster';
 import { LicenseStoreService } from '@cs/domains/license';
@@ -22,9 +22,14 @@ import {
     templateUrl: './cluster-create.container.html',
     styleUrl: './cluster-create.container.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
     providers: [ClusterFeatureFormComponentStore]
 })
 export class ClusterFeatureCreateContainer {
+    private readonly clusterFeatureFormComponentStore = inject(ClusterFeatureFormComponentStore);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly licenseStoreService = inject(LicenseStoreService);
+
     readonly registryForm$ = this.clusterFeatureFormComponentStore.partialForm$<ClusterRegistryForm>('registry');
 
     readonly clickhouseForm$ = this.clusterFeatureFormComponentStore.partialForm$<ClusterDataBaseForm>('clickhouse');
@@ -71,12 +76,6 @@ export class ClusterFeatureCreateContainer {
     );
 
     private readonly formValidations = new Map<ClusterFormType, boolean>([]);
-
-    constructor(
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly licenseStoreService: LicenseStoreService,
-        private readonly clusterFeatureFormComponentStore: ClusterFeatureFormComponentStore
-    ) {}
 
     changeRegistryForm(registry: ClusterCreateFormOutputs<ClusterRegistryForm>) {
         this.formValidations.set('registry', registry.isValid);

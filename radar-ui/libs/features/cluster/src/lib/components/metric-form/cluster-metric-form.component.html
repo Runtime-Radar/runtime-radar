@@ -1,7 +1,7 @@
 <ng-container *transloco="let tCluster; prefix: 'cluster'">
     <form [formGroup]="form" class="kbq-form-vertical cluster-abstract-feature-form" *transloco="let tCommon; prefix: 'common'">
         <section class="kbq-form__row layout-margin-top-xxl"
-                 [ngClass]="{ 'layout-margin-bottom-xxl': isMetricEnabled$ | async }">
+                 [class]="{ 'layout-margin-bottom-xxl': isMetricEnabled$ | async }">
             <kbq-toggle formControlName="isMetricEnabled" data-testid="cluster-metric-enabled-toggle">
                 {{ tCluster('Cluster.CreatePage.MetricForm.Label.MetricEnabled') }}
             </kbq-toggle>
@@ -69,7 +69,7 @@
                         {{ tCluster('Cluster.CreatePage.MetricForm.SubHeading.Prometheus') }}
                     </h2>
 
-                    <section class="kbq-form__row" [ngClass]="{ 'kbq-form-row_margin': rxlet.isPersistence }">
+                    <section class="kbq-form__row" [class]="{ 'kbq-form-row_margin': rxlet.isPersistence }">
                         <kbq-toggle formControlName="isPersistence" data-testid="cluster-metric-persistence-toggle">
                             {{ tCluster('Cluster.CreatePage.MetricForm.Label.Persistence') }}
                             <span class="kbq-text-compact cs-text-gray cluster-abstract-feature-form-toggle-hint">
@@ -82,7 +82,7 @@
                         <section class="kbq-form__row">
                             <label for="storageClass" class="kbq-form__label">
                                 {{ tCluster('Cluster.CreatePage.MetricForm.Label.StorageClass') }}
-                                <i kbq-icon="kbq-question-circle_16"
+                                <i kbq-icon="kbq-circle-question_16"
                                    class="cs-help-hover"
                                    kbqTooltip="{{ tCluster('Cluster.CreatePage.MetricForm.Hint.StorageClass') }}"
                                    kbqTooltipClass="cluster-abstract-feature-form-tooltip"

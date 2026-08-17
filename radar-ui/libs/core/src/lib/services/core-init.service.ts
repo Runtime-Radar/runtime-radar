@@ -1,26 +1,27 @@
 import { take } from 'rxjs';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 import { ApiPathService } from '@cs/api';
 import { AuthStoreService } from '@cs/domains/auth';
-import { CoreWindowService, IS_CHILD_CLUSTER } from '@cs/core';
-import { I18N_DEFAULT_LOCALE, I18N_LOCAL_STORAGE_KEY, I18nService } from '@cs/i18n';
+import { I18N_LOCAL_STORAGE_KEY, I18nService } from '@cs/i18n';
 
 import { CoreMetaService } from './core-meta.service';
+import { CoreWindowService } from './core-window.service';
+import { DEFAULT_LOCALE } from '../tokens/core-locale.token';
 import { DEFAULT_TRANSLATION_DICTS } from '../constants';
+import { IS_CHILD_CLUSTER } from '../tokens/core-child-cluster.token';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CoreInitService {
-    constructor(
-        private readonly apiPathService: ApiPathService,
-        private readonly authStoreService: AuthStoreService,
-        private readonly coreMetaService: CoreMetaService,
-        private readonly i18nService: I18nService,
-        private readonly coreWindowService: CoreWindowService,
-        @Inject(IS_CHILD_CLUSTER) private readonly isChildCluster: boolean
-    ) {}
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly authStoreService = inject(AuthStoreService);
+    private readonly coreMetaService = inject(CoreMetaService);
+    private readonly coreWindowService = inject(CoreWindowService);
+    private readonly defaultLocale = inject<string>(DEFAULT_LOCALE);
+    private readonly i18nService = inject(I18nService);
+    private readonly isChildCluster = inject<boolean>(IS_CHILD_CLUSTER);
 
     initialize(): Promise<void> {
         return new Promise((resolve) => {
@@ -44,6 +45,8 @@ export class CoreInitService {
     }
 
     private getLocaleFromStorage(): string {
-        return this.coreWindowService.localStorage.getItem(I18N_LOCAL_STORAGE_KEY) || I18N_DEFAULT_LOCALE;
+        const value = this.coreWindowService.localStorage.getItem(I18N_LOCAL_STORAGE_KEY);
+
+        return value || this.defaultLocale;
     }
 }

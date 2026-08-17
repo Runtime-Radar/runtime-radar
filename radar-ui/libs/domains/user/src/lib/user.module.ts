@@ -10,8 +10,8 @@ import { USER_DOMAIN_KEY, userDomainReducer } from './stores/user-selector.store
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(USER_DOMAIN_KEY, userDomainReducer),
-        EffectsModule.forFeature([UserEffectStore])
+        EffectsModule.forFeature([UserEffectStore]),
+        StoreModule.forFeature(USER_DOMAIN_KEY, userDomainReducer)
     ]
 })
 export class UserDomainModule {}

@@ -14,8 +14,8 @@ import { AUTH_DOMAIN_KEY, authDomainReducer } from './stores/auth-selector.store
     imports: [
         ApiModule,
         RoleDomainModule,
-        StoreModule.forFeature(AUTH_DOMAIN_KEY, authDomainReducer),
-        EffectsModule.forFeature([AuthEffectStore])
+        EffectsModule.forFeature([AuthEffectStore]),
+        StoreModule.forFeature(AUTH_DOMAIN_KEY, authDomainReducer)
     ],
     providers: [
         AUTH_HEADERS_PROVIDER,

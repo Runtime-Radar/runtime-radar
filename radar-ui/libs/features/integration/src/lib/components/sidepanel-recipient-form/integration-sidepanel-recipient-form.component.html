@@ -9,7 +9,7 @@
             @if (props.integration) {
                 <section class="kbq-text-compact integration-feature-sidepanel-recipient-form-header">
                     <i class="integration-feature-sidepanel-recipient-form-header-icon"
-                       [ngClass]="props.integration.type"></i>
+                       [class]="props.integration.type"></i>
                     <span>{{ tIntegration('Integration.EditRecipientForm.Text.Type', {
                         type: tIntegration(props.integration.type | integrationTypeLocalization),
                         name: props.integration.name
@@ -51,7 +51,7 @@
                             id="recipients"
                             editable
                             testLocator="integration-recipient-recipients-tag"
-                            [validators]="[validators.email]"></cs-tag-input-component>
+                            [validationRegExp]="formValidationRegExp.EMAIL" />
                 </section>
             }
 
@@ -130,7 +130,7 @@
             </section>
 
             @if ((isTemplateDefault$ | async) === false) {
-                <section class="kbq-form__row" [ngClass]="{ 'kbq-form-row_margin': props.integration.type === integrationType.WEBHOOK }">
+                <section class="kbq-form__row" [class]="{ 'kbq-form-row_margin': props.integration.type === integrationType.WEBHOOK }">
                     <label for="template" class="kbq-form__label">
                         {{ tIntegration('Integration.RecipientForm.Label.Template') }}
                     </label>

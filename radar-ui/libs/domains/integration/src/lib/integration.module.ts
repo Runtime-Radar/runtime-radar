@@ -11,8 +11,8 @@ import { INTEGRATION_DOMAIN_KEY, integrationDomainReducer } from './stores/integ
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(INTEGRATION_DOMAIN_KEY, integrationDomainReducer),
-        EffectsModule.forFeature([IntegrationEffectStore])
+        EffectsModule.forFeature([IntegrationEffectStore]),
+        StoreModule.forFeature(INTEGRATION_DOMAIN_KEY, integrationDomainReducer)
     ],
     declarations: [IntegrationTypeLocalizationPipe],
     exports: [IntegrationTypeLocalizationPipe]

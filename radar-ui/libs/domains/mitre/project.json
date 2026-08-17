@@ -1,0 +1,23 @@
+{
+    "name": "domain-mitre",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/domains/mitre/src",
+    "prefix": "runtime-radar",
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "options": {
+                "lintFilePatterns": ["libs/domains/mitre/src/**/*.ts", "libs/domains/mitre/src/**/*.html"]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/libs/domains/mitre"],
+            "options": {
+                "jestConfig": "libs/domains/mitre/jest.config.ts",
+                "passWithNoTests": true
+            }
+        }
+    }
+}

@@ -1,12 +1,13 @@
 import { ActivatedRoute } from '@angular/router';
 import { KbqBadgeColors } from '@koobiq/components/badge';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { Observable, filter, forkJoin, map, mergeMap, of, take } from 'rxjs';
 
 import { ApiPathService } from '@cs/api';
 import { DetectorStoreService } from '@cs/domains/detector';
 import { I18nService } from '@cs/i18n';
+import { SharedModalService } from '@cs/shared';
 import { ClusterStoreService, RegisteredCluster } from '@cs/domains/cluster';
 import { CreateRuleRequest, Rule, RuleStoreService, RuleType, UpdateRuleRequest } from '@cs/domains/rule';
 import { LoadStatus, CoreUtilsService as utils } from '@cs/core';
@@ -14,22 +15,33 @@ import { Notification, NotificationRequestService } from '@cs/domains/notificati
 import { PermissionName, PermissionType, RolePermissionMap } from '@cs/domains/role';
 import {
     RuleForm,
-    SharedModalService,
-    SharedRuleSidepanelComponent,
-    SharedRuleSidepanelFormComponent,
-    SharedRuleSidepanelFormProps,
-    SharedRuleSidepanelProps
-} from '@cs/shared';
+    RulePackageSidepanelFormComponent,
+    RulePackageSidepanelInfoComponent,
+    RuleSidepanelFormProps,
+    RuleSidepanelInfoProps
+} from '@cs/packages/rule';
 
-import { RuleFilters } from '../../interfaces/rule-form.interface';
+import { RuleFilters } from '../../interfaces/rule-filter.interface';
 import { RuleFeatureHelperService as ruleHelper } from '../../services/rule-helper.service';
 
 @Component({
     templateUrl: './rule-list.container.html',
     styleUrl: './rule-list.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuleFeatureListContainer {
+    private readonly route = inject(ActivatedRoute);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly detectorStoreService = inject(DetectorStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly notificationRequestService = inject(NotificationRequestService);
+    private readonly ruleStoreService = inject(RuleStoreService);
+    private readonly sharedModalService = inject(SharedModalService);
+
     readonly rules$: Observable<Rule[]> = this.ruleStoreService.rules$;
 
     readonly loadStatus$: Observable<LoadStatus> = this.ruleStoreService.loadStatus$;
@@ -50,18 +62,6 @@ export class RuleFeatureListContainer {
     readonly loadStatus = LoadStatus;
 
     filters?: RuleFilters;
-
-    constructor(
-        private readonly detectorStoreService: DetectorStoreService,
-        private readonly i18nService: I18nService,
-        private readonly notificationRequestService: NotificationRequestService,
-        private readonly route: ActivatedRoute,
-        private readonly ruleStoreService: RuleStoreService,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly apiPathService: ApiPathService,
-        private readonly sharedModalService: SharedModalService,
-        private readonly sidepanelService: KbqSidepanelService
-    ) {}
 
     changeFilter(values: RuleFilters) {
         this.filters = values;
@@ -85,7 +85,7 @@ export class RuleFeatureListContainer {
             })
         );
 
-        const config: KbqSidepanelConfig<SharedRuleSidepanelProps> = {
+        const config: KbqSidepanelConfig<RuleSidepanelInfoProps> = {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {
@@ -99,18 +99,18 @@ export class RuleFeatureListContainer {
             }
         };
 
-        this.sidepanelService.open(SharedRuleSidepanelComponent, config).afterClosed().pipe(take(1)).subscribe();
+        this.sidepanelService.open(RulePackageSidepanelInfoComponent, config).afterClosed().pipe(take(1)).subscribe();
     }
 
     openCreateSidepanel() {
-        const config: KbqSidepanelConfig<Partial<SharedRuleSidepanelFormProps>> = {
+        const config: KbqSidepanelConfig<Partial<RuleSidepanelFormProps>> = {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {}
         };
 
         this.sidepanelService
-            .open(SharedRuleSidepanelFormComponent, config)
+            .open(RulePackageSidepanelFormComponent, config)
             .afterClosed()
             .pipe(take(1), filter(utils.isDefined))
             .subscribe((form: RuleForm) => {
@@ -139,7 +139,7 @@ export class RuleFeatureListContainer {
     }
 
     openEditSidepanel(rule: Rule) {
-        const config: KbqSidepanelConfig<Partial<SharedRuleSidepanelFormProps>> = {
+        const config: KbqSidepanelConfig<Partial<RuleSidepanelFormProps>> = {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {
@@ -149,7 +149,7 @@ export class RuleFeatureListContainer {
         };
 
         this.sidepanelService
-            .open(SharedRuleSidepanelFormComponent, config)
+            .open(RulePackageSidepanelFormComponent, config)
             .afterClosed()
             .pipe(take(1), filter(utils.isDefined))
             .subscribe((form: RuleForm) => {

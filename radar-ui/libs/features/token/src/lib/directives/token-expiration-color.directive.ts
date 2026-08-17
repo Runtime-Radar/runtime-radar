@@ -1,22 +1,21 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { Directive, ElementRef, Input, OnChanges, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, Input, OnChanges, Renderer2, inject } from '@angular/core';
 
 const EXPIRATION_DAYS_LIMIT = 3;
 
 @Directive({
-    selector: '[tokenExpirationColor]'
+    selector: '[tokenExpirationColor]',
+    standalone: false
 })
 export class TokenFeatureExpirationColorDirective implements OnChanges {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly el = inject(ElementRef);
+    private readonly renderer = inject(Renderer2);
+
     @Input() expiresAt?: string | null; // RFC3339
 
-    @Input() invalidatedAt?: string; // RFC3339
-
-    constructor(
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly el: ElementRef,
-        private readonly renderer: Renderer2
-    ) {}
+    @Input() invalidatedAt?: string;
 
     ngOnChanges() {
         if (this.invalidatedAt) {

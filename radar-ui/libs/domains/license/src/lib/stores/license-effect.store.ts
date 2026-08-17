@@ -1,7 +1,7 @@
 import { Action } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap, take } from 'rxjs/operators';
@@ -18,6 +18,13 @@ import { UPDATE_LICENSE_STATE_DOC_ACTION } from './license-action.store';
     providedIn: 'root'
 })
 export class LicenseEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly i18nService = inject(I18nService);
+    private readonly licenseRequestService = inject(LicenseRequestService);
+
     readonly loadAppVersion$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(ROLE_LOAD_DONE_EVENT_ACTION),
@@ -78,12 +85,4 @@ export class LicenseEffectStore {
             map((centralUrl) => UPDATE_LICENSE_STATE_DOC_ACTION({ centralUrl }))
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly apiPathService: ApiPathService,
-        private readonly i18nService: I18nService,
-        private readonly licenseRequestService: LicenseRequestService,
-        private readonly toastService: KbqToastService
-    ) {}
 }

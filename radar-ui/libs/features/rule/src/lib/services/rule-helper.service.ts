@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { RuleForm } from '@cs/shared';
+import { RuleForm } from '@cs/packages/rule';
 import { RuleNotifyEntity, RuleWhiteList } from '@cs/domains/rule';
 
 @Injectable({

@@ -27,7 +27,7 @@
                             type="button"
                             id="paginator-number-button-{{ iterator + 1}}"
                             class="shared-paginator-item-button"
-                            [ngClass]="{ 'active': iterator === pageActiveIndex }"
+                            [class]="{ 'active': iterator === pageActiveIndex }"
                             (click)="navigate(iterator)"
                             [attr.data-testid]="testLocator + '-paginator-number-button-' + (iterator + 1)">
                         {{ iterator + 1 }}

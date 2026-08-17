@@ -5,7 +5,8 @@ import { RuntimeEventType } from '../interfaces/contract/runtime-event-contract.
 
 @Pipe({
     name: 'runtimeEventTypeLocalization',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class RuntimeEventTypeLocalizationPipe implements PipeTransform {
     transform(type?: RuntimeEventType): string {

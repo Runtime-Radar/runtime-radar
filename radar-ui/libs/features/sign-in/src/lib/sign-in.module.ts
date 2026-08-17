@@ -9,7 +9,7 @@ import { SignInFeaturePageContainer } from './containers/page/sign-in-page.conta
 import { SignInFeatureRoutingModule } from './sign-in-routing.module';
 
 @NgModule({
-    imports: [SignInFeatureRoutingModule, CommonModule, FormsModule, I18nModule, ReactiveFormsModule, SharedModule],
+    imports: [CommonModule, FormsModule, I18nModule, ReactiveFormsModule, SharedModule, SignInFeatureRoutingModule],
     declarations: [SignInFeaturePageContainer]
 })
 export class SignInFeatureModule {}

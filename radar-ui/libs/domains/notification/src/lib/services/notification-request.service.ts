@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, filter, map, switchMap, take } from 'rxjs';
 
 import { IntegrationType } from '@cs/domains/integration';
@@ -20,7 +20,7 @@ import {
     providedIn: 'root'
 })
 export class NotificationRequestService {
-    constructor(private readonly apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     getNotifications(request: Partial<GetNotificationsRequest> = {}): Observable<Notification[]> {
         return this.apiService

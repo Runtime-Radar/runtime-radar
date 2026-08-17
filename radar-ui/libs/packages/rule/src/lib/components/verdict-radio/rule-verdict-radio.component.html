@@ -1,0 +1,26 @@
+<ng-container *transloco="let tCommon; prefix: 'common'">
+    @for (option of ruleVerdictOptions; track option.id) {
+        <div class="layout-column rule-abstract-package-radio rule-package-verdict-radio"
+             [class]="{ 'active': verdict === option.id, 'disabled': isDisabled }">
+            <input type="radio"
+                   [name]="id"
+                   [id]="id + option.id"
+                   value="{{ option.id }}"
+                   [checked]="verdict === option.id"
+                   [disabled]="isDisabled"
+                   (change)="changeVerdict(option.id)"
+                   class="rule-abstract-package-radio-input"
+                   [attr.data-testid]="testLocator + '-' + option.testId">
+            <label class="kbq-text-compact layout-column layout-align-start-center layout-margin-top-m"
+                   [for]="id + option.id">
+                <cs-rule-package-severity-component
+                        class="cs-cursor-pointer"
+                        isWidthAuto
+                        [verdict]="option.id" />
+                <span class="cs-text-gray rule-abstract-package-radio-caption">
+                    {{ tCommon(option.id | ruleVerdictLocalization: noneLabelLocalizationKey) }}
+                </span>
+            </label>
+        </div>
+    }
+</ng-container>

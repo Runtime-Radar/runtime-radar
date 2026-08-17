@@ -31,6 +31,7 @@ const RULE_ENTITY_TWO: RuleEntity = {
 
 describe('RuleDomainReducer', () => {
     let entityState: RuleEntityState = adapter.getInitialState();
+
     const rulesWithNotify: Rule[] = [
         {
             ...RULE,

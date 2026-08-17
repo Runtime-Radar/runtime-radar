@@ -66,11 +66,7 @@
                 margin: 4px 4px 0 0;
 
                 &-truncate {
-                    display: inline-block;
                     max-width: 175px;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    overflow: hidden;
                 }
             }
 

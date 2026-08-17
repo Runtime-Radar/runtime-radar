@@ -1,9 +1,9 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, combineLatest, map, of, switchMap, zip } from 'rxjs';
 import { catchError, filter, mergeMap, take, tap } from 'rxjs/operators';
@@ -36,6 +36,14 @@ const GET_DETECTORS_REQUEST: GetDetectorsRequest = {
     providedIn: 'root'
 })
 export class DetectorEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly detectorRequestService = inject(DetectorRequestService);
+    private readonly i18nService = inject(I18nService);
+    private readonly store = inject<Store<DetectorState>>(Store);
+
     readonly loadDetectors$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_DETECTOR_ENTITIES_TODO_ACTION),
@@ -89,7 +97,7 @@ export class DetectorEffectStore {
             switchMap(() =>
                 this.store.select(getDetectorConfigs).pipe(
                     take(1),
-                    map((list) => list.reduce((acc, item) => (item ? [...acc, item.id] : acc), [] as DetectorType[]))
+                    map((list) => list.reduce<DetectorType[]>((acc, item) => (item ? [...acc, item.id] : acc), []))
                 )
             ),
             switchMap((types) => {
@@ -229,13 +237,4 @@ export class DetectorEffectStore {
                 return this.detectorRequestService.getRuntimeDetectors(GET_DETECTORS_REQUEST);
         }
     }
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly detectorRequestService: DetectorRequestService,
-        private readonly i18nService: I18nService,
-        private readonly store: Store<DetectorState>,
-        private readonly toastService: KbqToastService
-    ) {}
 }

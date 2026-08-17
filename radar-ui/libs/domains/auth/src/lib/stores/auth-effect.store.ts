@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { NEVER, Observable, of } from 'rxjs';
 import { catchError, concatMap, filter, map, switchMap, take, tap } from 'rxjs/operators';
@@ -39,6 +39,15 @@ import { AuthCredentials, AuthState, AuthTokens } from '../interfaces/state/auth
     providedIn: 'root'
 })
 export class AuthEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly router = inject(Router);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly authLocalStorageService = inject(AuthLocalStorageService);
+    private readonly authRequestService = inject(AuthRequestService);
+    private readonly i18nService = inject(I18nService);
+    private readonly store = inject<Store<AuthState>>(Store);
+
     readonly getLocationPath$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(GET_LOCATION_PATH_TODO_ACTION),
@@ -224,16 +233,6 @@ export class AuthEffectStore {
             })
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly authLocalStorageService: AuthLocalStorageService,
-        private readonly authRequestService: AuthRequestService,
-        private readonly i18nService: I18nService,
-        private readonly router: Router,
-        private readonly store: Store<AuthState>,
-        private readonly toastService: KbqToastService
-    ) {}
 
     private getCredentialsFromToken(token?: string): AuthCredentials | undefined {
         if (!token) {

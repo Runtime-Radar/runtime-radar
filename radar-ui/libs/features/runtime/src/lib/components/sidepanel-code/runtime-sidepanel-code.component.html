@@ -9,7 +9,29 @@
                 [lineNumbers]="true"
                 [softWrap]="false"
                 [filled]="false"
-                [files]="files">
-        </kbq-code-block>
+                [files]="files" />
     </kbq-sidepanel-body>
+
+    @if(props.prevHandler || props.nextHandler) {
+        <kbq-sidepanel-footer>
+            <kbq-sidepanel-actions align="left">
+                <button kbq-button
+                        type="button"
+                        class="kbq-button-icon"
+                        [disabled]="!props.prevHandler"
+                        (click)="props.prevHandler ? props.prevHandler(false) : null"
+                        data-testid="runtime-feature-sidepanel-code-prev-button">
+                    <i kbq-icon="kbq-chevron-up_16"></i>
+                </button>
+                <button kbq-button
+                        type="button"
+                        class="kbq-button-icon"
+                        [disabled]="!props.nextHandler"
+                        (click)="props.nextHandler ? props.nextHandler(true) : null"
+                        data-testid="runtime-feature-sidepanel-code-next-button">
+                    <i kbq-icon="kbq-chevron-down_16"></i>
+                </button>
+            </kbq-sidepanel-actions>
+        </kbq-sidepanel-footer>
+    }
 </ng-container>

@@ -27,7 +27,7 @@
                                              class="layout-row layout-align-space-between-center inventory-abstract-feature-header inventory-feature-sidepanel-node-header"
                                              (click)="props.namespaceHandler({ namespace, pods })"
                                              data-testid="inventory-namespace-open-button">
-                                        <span class="kbq-mono-normal-strong inventory-feature-sidepanel-node-header-name">{{ namespace.namespace }}</span>
+                                        <span class="kbq-mono-normal-strong cs-text-overflow inventory-feature-sidepanel-node-header-name">{{ namespace.namespace }}</span>
                                     </article>
 
                                     @if (pods.length) {
@@ -41,11 +41,11 @@
                                         @if (pod.node_name === props.node.node_name) {
                                             <article [id]="pod.uid"
                                                      class="layout-row layout-align-space-between-center inventory-abstract-feature-header inventory-feature-sidepanel-node-header inventory-feature-sidepanel-node-header--colored"
-                                                     [ngClass]="{ 'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING }"
-                                                     [ngStyle]="{ 'background-color': pod.bgColor, 'color': pod.textColor }"
+                                                     [class]="{ 'inventory-abstract-feature-header-unavailable': pod.phase === podPhase.PENDING }"
+                                                     [style]="{ 'background-color': pod.bgColor, 'color': pod.textColor }"
                                                      (click)="props.podHandler({ pod })"
                                                      data-testid="inventory-pod-open-button">
-                                                <span class="kbq-mono-normal-strong inventory-feature-sidepanel-node-header-name">{{ pod.name }}</span>
+                                                <span class="kbq-mono-normal-strong cs-text-overflow inventory-feature-sidepanel-node-header-name">{{ pod.name }}</span>
                                                 <span class="kbq-mono-normal inventory-feature-sidepanel-node-header-count">{{ pod.containers.length }}</span>
                                             </article>
                                         }
@@ -72,8 +72,7 @@
                             [lineNumbers]="true"
                             [softWrap]="false"
                             [filled]="false"
-                            [files]="codeConfigFiles">
-                    </kbq-code-block>
+                            [files]="codeConfigFiles" />
                 }
             </kbq-tab>
         </kbq-tab-group>

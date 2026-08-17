@@ -18,7 +18,8 @@ const PAGINATOR_INDEX_INDENT = 2;
     selector: 'cs-paginator-component',
     templateUrl: './shared-paginator.component.html',
     styleUrl: './shared-paginator.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SharedPaginatorComponent implements OnChanges {
     // Optional prop for e2e framework.
@@ -81,7 +82,7 @@ export class SharedPaginatorComponent implements OnChanges {
 
     private generatePagination(pages: number[]): number[] {
         return pages
-            .reduce((acc: number[], item) => {
+            .reduce<number[]>((acc, item) => {
                 let isItemPushed = false;
 
                 if (item < PAGINATOR_INDEX_INDENT) {

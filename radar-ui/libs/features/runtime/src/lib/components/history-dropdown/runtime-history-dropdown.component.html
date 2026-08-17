@@ -11,6 +11,7 @@
     <kbq-dropdown #dropdownMenu="kbqDropdown">
         @for (item of history; track item.id) {
             <button kbq-dropdown-item
+                    type="button"
                     [id]="item.id"
                     (click)="select(item)"
                     [kbqTooltip]="item | runtimeHistoryLabel"

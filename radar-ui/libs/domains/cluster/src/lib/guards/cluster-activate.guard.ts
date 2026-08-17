@@ -17,8 +17,9 @@ import { getClusterLastUpdate, getClusterLoadStatus } from '../stores/cluster-se
 const clusterActivate = (): Observable<boolean> => {
     const dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
     const router = inject(Router);
-    const store = inject<Store<ClusterState>>(Store);
+
     const pollingInterval = inject(POLLING_INTERVAL);
+    const store = inject<Store<ClusterState>>(Store);
 
     return store.select(getClusterLoadStatus).pipe(
         tap((status) => {

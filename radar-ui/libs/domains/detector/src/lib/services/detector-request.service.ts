@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { ApiService } from '@cs/api';
@@ -17,7 +17,7 @@ import {
     providedIn: 'root'
 })
 export class DetectorRequestService {
-    constructor(private readonly apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     getRuntimeDetectors(request: GetDetectorsRequest, page = 1): Observable<GetDetectorsResponse> {
         return this.apiService.get<GetDetectorsRequest, GetDetectorsResponse>(

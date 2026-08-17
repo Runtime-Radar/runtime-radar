@@ -3,6 +3,7 @@ $menu-height: 1 * 60px + 6 * 35px + 90px + 50px; // title + children + logo + us
 :host {
     display: block;
     position: relative;
+    flex: 0 0 170px;
     z-index: 2;
     background-color: #f2f5f9; // @todo: replace to koobiq token
 }
@@ -15,6 +16,7 @@ $menu-height: 1 * 60px + 6 * 35px + 90px + 50px; // title + children + logo + us
 .navbar {
     width: 170px;
     min-height: $menu-height + 70px;
+    background-color: #f2f5f9; // @todo: replace to koobiq token
 
     @media (min-height: 600px) {
         position: sticky;
@@ -116,13 +118,6 @@ $menu-height: 1 * 60px + 6 * 35px + 90px + 50px; // title + children + logo + us
         }
 
         &-info {
-            &-username {
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                overflow: hidden;
-                margin: 0 0 0 8px;
-            }
-
             &-avatar {
                 border-radius: 50%;
                 background-color: #c2daff; // @todo: replace to koobiq token
@@ -161,7 +156,7 @@ $menu-height: 1 * 60px + 6 * 35px + 90px + 50px; // title + children + logo + us
     }
 
     &-footer {
-        width: 100%;
+        width: 170px;
         height: calc(100% - $menu-height);
         position: absolute;
         top: $menu-height;

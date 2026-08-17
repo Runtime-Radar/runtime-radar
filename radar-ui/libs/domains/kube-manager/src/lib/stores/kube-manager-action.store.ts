@@ -4,8 +4,6 @@ import { GetKubeManagerPodsRequest, KubeManagerPod, KubeManagerState } from '../
 
 export const LOAD_KUBE_MANAGER_ENTITIES_TODO_ACTION = createAction('[Kube Manager] Load');
 
-export const POLLING_LOAD_KUBE_MANAGER_ENTITIES_TODO_ACTION = createAction('[Kube Manager] Polling Load');
-
 export const LOAD_KUBE_MANAGER_ENTITIES_WITH_FILTERS_TODO_ACTION = createAction(
     '[Kube Manager] Load With Filters',
     props<{ filters: Partial<GetKubeManagerPodsRequest> }>()

@@ -13,10 +13,6 @@
             height: 20px;
             padding: 6px 0;
         }
-
-        &-radio-group {
-            gap: 16px;
-        }
     }
 
     &-form {
@@ -168,12 +164,6 @@
         &-title {
             margin: 0;
             font-weight: 500;
-        }
-
-        &-actions {
-            display: flex;
-            gap: 12px;
-            margin-left: 12px;
         }
     }
 }
