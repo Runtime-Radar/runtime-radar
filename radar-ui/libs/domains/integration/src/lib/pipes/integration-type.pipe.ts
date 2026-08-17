@@ -5,7 +5,8 @@ import { IntegrationType } from '../interfaces/contract/integration-contract.int
 
 @Pipe({
     name: 'integrationTypeLocalization',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class IntegrationTypeLocalizationPipe implements PipeTransform {
     transform(type?: IntegrationType): string {

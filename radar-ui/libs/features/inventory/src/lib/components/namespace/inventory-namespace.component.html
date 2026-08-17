@@ -1,10 +1,10 @@
 <section class="kbq-text-normal inventory-feature-namespace"
-         [ngClass]="{ 'hidden': namespace.isVisible === false }"
+         [class]="{ 'hidden': namespace.isVisible === false }"
          *transloco="let tInventory; prefix: 'inventory'">
     <!-- @todo: add a11y support for header button -->
-    <header class="dragIgnore kbq-mono-normal-strong inventory-abstract-feature-header inventory-feature-namespace-header"
+    <header class="dragIgnore kbq-mono-normal-strong cs-text-overflow inventory-abstract-feature-header inventory-feature-namespace-header"
             [class]="'width-' + namespace.podCount"
-            [ngClass]="{ 'active': context.type === sidepanelContextType.NAMESPACE && context.id === namespace.namespace }"
+            [class]="{ 'active': context.type === sidepanelContextType.NAMESPACE && context.id === namespace.namespace }"
             [kbqExtendedTooltip]="namespaceTooltip"
             [kbqPlacement]="tooltipPlacements.Top"
             (click)="headerClick.emit({ namespace, pods })"
@@ -12,7 +12,7 @@
         {{ namespace.namespace }}
     </header>
     <section class="layout-row inventory-feature-namespace-pods"
-             [ngClass]="{ 'inventory-feature-namespace-pods--multiple': namespace.podCount > 3 }">
+             [class]="{ 'inventory-feature-namespace-pods--multiple': namespace.podCount > 3 }">
         <ng-content></ng-content>
     </section>
 

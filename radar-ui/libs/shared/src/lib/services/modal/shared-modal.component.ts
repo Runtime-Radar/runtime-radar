@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { KbqButtonModule } from '@koobiq/components/button';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { KbqModalModule, KbqModalRef } from '@koobiq/components/modal';
 
 @Component({
@@ -11,6 +11,8 @@ import { KbqModalModule, KbqModalRef } from '@koobiq/components/modal';
     standalone: true
 })
 export class SharedModalComponent {
+    private readonly modal = inject(KbqModalRef);
+
     @Input() title?: string;
 
     @Input({ required: true }) content!: string;
@@ -18,8 +20,6 @@ export class SharedModalComponent {
     @Input({ required: true }) confirmText!: string;
 
     @Input({ required: true }) cancelText!: string;
-
-    constructor(private readonly modal: KbqModalRef) {}
 
     close(isSuccessful: boolean) {
         this.modal.destroy(isSuccessful || undefined);

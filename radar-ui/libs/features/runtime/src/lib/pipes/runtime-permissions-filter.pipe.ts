@@ -4,7 +4,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { RuntimeSettingPermissionForm } from '../interfaces/runtime-form.interface';
 
 @Pipe({
-    name: 'runtimePermissionsFilter'
+    name: 'runtimePermissionsFilter',
+    standalone: false
 })
 export class RuntimeFeaturePermissionsFilterPipe implements PipeTransform {
     transform(

@@ -8,13 +8,14 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, map, startWith, tap } from 'rxjs';
 
 import { ClusterStoreService } from '@cs/domains/cluster';
-import { FORM_SEPARATOR_KEY_CODES, FORM_VALIDATION_REG_EXP, FormScheme, CoreUtilsService as utils } from '@cs/core';
+import { FORM_VALIDATION_REG_EXP, FormScheme, CoreUtilsService as utils } from '@cs/core';
 
 import { ClusterFeatureUrlValidator } from '../../validators/cluster-url.validator';
 import { ClusterAccessForm, ClusterCreateFormOutputs } from '../../interfaces/cluster-form.interface';
@@ -23,9 +24,14 @@ import { ClusterAccessForm, ClusterCreateFormOutputs } from '../../interfaces/cl
     selector: 'cs-cluster-feature-access-form-component',
     styleUrl: '../cluster-abstract-form.component.scss',
     templateUrl: './cluster-access-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureAccessFormComponent implements AfterViewInit, OnInit {
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input() values?: ClusterAccessForm | null;
 
     @Input() centralUrl?: string | null;
@@ -60,14 +66,6 @@ export class ClusterFeatureAccessFormComponent implements AfterViewInit, OnInit 
     );
 
     readonly tooltipPlacements = PopUpPlacements;
-
-    readonly separatorKeyCodes = FORM_SEPARATOR_KEY_CODES;
-
-    constructor(
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.onFormChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

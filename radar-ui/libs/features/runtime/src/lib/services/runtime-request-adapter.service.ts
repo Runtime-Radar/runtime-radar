@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
 
 import { DEFAULT_PAGINATOR_PAGE_SIZE } from '@cs/shared';
 import {
@@ -19,7 +19,7 @@ import { RuntimeEventContext, RuntimeEventFilters } from '../interfaces/runtime-
     providedIn: 'root'
 })
 export class RuntimeFeatureRequestAdapterService {
-    constructor(private readonly runtimeRequestService: RuntimeRequestService) {}
+    private readonly runtimeRequestService = inject(RuntimeRequestService);
 
     getEvents(
         pagination: RuntimeEventsPagination,

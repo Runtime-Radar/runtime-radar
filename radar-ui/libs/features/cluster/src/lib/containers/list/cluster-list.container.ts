@@ -4,7 +4,7 @@ import { KbqAlertColors } from '@koobiq/components/alert';
 import { KbqBadgeColors } from '@koobiq/components/badge';
 import { PopUpPlacements } from '@koobiq/components/core';
 import { BehaviorSubject, Observable, map, switchMap } from 'rxjs';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IModalOptionsForService, KbqModalService } from '@koobiq/components/modal';
 
 import { ApiPathService } from '@cs/api';
@@ -22,9 +22,18 @@ const CLUSTER_PAGINATOR_PAGE_SIZE = 10;
 @Component({
     templateUrl: './cluster-list.container.html',
     styleUrl: './cluster-list.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureListContainer {
+    private readonly modalService = inject(KbqModalService);
+    private readonly route = inject(ActivatedRoute);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly sharedModalService = inject(SharedModalService);
+
     readonly pageIndex$ = new BehaviorSubject(DEFAULT_PAGINATOR_PAGE_INDEX);
 
     readonly clustersResponse$: Observable<GetClustersResponse> = this.pageIndex$.pipe(
@@ -67,15 +76,6 @@ export class ClusterFeatureListContainer {
     readonly badgeColors = KbqBadgeColors;
 
     readonly tooltipPlacements = PopUpPlacements;
-
-    constructor(
-        private readonly apiPathService: ApiPathService,
-        private readonly i18nService: I18nService,
-        private readonly route: ActivatedRoute,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly sharedModalService: SharedModalService,
-        private readonly modalService: KbqModalService
-    ) {}
 
     changeName(outputs: ClusterEditPopoverOutputs) {
         this.clusterStoreService.updateCluster(outputs.id, {

@@ -18,10 +18,11 @@ import {
     take,
     tap
 } from 'rxjs';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 
 import { ApiPathService } from '@cs/api';
+import { GridPackageColumnComponentStore } from '@cs/packages/grid';
 import { I18nService } from '@cs/i18n';
 import { ClusterStoreService, RegisteredCluster } from '@cs/domains/cluster';
 import { DetectorExtended, DetectorStoreService, DetectorType } from '@cs/domains/detector';
@@ -31,7 +32,7 @@ import { LoadStatus, RouterName } from '@cs/core';
 import { PermissionName, RolePermissionMap } from '@cs/domains/role';
 
 import { RUNTIME_NAVIGATION_TABS } from '../../constants/runtime-navigation.constant';
-import { RuntimeFeatureEventFilterComponentStore } from '../../stores/event-filter/runtime-event-filter.store';
+import { RuntimeFeatureEventFilterComponentStore } from '../../stores/runtime-event-filter.store';
 import { RuntimeFeatureRequestAdapterService } from '../../services/runtime-request-adapter.service';
 import { RuntimeRouterName } from '../../interfaces/runtime-navigation.interface';
 import { RuntimeFeatureConfigUtilsService as runtimeConfigUtils } from '../../services/runtime-utils.service';
@@ -41,11 +42,18 @@ import {
     RuntimeEventsPagination
 } from '../../interfaces/runtime-events.interface';
 import {
+    RUNTIME_EVENT_GRID_COLUMNS,
+    RUNTIME_EVENT_GRID_COLUMNS_INITIAL_VALUES
+} from '../../constants/runtime-grid.constant';
+import {
     RUNTIME_FILTER_INITIAL_CONTEXT_STATE,
     RUNTIME_FILTER_INITIAL_STATE
 } from '../../constants/runtime-filter.constant';
 import {
     RuntimeEventContext,
+    RuntimeEventFilterContextDropdown,
+    RuntimeEventFilterContextDropdownType,
+    RuntimeEventFilterKey,
     RuntimeEventFilterRuleNode,
     RuntimeEventFilters
 } from '../../interfaces/runtime-filter.interface';
@@ -54,9 +62,26 @@ import {
     templateUrl: './runtime-events.container.html',
     styleUrl: './runtime-events.container.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [RuntimeFeatureEventFilterComponentStore]
+    standalone: false,
+    providers: [RuntimeFeatureEventFilterComponentStore, GridPackageColumnComponentStore]
 })
 export class RuntimeFeatureEventsContainer implements OnInit {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly detectorStoreService = inject(DetectorStoreService);
+    private readonly gridPackageColumnComponentStore = inject(GridPackageColumnComponentStore);
+    private readonly i18nService = inject(I18nService);
+    private readonly ruleRequestService = inject(RuleRequestService);
+    private readonly ruleStoreService = inject(RuleStoreService);
+    private readonly runtimeFeatureEventFilterComponentStore = inject(RuntimeFeatureEventFilterComponentStore);
+    private readonly runtimeFeatureRequestAdapterService = inject(RuntimeFeatureRequestAdapterService);
+
     readonly updateCounter$ = new Subject<string>();
 
     readonly activeClusterHost$ = this.apiPathService.host$;
@@ -214,6 +239,8 @@ export class RuntimeFeatureEventsContainer implements OnInit {
 
     readonly filterComponentStore = this.runtimeFeatureEventFilterComponentStore;
 
+    readonly gridColumnComponentStore = this.gridPackageColumnComponentStore;
+
     readonly loadStatus = LoadStatus;
 
     readonly runtimeEventCursorDirection = RuntimeEventCursorDirection;
@@ -224,29 +251,19 @@ export class RuntimeFeatureEventsContainer implements OnInit {
 
     readonly runtimeNavigationTabs = RUNTIME_NAVIGATION_TABS;
 
+    readonly runtimeEventGridColumns = RUNTIME_EVENT_GRID_COLUMNS;
+
     /* eslint @typescript-eslint/dot-notation: "off" */
     readonly permissions: RolePermissionMap = this.route.snapshot.data['permissions'];
 
     readonly permissionName = PermissionName;
 
-    constructor(
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly destroyRef: DestroyRef,
-        private readonly detectorStoreService: DetectorStoreService,
-        private readonly i18nService: I18nService,
-        private readonly ruleStoreService: RuleStoreService,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly apiPathService: ApiPathService,
-        private readonly ruleRequestService: RuleRequestService,
-        private readonly route: ActivatedRoute,
-        private readonly router: Router,
-        private readonly runtimeFeatureEventFilterComponentStore: RuntimeFeatureEventFilterComponentStore,
-        private readonly runtimeFeatureRequestAdapterService: RuntimeFeatureRequestAdapterService,
-        private readonly toastService: KbqToastService
-    ) {}
-
     ngOnInit() {
         this.routeWithFilterAndCursor$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+        this.gridPackageColumnComponentStore.setInitialState({
+            id: 'rntmgrd',
+            columns: RUNTIME_EVENT_GRID_COLUMNS_INITIAL_VALUES
+        });
     }
 
     tabChange(path?: string) {
@@ -287,6 +304,23 @@ export class RuntimeFeatureEventsContainer implements OnInit {
             values.context,
             values.id
         );
+        this.goToStartPage();
+    }
+
+    changeFilterEntity(filter: RuntimeEventFilterContextDropdown) {
+        if (filter.key === RuntimeEventFilterKey.NAMESPACE) {
+            const [namespace, pod] = filter.value.split('/');
+            this.runtimeFeatureEventFilterComponentStore.update({
+                [RuntimeEventFilterKey.NAMESPACE]:
+                    filter.type === RuntimeEventFilterContextDropdownType.ADD ? namespace : '',
+                [RuntimeEventFilterKey.POD]: filter.type === RuntimeEventFilterContextDropdownType.ADD ? pod : ''
+            });
+        } else {
+            this.runtimeFeatureEventFilterComponentStore.update({
+                [filter.key]: filter.type === RuntimeEventFilterContextDropdownType.ADD ? filter.value : ''
+            });
+        }
+
         this.goToStartPage();
     }
 

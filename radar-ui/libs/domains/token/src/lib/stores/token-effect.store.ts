@@ -1,9 +1,9 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, of } from 'rxjs';
 import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
@@ -35,6 +35,14 @@ import { Token, TokenState } from '../interfaces';
     providedIn: 'root'
 })
 export class TokenEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly store = inject<Store<TokenState>>(Store);
+    private readonly tokenRequestService = inject(TokenRequestService);
+
     readonly loadTokens$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_TOKEN_ENTITIES_TODO_ACTION),
@@ -168,13 +176,4 @@ export class TokenEffectStore {
             ])
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService,
-        private readonly tokenRequestService: TokenRequestService,
-        private readonly store: Store<TokenState>,
-        private readonly toastService: KbqToastService
-    ) {}
 }

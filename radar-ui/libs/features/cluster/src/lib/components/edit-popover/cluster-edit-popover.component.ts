@@ -10,7 +10,8 @@ import { ClusterEditPopoverOutputs } from '../../interfaces/cluster-popover.inte
     selector: 'cs-cluster-feature-edit-popover-component',
     templateUrl: './cluster-edit-popover.component.html',
     styleUrl: './cluster-edit-popover.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureEditPopoverComponent implements OnInit {
     @ViewChild('kbqPopover', { static: false }) popover!: KbqPopoverTrigger;

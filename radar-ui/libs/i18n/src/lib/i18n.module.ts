@@ -1,4 +1,3 @@
-import { provideTranslocoMessageformat } from '@jsverse/transloco-messageformat';
 import {
     DateAdapter,
     DateFormatter,
@@ -13,7 +12,8 @@ import {
     KBQ_LUXON_DATE_FORMATS,
     LuxonDateAdapter
 } from '@koobiq/angular-luxon-adapter/adapter';
-import { LOCALE_ID, ModuleWithProviders, NgModule } from '@angular/core';
+import { LOCALE_ID, ModuleWithProviders, NgModule, inject } from '@angular/core';
+import { TRANSLOCO_MESSAGE_FORMAT_CONFIG, provideTranslocoMessageformat } from '@jsverse/transloco-messageformat';
 import { TranslocoConfig, TranslocoModule, provideTransloco } from '@jsverse/transloco';
 import {
     TranslocoMarkupModule,
@@ -22,14 +22,15 @@ import {
 } from 'ngx-transloco-markup';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
+import { AVAILABLE_LOCALES, DEFAULT_LOCALE } from '@cs/core';
+
 import { I18nTemplateTranspiler } from './transpilers/i18n-template.transpiler';
 import { I18nTranslocoLoader } from './providers/i18n-transloco.loader';
-import { I18N_AVAILABLE_LOCALES, I18N_DEFAULT_LOCALE } from './constants/i18n.constant';
 
 const DEFAULT_TRANSLOCO_CONFIG: Partial<TranslocoConfig> = {
-    availableLangs: I18N_AVAILABLE_LOCALES,
-    defaultLang: I18N_DEFAULT_LOCALE,
-    fallbackLang: I18N_DEFAULT_LOCALE,
+    availableLangs: [],
+    defaultLang: '',
+    fallbackLang: '',
     interpolation: ['<<<', '>>>'],
     reRenderOnLangChange: true
 };
@@ -44,7 +45,7 @@ const translocoMarkupTranspilers = [
     providers: [
         {
             provide: LOCALE_ID,
-            useValue: I18N_DEFAULT_LOCALE
+            useFactory: () => inject<string>(DEFAULT_LOCALE)
         },
         {
             provide: DateFormatter,
@@ -66,9 +67,13 @@ export class I18nModule {
                     },
                     loader: I18nTranslocoLoader
                 }),
-                provideTranslocoMessageformat({
-                    locales: I18N_AVAILABLE_LOCALES
-                }),
+                {
+                    provide: TRANSLOCO_MESSAGE_FORMAT_CONFIG,
+                    useFactory: () => {
+                        const locales = inject<string[]>(AVAILABLE_LOCALES);
+                        return { locales };
+                    }
+                },
                 {
                     provide: KBQ_DATE_FORMATS,
                     useValue: KBQ_LUXON_DATE_FORMATS
@@ -82,6 +87,7 @@ export class I18nModule {
                     provide: KBQ_LOCALE_SERVICE,
                     useClass: KbqLocaleService
                 },
+                provideTranslocoMessageformat(),
                 provideHttpClient(withInterceptorsFromDi())
             ]
         };

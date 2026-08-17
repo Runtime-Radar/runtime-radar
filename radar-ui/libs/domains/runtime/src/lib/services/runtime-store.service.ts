@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import {
     CHECK_RUNTIME_CHANGES_TODO_ACTION,
@@ -31,6 +31,8 @@ import {
     providedIn: 'root'
 })
 export class RuntimeStoreService {
+    private readonly store = inject<Store<RuntimeState>>(Store);
+
     readonly runtimeGrafanaUrl$: Observable<string> = this.store.select(getRuntimeGrafanaUrl);
 
     readonly runtimeMonitorConfig$: Observable<RuntimeMonitorConfig> = this.store.select(getRuntimeMonitorConfig);
@@ -48,8 +50,6 @@ export class RuntimeStoreService {
     readonly runtimeIsExpertMode$: Observable<boolean> = this.store.select(getRuntimeIsExpertMode);
 
     readonly runtimeIsOverlayed$: Observable<boolean> = this.store.select(getRuntimeIsOverlayed);
-
-    constructor(private readonly store: Store<RuntimeState>) {}
 
     createConfig(config: RuntimeMonitorConfig, historyControl: RuntimeEventProcessorHistoryControl) {
         this.store.dispatch(

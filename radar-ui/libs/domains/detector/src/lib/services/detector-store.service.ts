@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { getDetectors } from '../stores/detector-selector.store';
 import {
@@ -13,10 +13,10 @@ import { DetectorExtended, DetectorState, DetectorType } from '../interfaces';
     providedIn: 'root'
 })
 export class DetectorStoreService {
+    private readonly store = inject<Store<DetectorState>>(Store);
+
     readonly detectors$ = (types?: DetectorType[]): Observable<DetectorExtended[]> =>
         this.store.select(getDetectors(types));
-
-    constructor(private readonly store: Store<DetectorState>) {}
 
     createRuntimeDetectors(base64list: string[]) {
         this.store.dispatch(CREATE_RUNTIME_DETECTOR_ENTITIES_TODO_ACTION({ base64list }));

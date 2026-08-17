@@ -7,7 +7,7 @@
                 [attr.data-testid]="testId">
         <kbq-option class="shared-multiple-select-general"
                     [value]="allOptionKey"
-                    [ngClass]="{ 'checked': selectedItems === optionItems, 'indeterminate': selectedItems < optionItems && selectedItems !== 0 }"
+                    [class]="{ 'checked': selectedItems === optionItems, 'indeterminate': selectedItems < optionItems && selectedItems !== 0 }"
                     [attr.data-testid]="tCommon('Common.Form.Label.SelectAll')">
             {{ tCommon('Common.Form.Label.SelectAll') }}
         </kbq-option>
@@ -17,6 +17,6 @@
                 {{ localizationFn(item.localizationKey) }}
             </kbq-option>
         }
-        <kbq-cleaner #kbqSelectCleaner></kbq-cleaner>
+        <kbq-cleaner #kbqSelectCleaner />
     </kbq-select>
 </kbq-form-field>

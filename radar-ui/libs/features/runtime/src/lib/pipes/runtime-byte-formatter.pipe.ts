@@ -1,7 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-    name: 'runtimeByteFormatter'
+    name: 'runtimeByteFormatter',
+    standalone: false
 })
 export class RuntimeFeatureByteFormatterPipe implements PipeTransform {
     readonly size = 1024;

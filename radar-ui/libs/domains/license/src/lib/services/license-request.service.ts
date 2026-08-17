@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { ApiEmptyRequest, ApiService } from '@cs/api';
@@ -9,7 +9,7 @@ import { GetAppVersionResponse, GetCentralUrlResponse } from '../interfaces';
     providedIn: 'root'
 })
 export class LicenseRequestService {
-    constructor(private readonly apiService: ApiService) {}
+    private readonly apiService = inject(ApiService);
 
     getAppVersion(): Observable<string> {
         return this.apiService

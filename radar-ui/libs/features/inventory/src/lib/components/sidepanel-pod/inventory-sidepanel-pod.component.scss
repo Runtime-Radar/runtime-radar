@@ -26,12 +26,6 @@
         border-radius: 8px;
         cursor: pointer;
 
-        &-name {
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-
         &:hover,
         &:focus,
         &:active {

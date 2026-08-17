@@ -32,7 +32,7 @@
     "Rule.CreateForm.Label.Registries": "Registries",
     "Rule.CreateForm.Placeholder.Registries": "registry.com:5000",
     "Rule.CreateForm.Error.Registries": "Incorrect value",
-    "Rule.CreateForm.Hint.Registries": "To specify a registry name template, list IP addresses and domain names for GitLab, artifactory domains for Nexus or GitLab, and all names of a registry if it uses several ports",
+    "Rule.CreateForm.Hint.Registries": "To specify a registry name template, list IP addresses and domain names for GitLab, registry domains for Nexus or GitLab, and all names of a registry if it uses several ports",
     "Rule.CreateForm.Label.Namespaces": "Namespaces",
     "Rule.CreateForm.Placeholder.Namespaces": "default, my-prod, my-stage",
     "Rule.CreateForm.Error.Namespaces": "Incorrect value",
@@ -66,7 +66,7 @@
     "Rule.CreateForm.WhiteList.SubTitle.Exception": "Exclusions",
     "Rule.CreateForm.WhiteList.Text.Exception.Runtime": "Skip the rule for these threats.",
 
-    "Rule.EditForm.Title.Edit": "Editing the rule",
+    "Rule.EditForm.Title.Edit": "Edit rule",
     "Rule.EditForm.Button.Confirm": "Save",
 
     "Rule.DeleteModal.Title.Text": "Delete the rule?",

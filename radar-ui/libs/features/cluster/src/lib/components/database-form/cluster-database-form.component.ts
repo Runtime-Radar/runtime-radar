@@ -8,7 +8,8 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, startWith, tap } from 'rxjs';
@@ -22,9 +23,13 @@ import { ClusterCreateFormOutputs, ClusterDataBaseForm } from '../../interfaces/
     selector: 'cs-cluster-feature-database-form-component',
     styleUrl: '../cluster-abstract-form.component.scss',
     templateUrl: './cluster-database-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ClusterFeatureDataBaseFormComponent implements AfterViewInit, OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input({ required: true }) type!: ClusterFormType;
 
     @Input() title?: string;
@@ -119,11 +124,6 @@ export class ClusterFeatureDataBaseFormComponent implements AfterViewInit, OnIni
     readonly tooltipPlacements = PopUpPlacements;
 
     isDatabaseControlEnable = false;
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.isDatabaseControlEnable = this.type === 'clickhouse' || this.type === 'postgres';

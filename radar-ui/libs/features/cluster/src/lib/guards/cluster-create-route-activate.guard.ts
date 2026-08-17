@@ -8,10 +8,11 @@ import { ClusterStoreService } from '@cs/domains/cluster';
 import { PermissionName, PermissionType, Role, RoleStoreService } from '@cs/domains/role';
 
 const clusterFeatureCreateRouteActivate = (): Observable<boolean | UrlTree> => {
+    const router = inject(Router);
+
     const authStoreService = inject(AuthStoreService);
     const clusterStoreService = inject(ClusterStoreService);
     const roleStoreService = inject(RoleStoreService);
-    const router = inject(Router);
 
     return clusterStoreService.loadStatus$.pipe(
         filter((status) => [LoadStatus.LOADED, LoadStatus.ERROR].includes(status)),

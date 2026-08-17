@@ -9,11 +9,10 @@ import { ApiRequestParams } from '../interfaces/api-request.interface';
     providedIn: 'root'
 })
 export class ApiService {
+    private readonly apiPathService = inject(ApiPathService);
     private readonly http = inject(HttpClient);
 
     private readonly apiPath = (path: string): string => this.apiPathService.get(path);
-
-    constructor(private readonly apiPathService: ApiPathService) {}
 
     get<R, T>(path: string, request: R = {} as R, headers?: HttpHeaders): Observable<T> {
         return this.http.get<T>(this.apiPath(path), {

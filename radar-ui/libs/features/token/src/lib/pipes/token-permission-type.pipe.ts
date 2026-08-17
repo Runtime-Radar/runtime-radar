@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 
 import { I18nService } from '@cs/i18n';
 import { PermissionType } from '@cs/domains/role';
@@ -6,25 +6,42 @@ import { TokenPermissionName } from '@cs/domains/token';
 
 @Pipe({
     name: 'tokenPermissionType',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class TokenFeaturePermissionTypePipe implements PipeTransform {
-    constructor(private readonly i18nService: I18nService) {}
+    private readonly i18nService = inject(I18nService);
 
     transform(type?: PermissionType, permissionName?: TokenPermissionName): string {
         switch (type) {
             case PermissionType.CREATE:
-                return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanCreate');
-            case PermissionType.READ:
-                if (permissionName === TokenPermissionName.EVENTS) {
-                    return this.i18nService.translate('Token.CreateForm.EventPermissions.Label.CanRead');
+                if (permissionName === TokenPermissionName.RULES) {
+                    return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanCreate');
+                } else {
+                    return '—';
                 }
-
-                return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanRead');
+            case PermissionType.READ:
+                if (permissionName === TokenPermissionName.RULES) {
+                    return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanRead');
+                } else if (permissionName === TokenPermissionName.EVENTS) {
+                    return this.i18nService.translate('Token.CreateForm.EventPermissions.Label.CanRead');
+                } else if (permissionName === TokenPermissionName.CLUSTERS) {
+                    return this.i18nService.translate('Token.CreateForm.ClusterPermissions.Label.CanRead');
+                } else {
+                    return '—';
+                }
             case PermissionType.UPDATE:
-                return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanUpdate');
+                if (permissionName === TokenPermissionName.RULES) {
+                    return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanUpdate');
+                } else {
+                    return '—';
+                }
             case PermissionType.DELETE:
-                return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanDelete');
+                if (permissionName === TokenPermissionName.RULES) {
+                    return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanDelete');
+                } else {
+                    return '—';
+                }
             default:
                 return '—';
         }

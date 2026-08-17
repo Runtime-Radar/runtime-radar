@@ -5,61 +5,99 @@
                 <th width="34"></th>
                 <th width="18"></th>
                 <th>{{ tRuntime('Runtime.EventsPage.Table.Namespace') }}</th>
-                <th>{{ tRuntime('Runtime.EventsPage.Table.Function') }}</th>
-                <th>{{ tRuntime('Runtime.EventsPage.Table.Binary') }}</th>
-                <th>{{ tRuntime('Runtime.EventsPage.Table.Argument') }}</th>
+                <th [columnVisible]="columns[gridColumnKey.FUNCTION]">
+                    {{ tRuntime('Runtime.EventsPage.Table.Function') }}
+                    @if (isGridCustomizationAvailable) {
+                        <cs-grid-package-column-view-icon-component
+                                class="eye-icon"
+                                [id]="gridColumnKey.FUNCTION"
+                                (click)="columnChange.emit(gridColumnKey.FUNCTION)" />
+                    }
+                </th>
+                <th [columnVisible]="columns[gridColumnKey.BINARY]">
+                    {{ tRuntime('Runtime.EventsPage.Table.Binary') }}
+                    @if (isGridCustomizationAvailable) {
+                        <cs-grid-package-column-view-icon-component
+                                class="eye-icon"
+                                [id]="gridColumnKey.BINARY"
+                                (click)="columnChange.emit(gridColumnKey.BINARY)" />
+                    }
+                </th>
+                <th [columnVisible]="columns[gridColumnKey.ARGUMENT]">
+                    {{ tRuntime('Runtime.EventsPage.Table.Argument') }}
+                    @if (isGridCustomizationAvailable) {
+                        <cs-grid-package-column-view-icon-component
+                                class="eye-icon"
+                                [id]="gridColumnKey.ARGUMENT"
+                                (click)="columnChange.emit(gridColumnKey.ARGUMENT)" />
+                    }
+                </th>
                 <th width="16"></th>
-                <th width="80"></th>
-                <th width="140">{{ tRuntime('Runtime.EventsPage.Table.Date') }}</th>
+                <th width="76" [columnVisible]="columns[gridColumnKey.SEVERITY]"></th>
+                <th width="140" [columnVisible]="columns[gridColumnKey.DATE_FROM]">
+                    {{ tRuntime('Runtime.EventsPage.Table.Date') }}
+                    @if (isGridCustomizationAvailable) {
+                        <cs-grid-package-column-view-icon-component
+                                class="eye-icon"
+                                [id]="gridColumnKey.DATE_FROM"
+                                (click)="columnChange.emit(gridColumnKey.DATE_FROM)" />
+                    }
+                </th>
                 <th width="{{ isContextChangeAvailable ? 68 : 34 }}"></th>
             </tr>
         </thead>
         <tbody>
-            @for (event of localEvents; track event.id) {
+            @for (event of localEvents; track event.id; let index = $index) {
                 @if (event.event.process_exec) {
                     <ng-container *ngTemplateOutlet="rowTemplate; context: {
                         type: runtimeEventType.EXEC,
                         entity: event.event.process_exec,
-                        item: event
+                        item: event,
+                        index
                     }"></ng-container>
                 } @else if (event.event.process_exit) {
                     <ng-container *ngTemplateOutlet="rowTemplate; context: {
                         type: runtimeEventType.EXIT,
                         entity: event.event.process_exit,
-                        item: event
+                        item: event,
+                        index
                     }"></ng-container>
                 } @else if (event.event.process_kprobe) {
                     <ng-container *ngTemplateOutlet="rowTemplate; context: {
                         type: runtimeEventType.KPROBE,
                         entity: event.event.process_kprobe,
-                        item: event
+                        item: event,
+                        index
                     }"></ng-container>
                 } @else if (event.event.process_loader) {
                     <ng-container *ngTemplateOutlet="rowTemplate; context: {
                         type: runtimeEventType.LOADER,
                         entity: event.event.process_loader,
-                        item: event
+                        item: event,
+                        index
                     }"></ng-container>
                 } @else if (event.event.process_tracepoint) {
                     <ng-container *ngTemplateOutlet="rowTemplate; context: {
                         type: runtimeEventType.TRACEPOINT,
                         entity: event.event.process_tracepoint,
-                        item: event
+                        item: event,
+                        index
                     }"></ng-container>
                 } @else if (event.event.process_uprobe) {
                     <ng-container *ngTemplateOutlet="rowTemplate; context: {
                         type: runtimeEventType.UPROBE,
                         entity: event.event.process_uprobe,
-                        item: event
+                        item: event,
+                        index
                     }"></ng-container>
                 }
             }
         </tbody>
     </table>
 
-    <ng-template #rowTemplate let-type="type" let-item="item" let-entity="entity">
+    <ng-template #rowTemplate let-type="type" let-item="item" let-entity="entity" let-index="index">
         <tr class="cs-cursor-pointer"
-            [ngClass]="{ 'active': activeContextId === item.id, 'error': item.detect_errors.length }"
+            [class]="{ 'active': activeContextId === item.id, 'error': item.detect_errors.length, 'active-sidepanel': (activeViewCodeId$ | async) === item.id }"
             (click)="goToDetailsPage(item.id)"
             id="{{ item.id }}"
             [attr.data-testid]="item.id">
@@ -100,77 +138,103 @@
                    [kbqPlacement]="tooltipPlacements.Left"></i>
             </td>
             <td>
-                <span class="runtime-feature-events-grid-valign-middle">
-                    @if (entity.process.pod) {
-                        <span class="runtime-feature-events-grid-truncate"
-                              title="{{ entity.process.pod.namespace }}/{{ entity.process.pod.name }}"
-                              [attr.data-testid]="entity.process.pod.namespace + '/' + entity.process.pod.name">
-                            {{ entity.process.pod.namespace }}/{{ entity.process.pod.name }}
-                        </span>
-                    } @else {
-                        —
-                    }
-                </span>
+                <cs-runtime-feature-filter-context-dropdown-component
+                        [key]="runtimeEventFilterKey.NAMESPACE"
+                        [value]="entity.process.pod.namespace + '/' + entity.process.pod.name"
+                        [constraint]="filters?.[runtimeEventFilterKey.NAMESPACE] ? filters?.[runtimeEventFilterKey.NAMESPACE] + '/' +  filters?.[runtimeEventFilterKey.POD] : ''"
+                        [isDropdownAvailable]="isGridCustomizationAvailable"
+                        (contextChange)="changeFilterContext($event)">
+                    <span class="runtime-feature-events-grid-valign-middle">
+                        @if (entity.process.pod) {
+                            <span class="cs-text-overflow runtime-feature-events-grid-truncate"
+                                title="{{ entity.process.pod.namespace }}/{{ entity.process.pod.name }}"
+                                [attr.data-testid]="entity.process.pod.namespace + '/' + entity.process.pod.name">
+                                {{ entity.process.pod.namespace }}/{{ entity.process.pod.name }}
+                            </span>
+                        } @else {
+                            —
+                        }
+                    </span>
+                </cs-runtime-feature-filter-context-dropdown-component>
             </td>
-            <td>
-                <span class="runtime-feature-events-grid-truncate" title="{{ entity.function_name || '—' }}">
-                    {{ entity.function_name || '—' }}
-                </span>
+            <td [columnVisible]="columns[gridColumnKey.FUNCTION]">
+                <cs-runtime-feature-filter-context-dropdown-component
+                        [key]="runtimeEventFilterKey.FUNCTION"
+                        [value]="entity.function_name || ''"
+                        [constraint]="filters?.[runtimeEventFilterKey.FUNCTION]"
+                        [isDropdownAvailable]="isGridCustomizationAvailable"
+                        (contextChange)="changeFilterContext($event)">
+                    <span class="cs-text-overflow runtime-feature-events-grid-truncate">{{ entity.function_name || '—' }}</span>
+                </cs-runtime-feature-filter-context-dropdown-component>
             </td>
-            <td>
-                <span class="runtime-feature-events-grid-truncate" title="{{ entity.process.binary }}">
-                    {{ entity.process.binary }}
-                </span>
+            <td [columnVisible]="columns[gridColumnKey.BINARY]">
+                <cs-runtime-feature-filter-context-dropdown-component
+                        [key]="runtimeEventFilterKey.BINARY"
+                        [value]="entity.process.binary || ''"
+                        [constraint]="filters?.[runtimeEventFilterKey.BINARY]"
+                        [isDropdownAvailable]="isGridCustomizationAvailable"
+                        (contextChange)="changeFilterContext($event)">
+                    <span class="cs-text-overflow runtime-feature-events-grid-truncate">{{ entity.process.binary }}</span>
+                </cs-runtime-feature-filter-context-dropdown-component>
             </td>
-            <td>
-                <span class="runtime-feature-events-grid-truncate" title="{{ entity.process.arguments || '—' }}">
-                    {{ entity.process.arguments || '—' }}
-                </span>
+            <td [columnVisible]="columns[gridColumnKey.ARGUMENT]">
+                <cs-runtime-feature-filter-context-dropdown-component
+                        [key]="runtimeEventFilterKey.ARGUMENT"
+                        [value]="entity.process.arguments || ''"
+                        [constraint]="filters?.[runtimeEventFilterKey.ARGUMENT]"
+                        [isDropdownAvailable]="isGridCustomizationAvailable"
+                        (contextChange)="changeFilterContext($event)">
+                    <span class="cs-text-overflow runtime-feature-events-grid-truncate">{{ entity.process.arguments || '—' }}</span>
+                </cs-runtime-feature-filter-context-dropdown-component>
             </td>
             <td>
                 @if (entity.process.cap.effective.includes(runtimeCapabilityType.CAP_SYS_ADMIN)) {
-                    <i kbq-icon="kbq-exclamation-triangle_16"
+                    <i kbq-icon="kbq-triangle-exclamation_16"
                        class="runtime-feature-events-grid-error-icon"
                        kbqTooltip="{{ tRuntime('Runtime.EventsPage.Hint.Process') }}"
                        [kbqPlacement]="tooltipPlacements.Left"></i>
                 }
             </td>
-            <td *transloco="let tCommon; prefix: 'common'">
-                <div class="layout-row layout-align-end-center">
-                    @if (item.threats.length) {
-                        <span class="kbq-text-compact cs-text-gray layout-margin-right-xxs">({{ item.threats.length }})</span>
-                    }
-                    <button kbq-button
-                            kbqStyle="transparent"
-                            color="contrast"
-                            type="button"
-                            class="kbq-button-icon"
-                            [ngClass]="{ 'runtime-feature-events-grid-none-severity': !item.threatSeverity }"
-                            [disabled]="!item.threats.length && !item.detect_errors.length"
-                            [kbqTooltip]="severityTooltip"
-                            [kbqPlacement]="tooltipPlacements.Right"
-                            (click)="openThreatsSidepanel(item.threats, entity.process.cap.effective, item.detect_errors); $event.stopPropagation()">
-                        <cs-severity-component
-                                [severity]="item.threatSeverity"
-                                [isWidthAuto]="item.threats.length"></cs-severity-component>
-                    </button>
-                </div>
+            <td [columnVisible]="columns[gridColumnKey.SEVERITY]">
+                <ng-container *transloco="let tCommon; prefix: 'common'">
+                    <div class="layout-row layout-align-start-center">
+                        <div class="runtime-feature-events-grid-severity-wrapper">
+                            <button kbq-button
+                                    kbqStyle="transparent"
+                                    color="contrast"
+                                    type="button"
+                                    class="kbq-button-icon"
+                                    [class]="{ 'runtime-feature-events-grid-none-severity': !item.threatSeverity }"
+                                    [disabled]="!item.threats.length && !item.detect_errors.length"
+                                    [kbqTooltip]="severityTooltip"
+                                    [kbqPlacement]="tooltipPlacements.Left"
+                                    (click)="openThreatsSidepanel(item.threats, entity.process.cap.effective, item.detect_errors); $event.stopPropagation()">
+                                <cs-rule-package-severity-component
+                                        [severity]="item.threatSeverity"
+                                        [isWidthAuto]="item.threats.length" />
+                            </button>
+                        </div>
+                        @if (item.threats.length) {
+                            <span class="kbq-text-compact cs-text-gray runtime-feature-events-grid-severity-margin">({{ item.threats.length }})</span>
+                        }
+                    </div>
 
-                <ng-template #severityTooltip>
-                    @if (item.threats.length) {
-                        <ul class="runtime-feature-events-grid-severity">
-                            @for (option of ruleSeverityOptions; track option.id) {
-                                @if (item.threats | runtimeSeverityThreatsCounter: option.id; as counter) {
-                                    <li>{{ counter }} — {{ tCommon(option.localizationKey) }}</li>
+                    <ng-template #severityTooltip>
+                        @if (item.threats.length) {
+                            <ul class="runtime-feature-events-grid-severity">
+                                @for (option of ruleSeverityOptions; track option.id) {
+                                    @if (item.threats | runtimeSeverityThreatsCounter: option.id; as counter) {
+                                        <li>{{ counter }} — {{ tCommon(option.localizationKey) }}</li>
+                                    }
                                 }
-                            }
-                        </ul>
-                    } @else {
-                        {{ tRuntime('Runtime.EventsPage.Hint.NoThreats') }}
-                    }
-                </ng-template>
+                            </ul>
+                        } @else {
+                            {{ tRuntime('Runtime.EventsPage.Hint.NoThreats') }}
+                        }
+                    </ng-template>
+                </ng-container>
             </td>
-            <td>{{ item.event.time | runtimeNanosecondsFormatter }}</td>
+            <td [columnVisible]="columns[gridColumnKey.DATE_FROM]">{{ item.event.time | runtimeNanosecondsFormatter }}</td>
             <td>
                 <div class="layout-row">
                     <button kbq-button
@@ -178,7 +242,7 @@
                             color="contrast"
                             type="button"
                             class="kbq-button-icon"
-                            (click)="openViewCodeSidepanel(item.event); $event.stopPropagation()">
+                            (click)="openViewCodeSidepanel(index); $event.stopPropagation()">
                         <i kbq-icon="kbq-code_16"></i>
                     </button>
                     @if (isContextChangeAvailable) {
@@ -198,6 +262,7 @@
                 <kbq-dropdown #dropdownContextMenu="kbqDropdown">
                     @for (option of runtimeContextOptions; track option.id) {
                         <button kbq-dropdown-item
+                                type="button"
                                 [disabled]="entity.parent === null && entity.process.parent_exec_id === null && (option.id === runtimeContext.PARENT || option.id === runtimeContext.SIBLING)"
                                 (click)="setContextId(item.id, option.id, entity.process.exec_id, entity.process.parent_exec_id)"
                                 [attr.data-testid]="tRuntime(option.localizationKey)">

@@ -19,16 +19,16 @@ import { TokenFeatureSidepanelFormComponent } from './components/sidepanel-form/
         FormsModule,
         I18nModule,
         ReactiveFormsModule,
+        SharedModule,
         TokenDomainModule,
-        TokenFeatureRoutingModule,
-        SharedModule
+        TokenFeatureRoutingModule
     ],
     declarations: [
-        TokenFeatureListContainer,
-        TokenFeatureSidepanelFormComponent,
         TokenFeatureExpirationColorDirective,
         TokenFeatureExpirationLabelPipe,
-        TokenFeaturePermissionTypePipe
+        TokenFeatureListContainer,
+        TokenFeaturePermissionTypePipe,
+        TokenFeatureSidepanelFormComponent
     ]
 })
 export class TokenFeatureModule {}

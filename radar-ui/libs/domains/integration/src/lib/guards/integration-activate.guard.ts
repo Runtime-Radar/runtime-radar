@@ -21,8 +21,9 @@ import {
 const integrationActivate = (): Observable<boolean> => {
     const dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
     const router = inject(Router);
-    const store = inject<Store<IntegrationState>>(Store);
+
     const pollingInterval = inject(POLLING_INTERVAL);
+    const store = inject<Store<IntegrationState>>(Store);
 
     return combineLatest([store.select(getIntegrationLoadStatus), store.select(getIntegrationLoadedTypes)]).pipe(
         tap(([status, types]) => {

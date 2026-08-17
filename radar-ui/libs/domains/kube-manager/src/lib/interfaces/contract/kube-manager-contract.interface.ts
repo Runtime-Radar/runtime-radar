@@ -15,13 +15,26 @@ export enum KubeManagerPodPhase {
     UNKNOWN = 'Unknown'
 }
 
+export interface KubeManagerOwner {
+    kind: string;
+    name: string;
+    scannable: boolean;
+}
+
+export interface KubeManagerContainer {
+    name: string;
+    image_url: string;
+    image_digest: string;
+}
+
 export interface KubeManagerPod {
     uid: string;
     name: string;
     namespace: string;
     node_name: string;
     phase: KubeManagerPodPhase;
-    containers: string[];
+    containers: KubeManagerContainer[];
+    owners: KubeManagerOwner[];
 }
 
 export interface KubeManagerPodMeta {

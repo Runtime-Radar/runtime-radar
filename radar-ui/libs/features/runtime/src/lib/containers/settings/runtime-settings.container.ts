@@ -4,7 +4,15 @@ import { PopUpPlacements } from '@koobiq/components/core';
 import { parse } from 'yaml';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    DestroyRef,
+    OnDestroy,
+    OnInit,
+    inject
+} from '@angular/core';
 import { FormBuilder, FormGroup, FormRecord } from '@angular/forms';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
@@ -64,9 +72,26 @@ import {
 @Component({
     templateUrl: './runtime-settings.container.html',
     styleUrl: './runtime-settings.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
+    private readonly cdr = inject(ChangeDetectorRef);
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly authStoreService = inject(AuthStoreService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly runtimeFeaturePolicyNameService = inject(RuntimeFeaturePolicyNameService);
+    private readonly runtimeStoreService = inject(RuntimeStoreService);
+    private readonly sharedModalService = inject(SharedModalService);
+
     readonly expertModeForm: FormGroup<FormScheme<RuntimeExpertModeForm>> = this.formBuilder.group({
         isExpert: [false]
     });
@@ -214,23 +239,6 @@ export class RuntimeFeatureSettingsContainer implements OnInit, OnDestroy {
     get permissionsFormGroup(): FormRecord {
         return this.form?.get('permissions') as FormRecord;
     }
-
-    constructor(
-        private readonly authStoreService: AuthStoreService,
-        private readonly cdr: ChangeDetectorRef,
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder,
-        private readonly i18nService: I18nService,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly apiPathService: ApiPathService,
-        private readonly sharedModalService: SharedModalService,
-        private readonly route: ActivatedRoute,
-        private readonly router: Router,
-        private readonly runtimeStoreService: RuntimeStoreService,
-        private readonly runtimeFeaturePolicyNameService: RuntimeFeaturePolicyNameService,
-        private readonly sidepanelService: KbqSidepanelService,
-        private readonly toastService: KbqToastService
-    ) {}
 
     ngOnInit() {
         this.config$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

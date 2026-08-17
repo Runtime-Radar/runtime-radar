@@ -5,7 +5,7 @@
                 [clusters]="clusters$ | async"
                 [activeClusterHost]="activeClusterHost$ | async"
                 (selectClusterId)="switchCluster($event)"
-                testLocator="runtime-detector-cluster-select"></cs-cluster-select-component>
+                testLocator="runtime-detector-cluster-select" />
     </header>
     <cs-tabs-component
             [tabs]="runtimeNavigationTabs"
@@ -29,19 +29,44 @@
                 <thead>
                     <tr>
                         <th>{{ tRuntime('Runtime.DetectorsPage.Table.Id') }}</th>
-                        <th>{{ tRuntime('Runtime.DetectorsPage.Table.Name') }}</th>
+                        <th width="250">{{ tRuntime('Runtime.DetectorsPage.Table.Name') }}</th>
                         <th>{{ tRuntime('Runtime.DetectorsPage.Table.Version') }}</th>
-                        <th>{{ tRuntime('Runtime.DetectorsPage.Table.Description') }}</th>
+                        <th>{{ tRuntime('Runtime.DetectorsPage.Table.Tactics') }}</th>
                         <th width="34"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @for (detector of detectors; track detector.id) {
-                        <tr id="{{ detector.id }}" [attr.data-testid]="detector.name">
+                        <tr class="cs-cursor-pointer"
+                            (click)="openViewDetectorSidepanel(detector)"
+                            id="{{ detector.id }}"
+                            [attr.data-testid]="detector.name">
                             <td>{{ detector.key }}</td>
                             <td>{{ detector.name }}</td>
                             <td>{{ detector.version }}</td>
-                            <td>{{ detector.description }}</td>
+                            <td>
+                                <div kbqOverflowItems
+                                     #kbqOverflowItems="kbqOverflowItems"
+                                     class="layout-row layout-align-start-center layout-gap-s runtime-feature-detectors-table-tactics">
+                                    @for (tactic of detector.tactics_covered; track tactic.id) {
+                                        <cs-runtime-feature-mitre-tactic-component
+                                                [kbqOverflowItem]="tactic"
+                                                [id]="tactic.id"
+                                                [techniques]="tactic.techniques"
+                                                [isOutline]="false"
+                                                [isCompact]="true" />
+                                    } @empty {
+                                        —
+                                    }
+
+                                    @let count = kbqOverflowItems.hiddenItemIDs().size;
+                                    @if (count) {
+                                        <kbq-badge kbqOverflowItemsResult [badgeColor]="badgeColors.FadeContrast" [compact]="true">
+                                            <span class="cs-text-gray">{{ tRuntime('Runtime.DetectorsPage.Table.TacticCount', { count }) }}</span>
+                                        </kbq-badge>
+                                    }
+                                </div>
+                            </td>
                             <td>
                                 <button kbq-button
                                         kbqStyle="transparent"
@@ -49,7 +74,7 @@
                                         type="button"
                                         class="kbq-button-icon"
                                         [disabled]="!permissions[permissionName.SYSTEM].has(permissionType.DELETE)"
-                                        (click)="openDeleteModal(detector.key, detector.version)"
+                                        (click)="openDeleteModal(detector.key, detector.version); $event.stopPropagation()"
                                         data-testid="runtime-detector-delete-button">
                                     <i kbq-icon="kbq-trash_16"></i>
                                 </button>
@@ -62,8 +87,7 @@
             <cs-empty-screen-component
                     imageUrl="/assets/koobiq/light/empty_256@2x.png"
                     [title]="tRuntime('Runtime.DetectorsPage.SubHeading.EmptyResult')"
-                    [description]="tRuntime('Runtime.DetectorsPage.Text.EmptyResult')">
-            </cs-empty-screen-component>
+                    [description]="tRuntime('Runtime.DetectorsPage.Text.EmptyResult')" />
         }
     </ng-container>
 </div>

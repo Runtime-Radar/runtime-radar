@@ -12,6 +12,7 @@ import { ClusterFeatureDataBaseFormComponent } from './components/database-form/
 import { ClusterFeatureDeleteUnregisteredModalContainer } from './containers/delete-unregistered-modal/cluster-delete-unregistered-modal.container';
 import { ClusterFeatureDetailsContainer } from './containers/details/cluster-details.container';
 import { ClusterFeatureEditPopoverComponent } from './components/edit-popover/cluster-edit-popover.component';
+import { ClusterFeatureHoursFormatterPipe } from './pipes/cluster-hours-formatter.pipe';
 import { ClusterFeatureIngressFormComponent } from './components/ingress-form/cluster-ingress-form.component';
 import { ClusterFeatureListContainer } from './containers/list/cluster-list.container';
 import { ClusterFeatureMetricFormComponent } from './components/metric-form/cluster-metric-form.component';
@@ -22,9 +23,9 @@ import { ClusterFeatureStepperComponent } from './components/stepper/cluster-ste
 
 @NgModule({
     imports: [
-        CommonModule,
         ClusterDomainModule,
         ClusterFeatureRoutingModule,
+        CommonModule,
         FormsModule,
         I18nModule,
         ReactiveFormsModule,
@@ -32,17 +33,18 @@ import { ClusterFeatureStepperComponent } from './components/stepper/cluster-ste
     ],
     declarations: [
         ClusterFeatureAccessFormComponent,
+        ClusterFeatureCreateContainer,
         ClusterFeatureDataBaseFormComponent,
         ClusterFeatureDeleteUnregisteredModalContainer,
-        ClusterFeatureIngressFormComponent,
-        ClusterFeatureMetricFormComponent,
-        ClusterFeatureRegistryFormComponent,
-        ClusterFeatureRabbitFormComponent,
-        ClusterFeatureEditPopoverComponent,
-        ClusterFeatureStepperComponent,
         ClusterFeatureDetailsContainer,
-        ClusterFeatureCreateContainer,
-        ClusterFeatureListContainer
+        ClusterFeatureEditPopoverComponent,
+        ClusterFeatureHoursFormatterPipe,
+        ClusterFeatureIngressFormComponent,
+        ClusterFeatureListContainer,
+        ClusterFeatureMetricFormComponent,
+        ClusterFeatureRabbitFormComponent,
+        ClusterFeatureRegistryFormComponent,
+        ClusterFeatureStepperComponent
     ]
 })
 export class ClusterFeatureModule {}

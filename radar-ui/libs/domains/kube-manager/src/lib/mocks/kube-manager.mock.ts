@@ -7,7 +7,24 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace1',
         node_name: 'node1',
         phase: KubeManagerPodPhase.RUNNING,
-        containers: ['cntr11', 'cntr12', 'cntr13']
+        owners: [],
+        containers: [
+            {
+                name: 'cntr11',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr12',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr13',
+                image_url: 'url',
+                image_digest: 'digest'
+            }
+        ]
     },
     {
         uid: 'uid2',
@@ -15,7 +32,19 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace1',
         node_name: 'node2',
         phase: KubeManagerPodPhase.RUNNING,
-        containers: ['cntr21', 'cntr22']
+        owners: [],
+        containers: [
+            {
+                name: 'cntr21',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr22',
+                image_url: 'url',
+                image_digest: 'digest'
+            }
+        ]
     },
     {
         uid: 'uid3',
@@ -23,7 +52,14 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace2',
         node_name: 'node1',
         phase: KubeManagerPodPhase.RUNNING,
-        containers: ['cntr31']
+        owners: [],
+        containers: [
+            {
+                name: 'cntr31',
+                image_url: 'url',
+                image_digest: 'digest'
+            }
+        ]
     },
     {
         uid: 'uid4',
@@ -31,7 +67,34 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace2',
         node_name: 'node2',
         phase: KubeManagerPodPhase.RUNNING,
-        containers: ['cntr41', 'cntr42', 'cntr43', 'cntr44', 'cntr45']
+        owners: [],
+        containers: [
+            {
+                name: 'cntr41',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr42',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr43',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr44',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr45',
+                image_url: 'url',
+                image_digest: 'digest'
+            }
+        ]
     },
     {
         uid: 'uid5',
@@ -39,6 +102,7 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace2',
         node_name: 'node1',
         phase: KubeManagerPodPhase.RUNNING,
+        owners: [],
         containers: []
     },
     {
@@ -47,7 +111,24 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace3',
         node_name: 'node2',
         phase: KubeManagerPodPhase.RUNNING,
-        containers: ['cntr61', 'cntr62', 'cntr63']
+        owners: [],
+        containers: [
+            {
+                name: 'cntr61',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr62',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr63',
+                image_url: 'url',
+                image_digest: 'digest'
+            }
+        ]
     },
     {
         uid: 'uid7',
@@ -55,7 +136,19 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace4',
         node_name: 'node2',
         phase: KubeManagerPodPhase.RUNNING,
-        containers: ['cntr71', 'cntr72']
+        owners: [],
+        containers: [
+            {
+                name: 'cntr71',
+                image_url: 'url',
+                image_digest: 'digest'
+            },
+            {
+                name: 'cntr71',
+                image_url: 'url',
+                image_digest: 'digest'
+            }
+        ]
     },
     {
         uid: 'uid8',
@@ -63,7 +156,14 @@ export const KUBE_MANAGER_PODS: KubeManagerPod[] = [
         namespace: 'namespace1',
         node_name: '',
         phase: KubeManagerPodPhase.PENDING,
-        containers: ['cntr81']
+        owners: [],
+        containers: [
+            {
+                name: 'cntr81',
+                image_url: 'url',
+                image_digest: 'digest'
+            }
+        ]
     }
 ];
 

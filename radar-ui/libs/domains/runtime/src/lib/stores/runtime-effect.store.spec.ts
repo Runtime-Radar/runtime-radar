@@ -40,10 +40,10 @@ const dateProviders = [
 ];
 
 describe('RuntimeEffectStore', () => {
-    let effects: RuntimeEffectStore;
     let actions$: ReplaySubject<Action>;
-    let i18nService: jest.Mocked<I18nService>;
+    let effects: RuntimeEffectStore;
     let coreWindowService: jest.Mocked<CoreWindowService>;
+    let i18nService: jest.Mocked<I18nService>;
     let runtimeRequestService: jest.Mocked<RuntimeRequestService>;
     let store: jest.Mocked<Store<RuntimeState>>;
     let toastService: jest.Mocked<KbqToastService>;
@@ -81,10 +81,9 @@ describe('RuntimeEffectStore', () => {
             RuntimeRequestService
         ) as jest.Mocked<RuntimeRequestService>;
         i18nService = fixture.debugElement.injector.get(I18nService) as jest.Mocked<I18nService>;
+        i18nService.translate.mockReturnValue('message');
         store = fixture.debugElement.injector.get(Store) as jest.Mocked<Store<RuntimeState>>;
         toastService = fixture.debugElement.injector.get(KbqToastService) as jest.Mocked<KbqToastService>;
-
-        i18nService.translate.mockReturnValue('message');
     });
 
     afterEach(() => {

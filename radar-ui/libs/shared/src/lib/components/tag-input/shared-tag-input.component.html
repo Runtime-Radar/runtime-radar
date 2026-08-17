@@ -1,5 +1,5 @@
 <kbq-form-field class="kbq-form__control"
-                [ngClass]="{ 'ng-invalid': control.invalid && control.value.length }"
+                [class]="{ 'ng-invalid': control.invalid && control.value.length }"
                 *transloco="let tCommon; prefix: 'common'">
     <kbq-tag-list #tagList [editable]="editable" [attr.data-testid]="testLocator + '-list'">
         @for (tag of control.value; track i; let i = $index) {
@@ -25,7 +25,10 @@
                placeholder="{{ !control.value.length && placeholder ? placeholder : '' }}"
                [attr.data-testid]="testLocator + '-input'">
     </kbq-tag-list>
+    @if (hint) {
+        <kbq-hint>{{ hint }}</kbq-hint>
+    }
     @if (control.invalid && control.value.length) {
-        <kbq-hint color="error">{{ hintText || tCommon('Common.Form.Error.Format') }}</kbq-hint>
+        <kbq-hint color="error">{{ error || tCommon('Common.Form.Error.Format') }}</kbq-hint>
     }
 </kbq-form-field>

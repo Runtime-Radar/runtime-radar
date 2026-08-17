@@ -6,7 +6,7 @@
     "prefix": "runtime-radar",
     "targets": {
         "lint": {
-            "executor": "@nx/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "options": {
                 "lintFilePatterns": ["libs/features/rule/src/**/*.ts", "libs/features/rule/src/**/*.html"]
             }

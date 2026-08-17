@@ -43,7 +43,7 @@ const translocoProviders = [
     }
 ];
 
-const dateAdapterProviders = [{ provide: DateAdapter, useValue: { today: () => RUNTIME_DATE_TIME } }];
+const dateProviders = [{ provide: DateAdapter, useValue: { today: () => RUNTIME_DATE_TIME } }];
 
 const activatedRouteProviders = [
     {
@@ -54,17 +54,17 @@ const activatedRouteProviders = [
 
 describe('RuntimeFeatureDetailsContainer', () => {
     let instance: RuntimeFeatureDetailsContainer;
-    let runtimeRequestService: jest.Mocked<RuntimeRequestService>;
     let runtimeFeatureRequestAdapterService: jest.Mocked<RuntimeFeatureRequestAdapterService>;
-    let toastService: jest.Mocked<KbqToastService>;
+    let runtimeRequestService: jest.Mocked<RuntimeRequestService>;
     let router: jest.Mocked<Router>;
+    let toastService: jest.Mocked<KbqToastService>;
 
     beforeEach(async () => {
         const { fixture } = await render(RuntimeFeatureDetailsContainer, {
             imports: [TranslocoModule],
             providers: [
                 ...translocoProviders,
-                ...dateAdapterProviders,
+                ...dateProviders,
                 ...activatedRouteProviders,
                 provideAutoSpy(RuntimeRequestService, { methodsToSpyOn: ['getEvent'] }),
                 provideAutoSpy(RuntimeFeatureRequestAdapterService, { methodsToSpyOn: ['getEvents'] }),
@@ -80,14 +80,13 @@ describe('RuntimeFeatureDetailsContainer', () => {
         runtimeRequestService = fixture.debugElement.injector.get(
             RuntimeRequestService
         ) as jest.Mocked<RuntimeRequestService>;
+        runtimeRequestService.getEvent.mockReturnValue(of(RUNTIME_EVENT));
         runtimeFeatureRequestAdapterService = fixture.debugElement.injector.get(
             RuntimeFeatureRequestAdapterService
         ) as jest.Mocked<RuntimeFeatureRequestAdapterService>;
-        toastService = fixture.debugElement.injector.get(KbqToastService) as jest.Mocked<KbqToastService>;
-        router = fixture.debugElement.injector.get(Router) as jest.Mocked<Router>;
-
-        runtimeRequestService.getEvent.mockReturnValue(of(RUNTIME_EVENT));
         runtimeFeatureRequestAdapterService.getEvents.mockReturnValue(of(RUNTIME_EVENT_RESPONSE));
+        router = fixture.debugElement.injector.get(Router) as jest.Mocked<Router>;
+        toastService = fixture.debugElement.injector.get(KbqToastService) as jest.Mocked<KbqToastService>;
     });
 
     afterEach(() => {
@@ -122,7 +121,7 @@ describe('RuntimeFeatureDetailsContainer', () => {
         it('should set load status', () => {
             subscribeSpyTo(instance.event$);
 
-            expect(instance.cardLoadStatus$.value).toBe(LoadStatus.LOADED);
+            expect(instance.cardLoadStatus$.value).toEqual(LoadStatus.LOADED);
         });
     });
 

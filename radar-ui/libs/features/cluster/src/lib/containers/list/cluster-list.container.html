@@ -1,7 +1,8 @@
 <ng-container *transloco="let tCluster; prefix: 'cluster'">
     <ng-container *ngrxLet="{
         clustersResponse: (clustersResponse$ | async)!,
-        activeClusterHost: (activeClusterHost$ | async)
+        activeClusterHost: (activeClusterHost$ | async),
+        pageIndex: (pageIndex$ | async)!
     } as rxlet">
         <header class="layout-row layout-align-space-between-center">
             <h1 class="kbq-display-compact cluster-feature-list-title">{{ tCluster('Cluster.ListPage.Header.Title') }}</h1>
@@ -10,7 +11,7 @@
                         [clusters]="clusters$ | async"
                         [activeClusterHost]="activeClusterHost$ | async"
                         (selectClusterId)="switchCluster($event)"
-                        testLocator="cluster-cluster-select"></cs-cluster-select-component>
+                        testLocator="cluster-cluster-select" />
                 @if (rxlet.clustersResponse.total) {
                     <button kbq-button
                             kbqStyle="outline"
@@ -30,7 +31,7 @@
             <section class="layout-row cluster-feature-list">
                 @for (cluster of rxlet.clustersResponse.clusters; track cluster.id) {
                     <article class="cluster-feature-list-card"
-                             [ngClass]="{ 'active': cluster.config.own_cs_url === rxlet.activeClusterHost }"
+                             [class]="{ 'active': cluster.config.own_cs_url === rxlet.activeClusterHost }"
                              [routerLink]="[cluster.id]"
                              id="{{ cluster.id }}"
                              [attr.data-testid]="cluster.name"
@@ -74,7 +75,7 @@
                                     [cluster]="cluster"
                                     [disabled]="!permissions[permissionName.CLUSTERS].has(permissionType.UPDATE)"
                                     (click)="$event.stopPropagation()"
-                                    (nameChange)="changeName($event)"></cs-cluster-feature-edit-popover-component>
+                                    (nameChange)="changeName($event)" />
                             @if (cluster.config.own_cs_url === rxlet.activeClusterHost) {
                                 <span kbqTooltip="{{ tCluster('Cluster.ListPage.Hint.DeleteCluster') }}"
                                       [kbqPlacement]="tooltipPlacements.Left">
@@ -106,9 +107,9 @@
                 isShowFirstLastButtons
                 [count]="rxlet.clustersResponse.total"
                 [pageSize]="paginatorPageSize"
-                [pageIndex]="(pageIndex$ | async)!"
+                [pageIndex]="rxlet.pageIndex"
                 (pageChange)="changePage($event)"
-                testLocator="cluster"></cs-paginator-component>
+                testLocator="cluster" />
 
         @if (!rxlet.clustersResponse.total) {
             <cs-empty-screen-component

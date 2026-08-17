@@ -1,7 +1,5 @@
-import { KbqPopoverTrigger } from '@koobiq/components/popover';
-import { PopUpSizes } from '@koobiq/components/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, Observable, distinctUntilChanged, map, startWith, tap } from 'rxjs';
+import { BehaviorSubject, Observable, distinctUntilChanged, map, tap } from 'rxjs';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -10,7 +8,7 @@ import {
     Input,
     OnInit,
     Output,
-    ViewChild
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
@@ -18,7 +16,7 @@ import { DetectorExtended } from '@cs/domains/detector';
 import { RUNTIME_EVENT_TYPE } from '@cs/domains/runtime';
 import { FormScheme, CoreUtilsService as utils } from '@cs/core';
 
-import { RUNTIME_FILTER_INITIAL_STATE, RUNTIME_FILTER_LABEL_LIMIT } from '../../constants/runtime-filter.constant';
+import { RUNTIME_FILTER_INITIAL_STATE } from '../../constants/runtime-filter.constant';
 import {
     RUNTIME_FILTER_POPOVER_CONTROL_LABELS,
     RUNTIME_FILTER_POPOVER_CONTROL_PLACEHOLDERS,
@@ -34,10 +32,12 @@ import {
     selector: 'cs-runtime-feature-filter-popover-component',
     templateUrl: './runtime-filter-popover.component.html',
     styleUrl: './runtime-filter-popover.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureFilterPopoverComponent implements OnInit {
-    @ViewChild('kbqPopover', { static: false }) popover!: KbqPopoverTrigger;
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
 
     readonly ruleNodes$ = new BehaviorSubject<RuntimeEventFilterRuleNode[] | null>(null);
     @Input() set ruleNodes(values: RuntimeEventFilterRuleNode[] | null) {
@@ -50,7 +50,7 @@ export class RuntimeFeatureFilterPopoverComponent implements OnInit {
         const filters: Partial<RuntimeEventFilters> =
             values && Object.keys(values).length
                 ? values
-                : utils.getFormValues<RuntimeEventFilters>(this.form.controls);
+                : utils.getFormValues<RuntimeEventFilters>(this.filterForm.controls);
         let hiddenKeys: RuntimeEventFilterKey[] = this.formControlKeys.filter(
             (key) => !RUNTIME_FILTER_POPOVER_VISIBLE_CONTROL_KEYS.includes(key)
         );
@@ -64,14 +64,14 @@ export class RuntimeFeatureFilterPopoverComponent implements OnInit {
                 }
             });
 
-        this.form.patchValue(filters);
+        this.filterForm.patchValue(filters);
         this.selectedFilters = { ...filters };
         this.hiddenDropdownMenuFilterKey = [...hiddenKeys];
     }
 
     @Output() filterChange = new EventEmitter<RuntimeEventFilters>();
 
-    readonly form: FormGroup<FormScheme<RuntimeEventFilters>> = this.formBuilder.group({
+    readonly filterForm: FormGroup<FormScheme<RuntimeEventFilters>> = this.formBuilder.group({
         type: RUNTIME_FILTER_INITIAL_STATE.type,
         hasThreats: RUNTIME_FILTER_INITIAL_STATE.hasThreats,
         hasIncident: RUNTIME_FILTER_INITIAL_STATE.hasIncident,
@@ -87,27 +87,31 @@ export class RuntimeFeatureFilterPopoverComponent implements OnInit {
         rules: [RUNTIME_FILTER_INITIAL_STATE.rules]
     });
 
-    readonly hasChanges$: Observable<boolean> = this.form.valueChanges.pipe(
-        startWith(this.form.value),
-        map(() => utils.getFormValues<RuntimeEventFilters>(this.form.controls)),
-        map((values) => !utils.isEqual(values, RUNTIME_FILTER_INITIAL_STATE))
-    );
+    readonly defaultFilterValues: RuntimeEventFilters = {
+        type: RUNTIME_FILTER_INITIAL_STATE.type,
+        hasThreats: RUNTIME_FILTER_INITIAL_STATE.hasThreats,
+        hasIncident: RUNTIME_FILTER_INITIAL_STATE.hasIncident,
+        argument: RUNTIME_FILTER_INITIAL_STATE.argument,
+        binary: RUNTIME_FILTER_INITIAL_STATE.binary,
+        container: RUNTIME_FILTER_INITIAL_STATE.container,
+        function: RUNTIME_FILTER_INITIAL_STATE.function,
+        image: RUNTIME_FILTER_INITIAL_STATE.image,
+        namespace: RUNTIME_FILTER_INITIAL_STATE.namespace,
+        pod: RUNTIME_FILTER_INITIAL_STATE.pod,
+        period: RUNTIME_FILTER_INITIAL_STATE.period,
+        detectors: RUNTIME_FILTER_INITIAL_STATE.detectors,
+        rules: RUNTIME_FILTER_INITIAL_STATE.rules
+    };
 
-    readonly hasFiltersChanges$: Observable<boolean> = this.form.valueChanges.pipe(
-        startWith(this.form.value),
-        map(() => utils.getFormValues<RuntimeEventFilters>(this.form.controls)),
-        map((values) => !utils.isEqual(values, this.selectedFilters))
-    );
-
-    private readonly areToggleSelected$: Observable<boolean> = this.form.valueChanges.pipe(
-        map(() => utils.getFormValues<RuntimeEventFilters>(this.form.controls)),
+    private readonly areToggleSelected$: Observable<boolean> = this.filterForm.valueChanges.pipe(
+        map(() => utils.getFormValues<RuntimeEventFilters>(this.filterForm.controls)),
         distinctUntilChanged((a, b) => a.hasThreats === b.hasThreats && a.hasIncident === b.hasIncident),
         tap((values) => {
             if (!values.hasThreats) {
-                this.form.get('detectors')?.setValue([], { onlySelf: true });
+                this.filterForm.get('detectors')?.setValue([], { onlySelf: true });
             }
             if (!values.hasIncident) {
-                this.form.get('rules')?.setValue([], { onlySelf: true });
+                this.filterForm.get('rules')?.setValue([], { onlySelf: true });
             }
         }),
         map((values) => values.hasThreats && values.hasIncident)
@@ -117,35 +121,26 @@ export class RuntimeFeatureFilterPopoverComponent implements OnInit {
         map((rules) => !!rules?.length),
         tap((hasRules) => {
             if (hasRules) {
-                this.form.get('rules')?.enable({ onlySelf: true });
+                this.filterForm.get('rules')?.enable({ onlySelf: true });
             } else {
-                this.form.get('rules')?.disable({ onlySelf: true });
+                this.filterForm.get('rules')?.disable({ onlySelf: true });
             }
         })
     );
 
     hiddenDropdownMenuFilterKey: RuntimeEventFilterKey[] = [];
 
-    selectedFilters: Partial<RuntimeEventFilters> = utils.getFormValues<RuntimeEventFilters>(this.form.controls);
+    selectedFilters: Partial<RuntimeEventFilters> = utils.getFormValues<RuntimeEventFilters>(this.filterForm.controls);
 
     readonly formControlKeys: RuntimeEventFilterKey[] = Object.values(RuntimeEventFilterKey);
-
-    readonly tooltipSizes = PopUpSizes;
 
     readonly runtimeEventFilterKey = RuntimeEventFilterKey;
 
     readonly runtimeEventTypeOptions = RUNTIME_EVENT_TYPE;
 
-    readonly selectedFilterLabelLimit = RUNTIME_FILTER_LABEL_LIMIT;
-
     readonly runtimeFilterPopoverControlLabelCollection = RUNTIME_FILTER_POPOVER_CONTROL_LABELS;
 
     readonly runtimeFilterPopoverControlPlaceholderCollection = RUNTIME_FILTER_POPOVER_CONTROL_PLACEHOLDERS;
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.areToggleSelected$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
@@ -154,7 +149,7 @@ export class RuntimeFeatureFilterPopoverComponent implements OnInit {
 
     hideControl(key: RuntimeEventFilterKey) {
         this.hiddenDropdownMenuFilterKey.push(key);
-        this.form.patchValue({
+        this.filterForm.patchValue({
             [key]: RUNTIME_FILTER_INITIAL_STATE[key]
         });
     }
@@ -163,18 +158,8 @@ export class RuntimeFeatureFilterPopoverComponent implements OnInit {
         this.hiddenDropdownMenuFilterKey.splice(this.hiddenDropdownMenuFilterKey.indexOf(key), 1);
     }
 
-    confirm() {
-        const values = utils.getFormValues<RuntimeEventFilters>(this.form.controls);
-        this.filterChange.emit(utils.getTrimmedFormValues<RuntimeEventFilters>(values));
-        this.popover.hide();
-    }
-
-    reset() {
-        this.form.patchValue(RUNTIME_FILTER_INITIAL_STATE);
-        this.confirm();
-    }
-
-    cancel() {
-        this.popover.hide();
+    changeFilter(filters: RuntimeEventFilters) {
+        this.filterForm.patchValue(filters);
+        this.filterChange.emit(filters);
     }
 }

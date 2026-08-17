@@ -1,0 +1,26 @@
+.grid-package-column-view-popover {
+    &-badge {
+        width: 8px;
+        height: 8px;
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        z-index: 1;
+        border-radius: 50%;
+        background-color: #21222c; // @todo: replace to koobiq token
+    }
+
+    &-divider {
+        margin: 12px -16px 4px -16px !important;
+    }
+
+    &-reset {
+        width: calc(100% + 24px);
+        justify-content: flex-start;
+        margin: 0 -12px;
+    }
+}
+
+::ng-deep .grid-package-column-view-popover .kbq-popover__content {
+    padding: 16px 16px 4px 16px !important;
+}

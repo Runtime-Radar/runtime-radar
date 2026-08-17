@@ -5,8 +5,8 @@ import { Observable, of, tap } from 'rxjs';
 import { IS_CHILD_CLUSTER, RouterName } from '@cs/core';
 
 const clusterFeatureSwitchRouteActivate = (): Observable<boolean> => {
-    const router = inject(Router);
     const isChildCluster = inject(IS_CHILD_CLUSTER);
+    const router = inject(Router);
 
     return of(isChildCluster).pipe(
         tap((isChild) => {

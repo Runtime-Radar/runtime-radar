@@ -2,8 +2,8 @@ import { Action } from '@ngrx/store';
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, of } from 'rxjs';
 import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
@@ -34,6 +34,14 @@ import {
     providedIn: 'root'
 })
 export class UserEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly authStoreService = inject(AuthStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly userRequestService = inject(UserRequestService);
+
     readonly loadUsers$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_USER_ENTITIES_TODO_ACTION),
@@ -236,15 +244,6 @@ export class UserEffectStore {
             })
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly authStoreService: AuthStoreService,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService,
-        private readonly userRequestService: UserRequestService,
-        private readonly toastService: KbqToastService
-    ) {}
 
     private handlePasswordErrors(error: HttpErrorResponse) {
         if (apiUtils.getReasonCode(error) === ApiErrorCode.PASSWORD_FOUND_IN_PASS_LIST) {

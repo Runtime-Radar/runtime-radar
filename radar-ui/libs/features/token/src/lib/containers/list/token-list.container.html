@@ -9,7 +9,7 @@
                         [clusters]="clusters$ | async"
                         [activeClusterHost]="activeClusterHost$ | async"
                         (selectClusterId)="switchCluster($event)"
-                        testLocator="token-cluster-select"></cs-cluster-select-component>
+                        testLocator="token-cluster-select" />
                 @if (tokens.length) {
                     <button kbq-button
                             kbqStyle="outline"
@@ -32,7 +32,7 @@
                         type="button"
                         (click)="openRevokeModal()"
                         data-testid="token-invalidate-button">
-                    <i kbq-icon="kbq-xmark-circle_16"></i>
+                    <i kbq-icon="kbq-circle-xmark_16"></i>
                     {{ tToken('Token.ListPage.Button.Invalidate') }}
                 </button>
             </section>
@@ -43,7 +43,7 @@
                 @for (token of tokens; track token.id) {
                     <article class="token-feature-list-card"
                              id="{{ token.id }}"
-                             [ngClass]="{ 'expanded': token.access_token }"
+                             [class]="{ 'expanded': token.access_token }"
                              [attr.data-testid]="token.name">
                         <header class="layout-row layout-wrap layout-align-space-between-center">
                             <h4 class="kbq-title token-feature-list-card-title">{{ token.name }}</h4>
@@ -77,10 +77,10 @@
                         @if (token.access_token) {
                             <section class="token-feature-list-card-access">
                                 <p class="layout-row layout-align-start-center kbq-text-compact-strong token-feature-list-card-access-alert">
-                                    <i kbq-icon="kbq-exclamation-triangle_16" class="token-feature-list-card-access-alert-icon"></i>
+                                    <i kbq-icon="kbq-triangle-exclamation_16" class="token-feature-list-card-access-alert-icon"></i>
                                     <span>{{ tToken('Token.ListPage.Table.Text.AccessToken') }}</span>
                                 </p>
-                                <cs-clipboard-component [value]="token.access_token"></cs-clipboard-component>
+                                <cs-clipboard-component [value]="token.access_token" />
                             </section>
                         }
 
@@ -89,6 +89,11 @@
                                 <div class="kbq-text-compact cs-text-gray token-feature-list-card-list-label">
                                     {{ tToken('Token.ListPage.Table.Permissions') }}
                                 </div>
+                                @if (token.permissions[tokenPermissionName.CLUSTERS]; as clusterPermissions) {
+                                    @for (item of clusterPermissions.actions; track item) {
+                                        <span class="cs-separator">{{ item | tokenPermissionType: tokenPermissionName.CLUSTERS }}</span>
+                                    }
+                                }
                                 @if (token.permissions[tokenPermissionName.EVENTS]; as eventPermissions) {
                                     @for (item of eventPermissions.actions; track item) {
                                         <span class="cs-separator">{{ item | tokenPermissionType: tokenPermissionName.EVENTS }}</span>

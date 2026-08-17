@@ -1,15 +1,18 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { TimeFormats } from '@koobiq/components/timepicker';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, inject } from '@angular/core';
 
 @Component({
     selector: 'cs-datetime-picker-component',
     templateUrl: './shared-datetime-picker.component.html',
     styleUrl: './shared-datetime-picker.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SharedDatetimePickerComponent {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+
     @Input() id?: string;
 
     @Input() testLocator?: string;
@@ -27,8 +30,6 @@ export class SharedDatetimePickerComponent {
     readonly timeFormats = TimeFormats;
 
     dateTime: DateTime | null = null;
-
-    constructor(private readonly dateAdapter: DateAdapter<DateTime>) {}
 
     clearDateTime() {
         this.dateTime = null;

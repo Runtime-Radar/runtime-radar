@@ -12,8 +12,8 @@ import { RUNTIME_DOMAIN_KEY, runtimeDomainReducer } from './stores/runtime-selec
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(RUNTIME_DOMAIN_KEY, runtimeDomainReducer),
-        EffectsModule.forFeature([RuntimeEffectStore])
+        EffectsModule.forFeature([RuntimeEffectStore]),
+        StoreModule.forFeature(RUNTIME_DOMAIN_KEY, runtimeDomainReducer)
     ],
     declarations: [RuntimeContextLocalizationPipe, RuntimeEventTypeLocalizationPipe],
     exports: [RuntimeContextLocalizationPipe, RuntimeEventTypeLocalizationPipe]

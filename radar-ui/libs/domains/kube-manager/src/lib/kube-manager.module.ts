@@ -11,8 +11,8 @@ import { KUBE_MANAGER_DOMAIN_KEY, kubeManagerDomainReducer } from './stores/kube
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(KUBE_MANAGER_DOMAIN_KEY, kubeManagerDomainReducer),
-        EffectsModule.forFeature([KubeManagerEffectStore])
+        EffectsModule.forFeature([KubeManagerEffectStore]),
+        StoreModule.forFeature(KUBE_MANAGER_DOMAIN_KEY, kubeManagerDomainReducer)
     ],
     declarations: [KubeManagerGroupNamespacesSortPipe],
     exports: [KubeManagerGroupNamespacesSortPipe]

@@ -1,0 +1,25 @@
+:host {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    height: 100%;
+}
+
+.rule-package-sidepanel-form {
+    position: relative;
+
+    &-subheading {
+        margin: 0 0 4px 0;
+    }
+
+    &-notify-empty {
+        margin-top: 16px;
+        padding: 24px 16px;
+        border: 2px dashed #bdc7d1; // @todo: replace to koobiq token
+        border-radius: 16px;
+
+        &-link {
+            line-height: inherit;
+        }
+    }
+}

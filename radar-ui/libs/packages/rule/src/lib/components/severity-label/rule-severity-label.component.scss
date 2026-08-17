@@ -1,0 +1,11 @@
+:host {
+    white-space: nowrap;
+}
+
+.rule-package-severity-label-text {
+    margin-left: 8px;
+
+    &.critical {
+        color: #f00;
+    }
+}

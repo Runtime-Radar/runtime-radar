@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelRef } from '@koobiq/components/sidepanel';
 import { Observable, debounceTime, distinctUntilChanged, map, startWith } from 'rxjs';
@@ -19,9 +19,17 @@ metadata:
 @Component({
     templateUrl: './runtime-sidepanel-policy-form.component.html',
     styleUrl: './runtime-sidepanel-policy-form.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureSidepanelPolicyFormComponent implements AfterViewInit {
+    private readonly formBuilder = inject(FormBuilder);
+    private readonly sidepanelRef = inject(KbqSidepanelRef);
+
+    private readonly runtimeFeaturePolicyNameService = inject(RuntimeFeaturePolicyNameService);
+
+    readonly props = inject<Partial<RuntimeSidepanelPolicyFormProps>>(KBQ_SIDEPANEL_DATA);
+
     readonly form: FormGroup<FormScheme<RuntimeSettingPolicyForm>> = this.formBuilder.group({
         isEnabled: [false],
         name: [
@@ -40,13 +48,6 @@ export class RuntimeFeatureSidepanelPolicyFormComponent implements AfterViewInit
         distinctUntilChanged(),
         map(() => utils.isFormValid(this.form.controls))
     );
-
-    constructor(
-        private readonly formBuilder: FormBuilder,
-        private readonly sidepanelRef: KbqSidepanelRef,
-        private readonly runtimeFeaturePolicyNameService: RuntimeFeaturePolicyNameService,
-        @Inject(KBQ_SIDEPANEL_DATA) public readonly props: Partial<RuntimeSidepanelPolicyFormProps>
-    ) {}
 
     ngAfterViewInit() {
         if (this.props.isEdit) {

@@ -1,9 +1,9 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, of } from 'rxjs';
 import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
@@ -34,6 +34,14 @@ import {
     providedIn: 'root'
 })
 export class RuleEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly ruleRequestService = inject(RuleRequestService);
+    private readonly store = inject<Store<RuleState>>(Store);
+
     readonly loadRules$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_RULE_ENTITIES_TODO_ACTION),
@@ -162,13 +170,4 @@ export class RuleEffectStore {
             })
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService,
-        private readonly ruleRequestService: RuleRequestService,
-        private readonly store: Store<RuleState>,
-        private readonly toastService: KbqToastService
-    ) {}
 }

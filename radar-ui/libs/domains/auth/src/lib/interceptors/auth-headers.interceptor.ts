@@ -9,7 +9,7 @@ import {
     HttpRequest,
     HttpStatusCode
 } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, filter, map, switchMap, tap, throwError } from 'rxjs';
 
 import { API_PATH, ApiErrorCode, ApiUtilsService as apiUtils } from '@cs/api';
@@ -25,12 +25,10 @@ import { EXPIRE_AUTH_TOKENS_TODO_ACTION, EXPIRE_PASSWORD_TODO_ACTION } from '../
     providedIn: 'root'
 })
 export class AuthHeadersInterceptor implements HttpInterceptor {
-    constructor(
-        private readonly authLocalStorageService: AuthLocalStorageService,
-        private readonly authRequestService: AuthRequestService,
-        private readonly store: Store<AuthState>,
-        @Inject(API_PATH) private readonly apiPath: string
-    ) {}
+    private readonly apiPath = inject(API_PATH);
+    private readonly authLocalStorageService = inject(AuthLocalStorageService);
+    private readonly authRequestService = inject(AuthRequestService);
+    private readonly store = inject<Store<AuthState>>(Store);
 
     intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
         if (!request.url.includes(this.apiPath)) {

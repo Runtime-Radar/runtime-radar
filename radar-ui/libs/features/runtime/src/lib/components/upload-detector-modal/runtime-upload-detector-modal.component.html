@@ -15,7 +15,7 @@
                     <tbody>
                         @for (file of files; track file.id) {
                             <tr id="{{ file.id }}" [attr.data-testid]="file.name">
-                                <td><span class="runtime-feature-upload-detector-modal-table-truncate">{{ file.name | lowercase }}</span></td>
+                                <td><span class="cs-text-overflow runtime-feature-upload-detector-modal-table-truncate">{{ file.name | lowercase }}</span></td>
                                 <td>{{ file.size | runtimeByteFormatter }}</td>
                                 <td>
                                     <button kbq-button
@@ -25,7 +25,7 @@
                                             class="kbq-button-icon"
                                             (click)="delete(file.id)"
                                             data-testid="runtime-detector-upload-delete-button">
-                                        <i kbq-icon="kbq-xmark-circle_16"></i>
+                                        <i kbq-icon="kbq-circle-xmark_16"></i>
                                     </button>
                                 </td>
                             </tr>

@@ -2,7 +2,7 @@ import { KbqBadgeColors } from '@koobiq/components/badge';
 import { KbqCodeBlockFile } from '@koobiq/components/code-block';
 import { Router } from '@angular/router';
 import { stringify } from 'yaml';
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { Observable, map } from 'rxjs';
 
@@ -14,9 +14,15 @@ import { InventorySidepanelPodProps } from '../../interfaces/inventory-sidepanel
 @Component({
     templateUrl: './inventory-sidepanel-pod.component.html',
     styleUrls: ['./inventory-sidepanel-pod.component.scss', '../inventory-abstract.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class InventoryFeatureSidepanelPodComponent {
+    private readonly router = inject(Router);
+    private readonly kubeManagerRequestService = inject(KubeManagerRequestService);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+    readonly props = inject<InventorySidepanelPodProps>(KBQ_SIDEPANEL_DATA);
+
     readonly codeConfigFiles$: Observable<KbqCodeBlockFile[]> = this.kubeManagerRequestService
         .getPod(this.props.pod.name, this.props.pod.namespace)
         .pipe(
@@ -32,13 +38,6 @@ export class InventoryFeatureSidepanelPodComponent {
     readonly badgeColors = KbqBadgeColors;
 
     readonly podPhase = KubeManagerPodPhase;
-
-    constructor(
-        private readonly router: Router,
-        private readonly kubeManagerRequestService: KubeManagerRequestService,
-        private readonly sidepanelService: KbqSidepanelService,
-        @Inject(KBQ_SIDEPANEL_DATA) public readonly props: InventorySidepanelPodProps
-    ) {}
 
     goToRuntimeEventPage() {
         this.sidepanelService.closeAll();

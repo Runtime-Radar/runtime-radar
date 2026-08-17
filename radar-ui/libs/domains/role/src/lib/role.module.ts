@@ -10,8 +10,8 @@ import { ROLE_DOMAIN_KEY, roleDomainReducer } from './stores/role-selector.store
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(ROLE_DOMAIN_KEY, roleDomainReducer),
-        EffectsModule.forFeature([RoleEffectStore])
+        EffectsModule.forFeature([RoleEffectStore]),
+        StoreModule.forFeature(ROLE_DOMAIN_KEY, roleDomainReducer)
     ]
 })
 export class RoleDomainModule {}

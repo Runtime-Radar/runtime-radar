@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { NEVER, Observable, combineLatest, forkJoin, of } from 'rxjs';
 import { catchError, concatMap, debounceTime, filter, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
@@ -8,7 +8,7 @@ import { catchError, concatMap, debounceTime, filter, map, mergeMap, switchMap, 
 import { I18nService } from '@cs/i18n';
 import { SIGN_OUT_EVENT_ACTION } from '@cs/domains/auth';
 import { SWITCH_CLUSTER_EVENT_ACTION } from '@cs/domains/cluster';
-import { CoreWindowService, LoadStatus, CoreUtilsService as utils } from '@cs/core';
+import { CoreNavigationStoreService, CoreWindowService, LoadStatus, CoreUtilsService as utils } from '@cs/core';
 
 import { RuntimeRequestService } from '../services/runtime-request.service';
 import { RuntimeHelperService as runtimeHelper } from '../services/runtime-helper.service';
@@ -43,6 +43,15 @@ const RUNTIME_EXPERT_MODE_LOCAL_STORAGE_KEY = 'xprtmd';
     providedIn: 'root'
 })
 export class RuntimeEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly coreNavigationStoreService = inject(CoreNavigationStoreService);
+    private readonly coreWindowService = inject(CoreWindowService);
+    private readonly i18nService = inject(I18nService);
+    private readonly runtimeRequestService = inject(RuntimeRequestService);
+    private readonly store = inject<Store<RuntimeState>>(Store);
+
     readonly checkExpertMode$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_RUNTIME_CONFIG_TODO_ACTION),
@@ -290,6 +299,9 @@ export class RuntimeEffectStore {
     readonly hideOverlay$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(HIDE_RUNTIME_OVERLAY_TODO_ACTION),
+            tap(() => {
+                this.coreNavigationStoreService.setLoadStatus(LoadStatus.LOADED);
+            }),
             map(() =>
                 UPDATE_RUNTIME_STATE_DOC_ACTION({
                     isOverlayed: false
@@ -297,13 +309,4 @@ export class RuntimeEffectStore {
             )
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly i18nService: I18nService,
-        private readonly coreWindowService: CoreWindowService,
-        private readonly runtimeRequestService: RuntimeRequestService,
-        private readonly store: Store<RuntimeState>,
-        private readonly toastService: KbqToastService
-    ) {}
 }

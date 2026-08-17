@@ -14,8 +14,9 @@ import { getUserLastUpdate, getUserLoadStatus } from '../stores/user-selector.st
 const userActivate = (): Observable<boolean> => {
     const dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
     const router = inject(Router);
-    const store = inject<Store<UserState>>(Store);
+
     const pollingInterval = inject(POLLING_INTERVAL);
+    const store = inject<Store<UserState>>(Store);
 
     return store.select(getUserLoadStatus).pipe(
         tap((status) => {

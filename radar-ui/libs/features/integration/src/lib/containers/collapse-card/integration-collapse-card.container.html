@@ -1,5 +1,5 @@
 <ng-container *transloco="let tIntegration; prefix: 'integration'">
-    <h4 class="kbq-caps-normal integration-feature-collapse-title" [ngClass]="type">
+    <h4 class="kbq-caps-normal integration-feature-collapse-title" [class]="type">
         {{ tIntegration(type | integrationTypeLocalization) }}
     </h4>
 
@@ -95,12 +95,12 @@
                                             </button>
 
                                             @if (rules.length) {
-                                                <ng-container *ngTemplateOutlet="deleteRecipientButton"></ng-container>
-                                            } @else {
                                                 <span kbqTooltip="{{ tIntegration('Integration.Card.Hint.DeleteRecipient') }}"
                                                       [kbqPlacement]="tooltipPlacements.Left">
                                                     <ng-container *ngTemplateOutlet="deleteRecipientButton"></ng-container>
                                                 </span>
+                                            } @else {
+                                                <ng-container *ngTemplateOutlet="deleteRecipientButton"></ng-container>
                                             }
 
                                             <ng-template #deleteRecipientButton>
@@ -152,12 +152,14 @@
 
                 <kbq-dropdown #dropdownCardMenu="kbqDropdown">
                     <button kbq-dropdown-item
+                            type="button"
                             [disabled]="!permissions[permissionName.INTEGRATIONS].has(permissionType.UPDATE)"
                             (click)="openEditSidepanel(item)"
                             data-testid="integration-update-button">
                         {{ tIntegration('Integration.Card.Button.Update') }}
                     </button>
                     <button kbq-dropdown-item
+                            type="button"
                             [disabled]="!permissions[permissionName.INTEGRATIONS].has(permissionType.DELETE)"
                             (click)="openDeleteModal(item.id)"
                             data-testid="integration-delete-button">

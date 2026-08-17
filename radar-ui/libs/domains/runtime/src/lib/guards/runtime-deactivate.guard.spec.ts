@@ -11,12 +11,12 @@ import { RuntimeState } from '../interfaces';
 import { runtimeDeactivateGuard } from './runtime-deactivate.guard';
 
 describe('runtimeDeactivateGuard', () => {
-    let store: jest.Mocked<Store<RuntimeState>>;
-    let status$: ReplaySubject<LoadStatus>;
     let injector: EnvironmentInjector;
+    let loadStatus$: ReplaySubject<LoadStatus>;
+    let store: jest.Mocked<Store<RuntimeState>>;
 
     beforeEach(async () => {
-        status$ = new ReplaySubject<LoadStatus>(LoadStatus.IN_PROGRESS);
+        loadStatus$ = new ReplaySubject<LoadStatus>(LoadStatus.IN_PROGRESS);
 
         const { fixture } = await render('<div></div>', {
             providers: [provideAutoSpy(Store<RuntimeState>)]
@@ -24,8 +24,7 @@ describe('runtimeDeactivateGuard', () => {
 
         injector = fixture.componentRef.injector.get(EnvironmentInjector);
         store = fixture.debugElement.injector.get(Store) as jest.Mocked<Store<RuntimeState>>;
-
-        store.select.mockReturnValue(status$.asObservable());
+        store.select.mockReturnValue(loadStatus$.asObservable());
     });
 
     afterEach(() => {
@@ -40,7 +39,7 @@ describe('runtimeDeactivateGuard', () => {
             });
         });
 
-        status$.next(LoadStatus.LOADED);
-        status$.next(LoadStatus.INIT);
+        loadStatus$.next(LoadStatus.LOADED);
+        loadStatus$.next(LoadStatus.INIT);
     });
 });

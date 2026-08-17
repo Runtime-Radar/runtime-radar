@@ -22,13 +22,13 @@
                 <tbody>
                     @for (detector of detectors; track $index) {
                         <tr>
-                            <td><span class="text-overflow">{{ detector.detector_id }}</span></td>
+                            <td><span class="cs-text-overflow text-overflow">{{ detector.detector_id }}</span></td>
                             <td class="align-right">
-                                <cs-severity-component
+                                <cs-rule-package-severity-component
                                         *transloco="let tCommon; prefix: 'common'"
-                                        [kbqTooltip]="tCommon(detector.severity | severityLocalization)"
+                                        [kbqTooltip]="tCommon(detector.severity | ruleSeverityLocalization)"
                                         [kbqPlacement]="tooltipPlacements.Right"
-                                        [severity]="detector.severity"></cs-severity-component>
+                                        [severity]="detector.severity" />
                             </td>
                             <td class="align-right">{{ detector.count }}</td>
                         </tr>
@@ -48,6 +48,6 @@
             </cs-empty-screen-component>
         }
     } @else {
-        <kbq-loader-overlay class="inventory-feature-detector-table-loader" [transparent]="true"></kbq-loader-overlay>
+        <kbq-loader-overlay class="inventory-feature-detector-table-loader" [transparent]="true" />
     }
 </ng-container>

@@ -5,30 +5,71 @@
     height: 100%;
 }
 
+// @todo: replace to extended class .kbq-mono-normal
+.runtime-reason-fragment {
+    padding: 2px 4px;
+    border-radius: 6px;
+    font-size: var(--kbq-typography-mono-normal-font-size);
+    font-style: var(--kbq-typography-mono-normal-font-style);
+    font-weight: var(--kbq-typography-mono-normal-font-weight);
+    line-height: var(--kbq-typography-mono-normal-line-height);
+    font-family: var(--kbq-typography-mono-normal-font-family);
+    text-transform: var(--kbq-typography-mono-normal-text-transform);
+    font-feature-settings: var(--kbq-typography-mono-normal-font-feature-settings);
+    letter-spacing: var(--kbq-typography-mono-normal-letter-spacing);
+    background-color: rgb(189, 199, 209);
+}
+
 .runtime-feature-sidepanel-threats {
     position: relative;
 
     &-cap-sys {
         min-height: 20px;
         gap: 8px;
-        margin: 0 0 24px 0;
+        margin: 0 0 20px 0;
         padding: 0;
+
+        .kbq-icon {
+            color: #f00; // @todo: replace to koobiq token
+        }
     }
 
-    &-item {
-        margin-top: 24px;
+    &-accordion {
+        border: none;
 
-        &:first-child {
-            margin-top: 0;
+        &-title {
+            margin-top: 2px;
+            margin-bottom: 8px;
+        }
+
+        &-mitre {
+            display: block;
+            margin: 16px 0 4px 0;
+            color: var(--kbq-accordion-item-default-text-color);
+            text-transform: uppercase;
+        }
+
+        &-button {
+            padding: 0 !important;
         }
 
         &-info {
-            margin-left: 48px;
+            position: relative;
 
-            &-description {
-                margin: 16px 0 0 0;
+            &-help {
+                position: absolute;
+                top: -6px;
+                right: 12px;
+            }
+
+            &-reason {
+                word-break: break-word;
             }
         }
+    }
+
+    &-divider {
+        margin: 16px 24px !important;
     }
 
     &-detect-errors {
@@ -48,9 +89,6 @@
 
         &-truncate {
             max-width: 100%;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
         }
     }
 }

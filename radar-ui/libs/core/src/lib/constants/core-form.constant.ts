@@ -1,12 +1,7 @@
-import { COMMA, ENTER, SPACE } from '@koobiq/cdk/keycodes';
-
-export const FORM_SEPARATOR_KEY_CODES = [ENTER, COMMA, SPACE];
-
 export const FORM_VALIDATION_REG_EXP = {
     NUMBER: /^[0-9]+$/,
-    TEXT: /^[\w\s/.,"]+$/,
-    TEXT_SYMBOLS: /^[\w\s/.?*-:]+$/,
-    STRING_NUMBER_SYMBOLS: /^[\w-/.]+$/,
+    TEXT_SYMBOLS: /^[\w/.?*-:]+$/,
+    EMAIL: /^(?=.{1,254}$)(?=.{1,64}@)[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
     /* eslint no-useless-escape: "off" */
     REG_EXP: /^[\[\]\(\)\{\}.?:*\-+^$\w\d\\]+$/,
     COMPONENT_VERSION: /^\S*$/,

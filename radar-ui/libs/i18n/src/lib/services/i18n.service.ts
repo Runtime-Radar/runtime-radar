@@ -1,41 +1,32 @@
 import { Params } from '@angular/router';
-import {
-    DateAdapter,
-    DateFormatter,
-    KBQ_DATE_FORMATS,
-    KBQ_LOCALE_SERVICE,
-    KbqDateFormats,
-    KbqLocaleService
-} from '@koobiq/components/core';
+import { BehaviorSubject, Observable, bufferCount, concatMap, from, map, tap } from 'rxjs';
+import { DateAdapter, DateFormatter, KBQ_DATE_FORMATS, KBQ_LOCALE_SERVICE } from '@koobiq/components/core';
 import { DateTime, Settings } from 'luxon';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { LangDefinition, TranslocoService } from '@jsverse/transloco';
-import { Observable, bufferCount, concatMap, from, map, tap } from 'rxjs';
 
-import { CoreWindowService } from '@cs/core';
+import { AVAILABLE_LOCALES, CoreWindowService, DEFAULT_LOCALE } from '@cs/core';
 
 import { I18nLocale } from '../interfaces/i18n.interface';
-import {
-    I18N_AVAILABLE_LOCALES,
-    I18N_DATE_LOCALE_FORMATS,
-    I18N_DEFAULT_LOCALE,
-    I18N_LOCAL_STORAGE_KEY
-} from '../constants/i18n.constant';
+import { I18N_DATE_LOCALE_FORMATS, I18N_LOCAL_STORAGE_KEY } from '../constants/i18n.constant';
 
 @Injectable({
     providedIn: 'root'
 })
 export class I18nService {
+    private readonly availableLocales = inject<string[]>(AVAILABLE_LOCALES);
+    private readonly defaultLocale = inject<string>(DEFAULT_LOCALE);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly dateFormatter = inject<DateFormatter<DateTime>>(DateFormatter);
+    private readonly dateFormats = inject(KBQ_DATE_FORMATS);
+    private readonly kbqLocaleService = inject(KBQ_LOCALE_SERVICE);
+    private readonly translocoService = inject(TranslocoService);
+
+    private readonly coreWindowService = inject(CoreWindowService);
+
     private locale = this.translocoService.getActiveLang();
 
-    constructor(
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly dateFormatter: DateFormatter<DateTime>,
-        private readonly translocoService: TranslocoService,
-        private readonly coreWindowService: CoreWindowService,
-        @Inject(KBQ_DATE_FORMATS) private readonly dateFormats: KbqDateFormats,
-        @Inject(KBQ_LOCALE_SERVICE) private readonly kbqLocaleService: KbqLocaleService
-    ) {}
+    readonly locale$ = new BehaviorSubject<string>(this.locale);
 
     loadTranslation(names: string[]): Observable<boolean> {
         const dicts = this.translocoService
@@ -63,8 +54,17 @@ export class I18nService {
         return this.locale;
     }
 
+    setLocale(locale: string) {
+        if (this.locale === locale) {
+            return;
+        }
+
+        this.initLocale(locale);
+    }
+
     initLocale(locale: string) {
-        this.locale = this.isLocaleAvailable(locale) ? locale : I18N_DEFAULT_LOCALE;
+        this.locale = this.isLocaleAvailable(locale) ? locale : this.defaultLocale;
+        this.locale$.next(this.locale);
         this.kbqLocaleService.setLocale(this.locale);
         this.dateAdapter.setLocale(this.locale);
         this.dateFormatter.setLocale(this.locale);
@@ -82,7 +82,7 @@ export class I18nService {
 
     private isLocaleAvailable(locale: string): boolean {
         return (
-            I18N_AVAILABLE_LOCALES.find((availableLocale) => availableLocale === (locale as I18nLocale)) !== undefined
+            this.availableLocales.find((availableLocale) => availableLocale === (locale as I18nLocale)) !== undefined
         );
     }
 }

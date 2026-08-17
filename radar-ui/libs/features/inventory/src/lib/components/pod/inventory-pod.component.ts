@@ -14,7 +14,8 @@ import {
     selector: 'cs-inventory-feature-pod-component',
     templateUrl: './inventory-pod.component.html',
     styleUrls: ['./inventory-pod.component.scss', '../inventory-abstract.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class InventoryFeaturePodComponent {
     @Input({ required: true }) pod!: KubeManagerPodExtended;

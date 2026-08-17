@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { LoadStatus } from '@cs/core';
 
@@ -17,6 +17,8 @@ import { getCluster, getClusterLoadStatus, getClusters, getRegisteredClusters } 
     providedIn: 'root'
 })
 export class ClusterStoreService {
+    private readonly store = inject<Store<ClusterState>>(Store);
+
     readonly clusters$: Observable<Cluster[]> = this.store.select(getClusters);
 
     readonly registeredClusters$: Observable<RegisteredCluster[]> = this.store.select(getRegisteredClusters);
@@ -24,8 +26,6 @@ export class ClusterStoreService {
     readonly cluster$ = (id: string): Observable<Cluster | undefined> => this.store.select(getCluster(id));
 
     readonly loadStatus$: Observable<LoadStatus> = this.store.select(getClusterLoadStatus);
-
-    constructor(private readonly store: Store<ClusterState>) {}
 
     createCluster(item: CreateClusterRequest) {
         this.store.dispatch(CREATE_CLUSTER_ENTITY_TODO_ACTION({ item }));

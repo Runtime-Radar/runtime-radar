@@ -28,15 +28,15 @@
             @if (integrationTypeValue === integrationType.EMAIL) {
                 <cs-integration-feature-email-form-component
                         [values]="props.email"
-                        (formChange)="changeEmailForm($event)"></cs-integration-feature-email-form-component>
+                        (formChange)="changeEmailForm($event)" />
             } @else if (integrationTypeValue === integrationType.SYSLOG) {
                 <cs-integration-feature-syslog-form-component
                         [values]="props.syslog"
-                        (formChange)="changeSyslogForm($event)"></cs-integration-feature-syslog-form-component>
+                        (formChange)="changeSyslogForm($event)" />
             } @else if (integrationTypeValue === integrationType.WEBHOOK) {
                 <cs-integration-feature-webhook-form-component
                         [values]="props.webhook"
-                        (formChange)="changeWebhookForm($event)"></cs-integration-feature-webhook-form-component>
+                        (formChange)="changeWebhookForm($event)" />
             }
         </div>
     </kbq-sidepanel-body>

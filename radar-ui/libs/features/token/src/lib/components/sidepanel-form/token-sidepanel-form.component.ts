@@ -1,7 +1,7 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { KbqAlertColors } from '@koobiq/components/alert';
-import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, FormRecord, Validators } from '@angular/forms';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelRef } from '@koobiq/components/sidepanel';
 import { Observable, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, startWith, tap } from 'rxjs';
@@ -45,9 +45,16 @@ const TOKEN_EXPIRY_DATE_PRESET: TokenExpiryDatePresetOption[] = [
 @Component({
     templateUrl: './token-sidepanel-form.component.html',
     styleUrl: './token-sidepanel-form.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class TokenFeatureSidepanelFormComponent implements OnInit {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly formBuilder = inject(FormBuilder);
+    private readonly sidepanelRef = inject(KbqSidepanelRef);
+
+    readonly props = inject<TokenSidepanelFormProps>(KBQ_SIDEPANEL_DATA);
+
     readonly form: FormGroup<FormScheme<TokenForm, 'permissions'>> = this.formBuilder.group({
         name: ['', Validators.required],
         date: [this.dateAdapter.today()],
@@ -91,7 +98,7 @@ export class TokenFeatureSidepanelFormComponent implements OnInit {
         map(() => {
             const permissions = utils.getFormValues<TokenForm>(this.form.controls).permissions;
             const arePermissionsValid = Object.values(permissions)
-                .reduce((acc, item) => acc.concat(Object.values(item)), [] as boolean[])
+                .reduce<boolean[]>((acc, item) => acc.concat(Object.values(item)), [])
                 .some((item) => !!item);
 
             return utils.isFormValid(this.form.controls) && arePermissionsValid;
@@ -118,14 +125,13 @@ export class TokenFeatureSidepanelFormComponent implements OnInit {
 
     readonly alertColors = KbqAlertColors;
 
-    constructor(
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly formBuilder: FormBuilder,
-        private readonly sidepanelRef: KbqSidepanelRef,
-        @Inject(KBQ_SIDEPANEL_DATA) public readonly props: TokenSidepanelFormProps
-    ) {}
-
     ngOnInit() {
+        const clusterPermissionsForm = this.formBuilder.group({
+            [TokenPermissionType.READ]: [
+                { value: false, disabled: !this.props.permissions[PermissionName.CLUSTERS].has(PermissionType.READ) }
+            ]
+        });
+
         const rulePermissionsForm = this.formBuilder.group({
             [TokenPermissionType.CREATE]: [
                 { value: false, disabled: !this.props.permissions[PermissionName.RULES].has(PermissionType.CREATE) }
@@ -147,6 +153,7 @@ export class TokenFeatureSidepanelFormComponent implements OnInit {
             ]
         });
 
+        this.permissionsFormGroup.addControl(TokenPermissionName.CLUSTERS, clusterPermissionsForm);
         this.permissionsFormGroup.addControl(TokenPermissionName.RULES, rulePermissionsForm);
         this.permissionsFormGroup.addControl(TokenPermissionName.EVENTS, eventPermissionsForm);
     }

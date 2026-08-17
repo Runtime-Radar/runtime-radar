@@ -54,6 +54,10 @@
     "Common.Pseudo.Menu.Password": "Change password",
     "Common.Pseudo.Menu.Version": "System version: <<<version>>>",
 
+    "Common.Pseudo.SortKey.None": "Do not sort",
+    "Common.Pseudo.SortKey.Asc": "Ascending",
+    "Common.Pseudo.SortKey.Desc": "Descending",
+
     "Common.Pseudo.Severity.Undefined": "None",
     "Common.Pseudo.Severity.None": "Not assigned",
     "Common.Pseudo.Severity.Low": "Low",
@@ -63,8 +67,7 @@
     "Common.Pseudo.Severity.NoneNotifyLabel": "Do not notify",
 
     "Common.Pseudo.Verdict.None": "Not assigned",
-    "Common.Pseudo.Verdict.Clean": "Benign",
-    "Common.Pseudo.Verdict.Unwanted": "Unwanted",
+    "Common.Pseudo.Verdict.Unwanted": "Potentially dangerous",
     "Common.Pseudo.Verdict.Dangerous": "Dangerous",
 
     "Common.Pseudo.ClusterStatus.Registered": "Connected",
@@ -82,8 +85,19 @@
     "Common.Clipboard.Notification.ClipboardDenied": "Configure a secure connection to copy to the clipboard",
     "Common.Clipboard.Button.CopyToClipboard": "Copy",
 
+    "Common.FilterPopover.Button.Filters": "Filters",
+    "Common.FilterPopover.Button.Confirm": "Apply",
+    "Common.FilterPopover.Button.Cancel": "Close",
+    "Common.FilterPopover.Button.Reset": "Reset",
+
+    "Common.SortPopover.Label.Date": "Date",
+    "Common.SortPopover.Label.Severity": "Severity",
+    "Common.SortPopover.Button.Sort": "Sort",
+    "Common.SortPopover.Button.Confirm": "Apply",
+    "Common.SortPopover.Button.Reset": "Reset",
+
     "Common.ChangePasswordModal.Title.Change": "Change password",
-    "Common.ChangePasswordModal.Placeholder.Password": "Type new password",
+    "Common.ChangePasswordModal.Placeholder.Password": "Enter a new password",
     "Common.ChangePasswordModal.Hint.ShowPassword": "Show password",
     "Common.ChangePasswordModal.Hint.HidePassword": "Hide password",
     "Common.ChangePasswordModal.Button.Confirm": "Save",
@@ -91,8 +105,8 @@
 
     "Common.RuleSidepanel.Alert.Text.DeletedRule": "The response rule was deleted from the system and is no longer in use",
     "Common.RuleSidepanel.Text.Clipboard": "To scan an image using this rule, run the following command in the console:",
-    "Common.RuleSidepanel.SubTitle.ImageNames": "Image",
-    "Common.RuleSidepanel.SubTitle.Registries": "Repositories",
+    "Common.RuleSidepanel.SubTitle.ImageNames": "Images",
+    "Common.RuleSidepanel.SubTitle.Registries": "Registries",
     "Common.RuleSidepanel.SubTitle.Namespaces": "Namespaces",
     "Common.RuleSidepanel.SubTitle.Pods": "Pods",
     "Common.RuleSidepanel.SubTitle.Nodes": "Nodes",
@@ -102,9 +116,12 @@
     "Common.RuleSidepanel.Text.RuntimeSeverityNotify": "Notify about threats of this severity and higher.",
     "Common.RuleSidepanel.SubTitle.Recipients": "Notification templates",
     "Common.RuleSidepanel.SubTitle.WhiteList": "Exclusions",
-    "Common.RuleSidepanel.Text.RuntimeWhiteList" : "Skip the rule for these threats.",
+    "Common.RuleSidepanel.Text.RuntimeWhiteList": "Skip the rule for these threats.",
     "Common.RuleSidepanel.Button.Update": "Edit",
     "Common.RuleSidepanel.Button.Delete": "Delete",
+
+    "Common.GridColumnViewPopover.Text.Column": "Select columns",
+    "Common.GridColumnViewPopover.Button.Reset": "Reset",
 
     "Common.DetectorTreeSelect.Text.EmptySearch": "Nothing found",
     "Common.DetectorTreeSelect.Text.Deleted": "This detector is deleted.",

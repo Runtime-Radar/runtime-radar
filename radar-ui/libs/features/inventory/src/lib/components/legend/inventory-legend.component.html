@@ -6,8 +6,9 @@
             </li>
             @for (node of nodes; track node.id; let i = $index) {
                 <li class="inventory-feature-legend-item">
-                    <i class="inventory-feature-legend-item-node" [ngStyle]="{ 'background-color': nodeBgColors[i] }"></i>
-                    <span class="text-overflow" title="{{ node.node_name }}">{{ node.node_name }}</span>
+                    <i class="inventory-feature-legend-item-node"
+                       [style]="{ 'background-color': nodeBgColors[i] }"></i>
+                    <span class="cs-text-overflow" title="{{ node.node_name }}">{{ node.node_name }}</span>
                 </li>
             }
             <li class="inventory-feature-legend-item">

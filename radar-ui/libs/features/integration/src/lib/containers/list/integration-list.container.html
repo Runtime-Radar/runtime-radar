@@ -14,7 +14,7 @@
                         [clusters]="clusters$ | async"
                         [activeClusterHost]="activeClusterHost$ | async"
                         (selectClusterId)="switchCluster($event)"
-                        testLocator="integration-cluster-select"></cs-cluster-select-component>
+                        testLocator="integration-cluster-select" />
                 @if ((rxlet.emailIntegrations?.length || rxlet.syslogIntegrations?.length || rxlet.webhookIntegrations?.length) && rxlet.loadStatus === loadStatus.LOADED) {
                     <button kbq-button
                             kbqStyle="outline"
@@ -36,7 +36,7 @@
                         class="integration-feature-list-card"
                         [type]="integrationType.EMAIL"
                         [list]="rxlet.emailIntegrations"
-                        [permissions]="permissions"></cs-integration-feature-collapse-card-container>
+                        [permissions]="permissions" />
             }
 
             @if (rxlet.syslogIntegrations?.length) {
@@ -44,7 +44,7 @@
                         class="integration-feature-list-card"
                         [type]="integrationType.SYSLOG"
                         [list]="rxlet.syslogIntegrations"
-                        [permissions]="permissions"></cs-integration-feature-collapse-card-container>
+                        [permissions]="permissions" />
             }
 
             @if (rxlet.webhookIntegrations?.length) {
@@ -52,7 +52,7 @@
                         class="integration-feature-list-card"
                         [type]="integrationType.WEBHOOK"
                         [list]="rxlet.webhookIntegrations"
-                        [permissions]="permissions"></cs-integration-feature-collapse-card-container>
+                        [permissions]="permissions" />
             }
 
             @if (!rxlet.emailIntegrations?.length && !rxlet.syslogIntegrations?.length && !rxlet.webhookIntegrations?.length && rxlet.loadStatus === loadStatus.LOADED) {

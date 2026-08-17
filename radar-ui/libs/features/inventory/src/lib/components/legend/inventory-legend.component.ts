@@ -9,7 +9,8 @@ import { INVENTORY_NODE_BG_COLORS } from '../../constants/inventory-scheme.const
     selector: 'cs-inventory-feature-legend-component',
     templateUrl: './inventory-legend.component.html',
     styleUrls: ['./inventory-legend.component.scss', '../inventory-abstract.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class InventoryFeatureLegendComponent {
     @Input({ required: true }) nodes!: KubeManagerNode[];

@@ -11,8 +11,8 @@ import { CLUSTER_DOMAIN_KEY, clusterDomainReducer } from './stores/cluster-selec
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(CLUSTER_DOMAIN_KEY, clusterDomainReducer),
-        EffectsModule.forFeature([ClusterEffectStore])
+        EffectsModule.forFeature([ClusterEffectStore]),
+        StoreModule.forFeature(CLUSTER_DOMAIN_KEY, clusterDomainReducer)
     ],
     declarations: [ClusterStatusLocalizationPipe],
     exports: [ClusterStatusLocalizationPipe]

@@ -11,11 +11,10 @@ import {
 } from '@koobiq/components/core';
 import { createSpyFromClass, provideAutoSpy } from 'jest-auto-spies';
 
-import { CoreWindowService, TranslationDict } from '@cs/core';
+import { AVAILABLE_LOCALES, CoreWindowService, DEFAULT_LOCALE, TranslationDict } from '@cs/core';
 
 import { I18nLocale } from '../interfaces/i18n.interface';
 import { I18nService } from './i18n.service';
-import { I18N_AVAILABLE_LOCALES, I18N_DEFAULT_LOCALE } from '../constants/i18n.constant';
 
 const dateProviders = [
     {
@@ -42,12 +41,15 @@ const kbqProviders = [
 ];
 
 describe('I18nService', () => {
-    let i18nService: I18nService;
+    let coreWindowService: jest.Mocked<CoreWindowService>;
     let dateAdapter: DateAdapter<unknown>;
     let dateFormatter: DateFormatter<unknown>;
+    let i18nService: I18nService;
+    let localeService: jest.Mocked<KbqLocaleService>;
     let translocoService: jest.Mocked<TranslocoService>;
-    let kbqLocaleService: jest.Mocked<KbqLocaleService>;
-    let coreWindowService: jest.Mocked<CoreWindowService>;
+
+    const availableLocales = ['en-US'];
+    const defaultLocale = 'en-US';
 
     beforeEach(async () => {
         translocoService = createSpyFromClass(TranslocoService);
@@ -61,14 +63,12 @@ describe('I18nService', () => {
                 setItem: jest.fn()
             } as unknown as Storage
         } as jest.Mocked<CoreWindowService>;
-
         const coreWindowProviders = [
             {
                 provide: CoreWindowService,
                 useValue: coreWindowService
             }
         ];
-
         const { fixture } = await render('<div></div>', {
             providers: [
                 ...coreWindowProviders,
@@ -77,12 +77,20 @@ describe('I18nService', () => {
                 {
                     provide: TranslocoService,
                     useValue: translocoService
+                },
+                {
+                    provide: AVAILABLE_LOCALES,
+                    useValue: availableLocales
+                },
+                {
+                    provide: DEFAULT_LOCALE,
+                    useValue: defaultLocale
                 }
             ]
         });
 
         translocoService = fixture.debugElement.injector.get(TranslocoService) as jest.Mocked<TranslocoService>;
-        kbqLocaleService = fixture.debugElement.injector.get(KBQ_LOCALE_SERVICE) as jest.Mocked<KbqLocaleService>;
+        localeService = fixture.debugElement.injector.get(KBQ_LOCALE_SERVICE) as jest.Mocked<KbqLocaleService>;
         i18nService = fixture.debugElement.injector.get(I18nService);
         dateAdapter = fixture.debugElement.injector.get(DateAdapter);
         dateFormatter = fixture.debugElement.injector.get(DateFormatter);
@@ -94,7 +102,27 @@ describe('I18nService', () => {
 
     describe('getLocale', () => {
         it('should return current locale', () => {
-            expect(i18nService.getLocale()).toBe(I18nLocale.EN);
+            expect(i18nService.getLocale()).toEqual(I18nLocale.EN);
+        });
+    });
+
+    describe('setLocale', () => {
+        let spyInitLocale: jest.SpyInstance;
+
+        beforeEach(() => {
+            spyInitLocale = jest.spyOn(i18nService, 'initLocale');
+        });
+
+        it('should not call initLocale when locale is not changed', () => {
+            i18nService.setLocale(I18nLocale.EN);
+
+            expect(spyInitLocale).not.toHaveBeenCalled();
+        });
+
+        it('should call initLocale', () => {
+            i18nService.setLocale(I18nLocale.EN);
+
+            expect(spyInitLocale).toHaveBeenCalledWith(I18nLocale.EN);
         });
     });
 
@@ -103,14 +131,14 @@ describe('I18nService', () => {
             i18nService['isLocaleAvailable'] = () => false;
             i18nService.initLocale('xx-XX');
 
-            expect(kbqLocaleService.setLocale).toHaveBeenCalledWith(I18N_DEFAULT_LOCALE);
+            expect(localeService.setLocale).toHaveBeenCalledWith(defaultLocale);
         });
 
         it('should update locale', () => {
             i18nService['isLocaleAvailable'] = () => true;
             i18nService.initLocale(I18nLocale.EN);
 
-            expect(kbqLocaleService.setLocale).toHaveBeenCalledWith(I18nLocale.EN);
+            expect(localeService.setLocale).toHaveBeenCalledWith(I18nLocale.EN);
             expect(dateAdapter.setLocale).toHaveBeenCalledWith(I18nLocale.EN);
             expect(dateFormatter.setLocale).toHaveBeenCalledWith(I18nLocale.EN);
             expect(translocoService.setActiveLang).toHaveBeenCalledWith(I18nLocale.EN);
@@ -126,7 +154,7 @@ describe('I18nService', () => {
 
     describe('loadTranslation', () => {
         it('should return true if all dicts loaded', (done) => {
-            translocoService.getAvailableLangs.mockReturnValue(I18N_AVAILABLE_LOCALES);
+            translocoService.getAvailableLangs.mockReturnValue(availableLocales);
             translocoService.load.mockReturnValue(of({ ok: true }));
 
             i18nService.loadTranslation([TranslationDict.COMMON, TranslationDict.AUTH]).subscribe((result) => {
@@ -136,7 +164,7 @@ describe('I18nService', () => {
         });
 
         it('should call transloco load with args', () => {
-            translocoService.getAvailableLangs.mockReturnValue(I18N_AVAILABLE_LOCALES);
+            translocoService.getAvailableLangs.mockReturnValue(availableLocales);
             translocoService.load.mockReturnValue(of({ ok: true }));
 
             i18nService.loadTranslation([TranslationDict.COMMON]).subscribe();
@@ -145,7 +173,10 @@ describe('I18nService', () => {
         });
 
         it('should return false if any dict is empty', (done) => {
-            translocoService.getAvailableLangs.mockReturnValue(I18N_AVAILABLE_LOCALES);
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+            translocoService.getAvailableLangs.mockReturnValue(availableLocales);
             translocoService.load.mockReturnValue(of({}));
 
             i18nService.loadTranslation([TranslationDict.COMMON]).subscribe((result) => {
@@ -157,7 +188,7 @@ describe('I18nService', () => {
 
     describe('translate', () => {
         it('should return empty string if scope does not exist', () => {
-            expect(i18nService.translate('', { value: 1 })).toBe('');
+            expect(i18nService.translate('', { value: 1 })).toEqual('');
             expect(translocoService.translate).not.toHaveBeenCalled();
         });
 

@@ -10,12 +10,12 @@ import { IntegrationRecipientTemplateRecord } from '../interfaces/integration-re
 })
 export class IntegrationFeatureHelperService {
     static convertHeadersToRequestNode(record: IntegrationRecipientTemplateRecord): NotificationWebhookHeadersList {
-        return Object.keys(record).reduce((acc, key) => {
+        return Object.keys(record).reduce<NotificationWebhookHeadersList>((acc, key) => {
             const item = record[key];
             acc[item.key] = item.value;
 
             return acc;
-        }, {} as NotificationWebhookHeadersList);
+        }, {});
     }
 
     static convertResponseNodeToHeaders(list?: NotificationWebhookHeadersList): IntegrationRecipientTemplateRecord {

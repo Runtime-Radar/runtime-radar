@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 import { CoreWindowService } from '@cs/core';
 
@@ -9,7 +9,7 @@ import { AuthTokens } from '../interfaces/state/auth-state.interface';
     providedIn: 'root'
 })
 export class AuthLocalStorageService {
-    constructor(private readonly coreWindowService: CoreWindowService) {}
+    private readonly coreWindowService = inject(CoreWindowService);
 
     getTokens(): AuthTokens {
         return {

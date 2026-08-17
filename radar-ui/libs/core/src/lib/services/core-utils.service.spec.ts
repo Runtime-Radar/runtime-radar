@@ -1,4 +1,4 @@
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { CoreUtilsService } from './core-utils.service';
 import { FormScheme } from '../interfaces/core-form-scheme.interface';
@@ -20,7 +20,7 @@ describe('CoreUtilsService', () => {
             jest.spyOn(Math, 'random').mockReturnValue(0.1);
             const uuid = CoreUtilsService.generateUuid('pre-');
 
-            expect(uuid).toBe('pre-11111111-1111-4111-9111-111111111111');
+            expect(uuid).toEqual('pre-11111111-1111-4111-9111-111111111111');
         });
     });
 
@@ -141,37 +141,6 @@ describe('CoreUtilsService', () => {
 
             expect(control.disabled).toBe(true);
             expect(control.validator).toBe(null);
-        });
-    });
-
-    describe('toggleArrayControlEnable', () => {
-        it('should enable array control and add validator', () => {
-            const control = new FormArray([], Validators.required);
-
-            CoreUtilsService.toggleArrayControlEnable(control, true);
-
-            expect(control.enabled).toBe(true);
-            expect(control.hasValidator(Validators.required)).toBe(true);
-        });
-
-        it('should disable array control and clear items', () => {
-            const control = new FormArray([new FormControl('a')]);
-
-            CoreUtilsService.toggleArrayControlEnable(control, false);
-
-            expect(control.length).toBe(0);
-            expect(control.disabled).toBe(true);
-        });
-    });
-
-    describe('setArrayControlValue', () => {
-        it('should return correct value when new item is added into formArray', () => {
-            const control = new FormArray<FormControl<string | null>>([]);
-            const value = ['abc'];
-
-            CoreUtilsService.setArrayControlValue(control, value, new FormBuilder());
-
-            expect(control.value).toStrictEqual(value);
         });
     });
 

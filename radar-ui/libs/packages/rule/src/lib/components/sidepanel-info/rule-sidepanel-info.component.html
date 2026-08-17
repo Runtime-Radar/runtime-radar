@@ -1,0 +1,233 @@
+<ng-container *transloco="let tCommon; prefix: 'common'">
+    <ng-container *ngrxLet="props.rule$ as rule">
+        @if (rule) {
+            <kbq-sidepanel-header [closeable]="true">{{ rule.name }}</kbq-sidepanel-header>
+
+            <kbq-sidepanel-body class="rule-package-sidepanel-info">
+                @if (props.isDeleted) {
+                    <kbq-alert
+                            [alertStyle]="'colored'"
+                            [alertColor]="alertColors.Warning"
+                            [compact]="true"
+                            class="layout-margin-bottom-l">
+                        <i kbq-icon="kbq-triangle-exclamation_16"></i>
+                        <span>{{ tCommon('Common.RuleSidepanel.Alert.Text.DeletedRule') }}</span>
+                    </kbq-alert>
+                }
+
+                @if (rule.scope.registries.length) {
+                    <section class="rule-package-sidepanel-info-section">
+                        <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                            {{ tCommon('Common.RuleSidepanel.SubTitle.Registries') }}
+                        </h4>
+                        <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                            @for (registry of rule.scope.registries; track registry) {
+                                <li>
+                                    <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                        <span class="cs-text-overflow rule-package-sidepanel-info-section-badges-truncate">{{ registry }}</span>
+                                    </kbq-badge>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                    <kbq-divider />
+                }
+
+                @if (rule.scope.image_names.length) {
+                    <section class="rule-package-sidepanel-info-section">
+                        <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                            {{ tCommon('Common.RuleSidepanel.SubTitle.ImageNames') }}
+                        </h4>
+                        <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                            @for (imageName of rule.scope.image_names; track imageName) {
+                                <li>
+                                    <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                        <span class="cs-text-overflow rule-package-sidepanel-info-section-badges-truncate">{{ imageName }}</span>
+                                    </kbq-badge>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                    <kbq-divider />
+                }
+
+                @if (rule.scope.nodes.length) {
+                    <section class="rule-package-sidepanel-info-section">
+                        <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                            {{ tCommon('Common.RuleSidepanel.SubTitle.Nodes') }}
+                        </h4>
+                        <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                            @for (node of rule.scope.nodes; track node) {
+                                <li>
+                                    <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                        <span class="cs-text-overflow rule-package-sidepanel-info-section-badges-truncate">{{ node }}</span>
+                                    </kbq-badge>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                    <kbq-divider />
+                }
+
+                @if (rule.scope.namespaces.length) {
+                    <section class="rule-package-sidepanel-info-section">
+                        <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                            {{ tCommon('Common.RuleSidepanel.SubTitle.Namespaces') }}
+                        </h4>
+                        <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                            @for (namespace of rule.scope.namespaces; track namespace) {
+                                <li>
+                                    <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                        <span class="cs-text-overflow rule-package-sidepanel-info-section-badges-truncate">{{ namespace }}</span>
+                                    </kbq-badge>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                    <kbq-divider />
+                }
+
+                @if (rule.scope.pods.length) {
+                    <section class="rule-package-sidepanel-info-section">
+                        <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                            {{ tCommon('Common.RuleSidepanel.SubTitle.Pods') }}
+                        </h4>
+                        <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                            @for (pod of rule.scope.pods; track pod) {
+                                <li>
+                                    <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                        <span class="cs-text-overflow rule-package-sidepanel-info-section-badges-truncate">{{ pod }}</span>
+                                    </kbq-badge>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                    <kbq-divider />
+                }
+
+                @if (rule.scope.containers.length) {
+                    <section class="rule-package-sidepanel-info-section">
+                        <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                            {{ tCommon('Common.RuleSidepanel.SubTitle.Containers') }}
+                        </h4>
+                        <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                            @for (container of rule.scope.containers; track container) {
+                                <li>
+                                    <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                        <span class="cs-text-overflow rule-package-sidepanel-info-section-badges-truncate">{{ container }}</span>
+                                    </kbq-badge>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                    <kbq-divider />
+                }
+
+                <section class="rule-package-sidepanel-info-section">
+                    <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                        {{ tCommon('Common.RuleSidepanel.SubTitle.Notify') }}
+                    </h4>
+                    <div class="kbq-text-compact cs-text-gray layout-margin-top-xxs">
+                        {{ tCommon('Common.RuleSidepanel.Text.RuntimeSeverityNotify') }}
+                    </div>
+                    <cs-rule-package-severity-label-component
+                            class="rule-package-sidepanel-info-section-severity"
+                            isWidthAuto
+                            [severity]="rule.rule.notify?.severity"
+                            [verdict]="rule.rule.notify?.verdict"
+                            noneLabelLocalizationKey="Common.Pseudo.Severity.NoneNotifyLabel" />
+
+                    <ng-container *ngrxLet="props.notifications$ as notifications">
+                        @if (notifications?.length) {
+                            <h4 class="kbq-subheading layout-margin-top-l rule-package-sidepanel-info-section-subheading">
+                                {{ tCommon('Common.RuleSidepanel.SubTitle.Recipients') }}
+                            </h4>
+                            <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                                @for (notification of notifications; track notification.id) {
+                                    <li>
+                                        <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                            <span class="rule-package-sidepanel-info-section-badges-truncate">{{ notification.name }}</span>
+                                        </kbq-badge>
+                                        @for (recipient of notification.recipients; track recipient) {
+                                            <kbq-badge [badgeColor]="badgeColors.FadeTheme" class="layout-margin-left-xxs">{{ recipient }}</kbq-badge>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </ng-container>
+                </section>
+
+                @let wl = rule.rule.whitelist;
+                @if (wl.threats.length || wl.binaries.length) {
+                    <kbq-divider />
+
+                    <section class="rule-package-sidepanel-info-section">
+                        <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                            {{ tCommon('Common.RuleSidepanel.SubTitle.WhiteList') }}
+                        </h4>
+                        <div class="kbq-text-compact cs-text-gray layout-margin-top-xxs">
+                            {{ tCommon('Common.RuleSidepanel.Text.RuntimeWhiteList') }}
+                        </div>
+
+                        <ul class="rule-package-sidepanel-info-section-detectors">
+                            @for (detector of detectors$(wl) | async; track detector.id) {
+                                <li class="layout-row rule-package-sidepanel-info-section-detectors-item">
+                                    <span class="kbq-text-compact cs-text-gray rule-package-sidepanel-info-section-detectors-item-id">
+                                        {{ detector.key }}
+                                    </span>
+                                    <span class="kbq-text-normal">{{ detector.name || '—' }}</span>
+                                </li>
+                            }
+                        </ul>
+
+                        @if (wl.binaries.length) {
+                            <section class="layout-margin-top-l rule-package-sidepanel-info-section">
+                                <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                                    {{ tCommon('Common.RuleSidepanel.SubTitle.Binaries') }}
+                                </h4>
+                                <ul class="layout-row rule-package-sidepanel-info-section-badges">
+                                    @for (binary of wl.binaries; track binary) {
+                                        <li>
+                                            <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true">
+                                                <span class="cs-text-overflow rule-package-sidepanel-info-section-badges-truncate">{{ binary }}</span>
+                                            </kbq-badge>
+                                        </li>
+                                    }
+                                </ul>
+                            </section>
+                        }
+                    </section>
+                }
+            </kbq-sidepanel-body>
+
+            @if (props.updateHandler !== undefined || props.deleteHandler !== undefined) {
+                <kbq-sidepanel-footer>
+                    <kbq-sidepanel-actions align="left">
+                        @if (props.updateHandler !== undefined) {
+                            <button kbq-button
+                                    kbqStyle="outline"
+                                    color="theme-fade"
+                                    type="button"
+                                    [disabled]="!props.permissions?.has(permissionType.UPDATE)"
+                                    (click)="updateRule(rule)"
+                                    data-testid="shared-rule-update-button">
+                                {{ tCommon('Common.RuleSidepanel.Button.Update') }}
+                            </button>
+                        }
+                        @if (props.deleteHandler !== undefined) {
+                            <button kbq-button
+                                    kbqStyle="transparent"
+                                    type="button"
+                                    [disabled]="!props.permissions?.has(permissionType.DELETE)"
+                                    (click)="deleteRule(rule.id)"
+                                    data-testid="shared-rule-delete-button">
+                                {{ tCommon('Common.RuleSidepanel.Button.Delete') }}
+                            </button>
+                        }
+                    </kbq-sidepanel-actions>
+                </kbq-sidepanel-footer>
+            }
+        }
+    </ng-container>
+</ng-container>

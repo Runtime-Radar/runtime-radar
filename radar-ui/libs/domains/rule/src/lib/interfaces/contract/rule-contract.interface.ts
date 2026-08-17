@@ -14,9 +14,18 @@ export enum RuleSeverity {
 
 export enum RuleVerdict {
     NONE = 'none',
-    CLEAN = 'clean',
     UNWANTED = 'unwanted',
     DANGEROUS = 'dangerous'
+}
+
+export enum RuleCombinedSeverityVerdict {
+    NONE = RuleSeverity.NONE,
+    LOW = RuleSeverity.LOW,
+    MEDIUM = RuleSeverity.MEDIUM,
+    HIGH = RuleSeverity.HIGH,
+    CRITICAL = RuleSeverity.CRITICAL,
+    UNWANTED = RuleVerdict.UNWANTED,
+    DANGEROUS = RuleVerdict.DANGEROUS
 }
 
 // fields are described into RuleFeatureHelperService#19

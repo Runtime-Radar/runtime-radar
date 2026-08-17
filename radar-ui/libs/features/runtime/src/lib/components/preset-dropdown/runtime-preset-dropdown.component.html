@@ -10,6 +10,7 @@
     <kbq-dropdown #dropdownMenu="kbqDropdown">
         @for (preset of presetDropdownFiltersCollection | keyvalue; track preset.key) {
             <button kbq-dropdown-item
+                    type="button"
                     (click)="select(preset.key)"
                     [attr.data-testid]="tRuntime(preset.value)">
                 {{ tRuntime(preset.value) }}

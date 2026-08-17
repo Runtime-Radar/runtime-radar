@@ -25,10 +25,6 @@ $container-query-max-width: 350px;
         margin-top: 16px;
         padding: 0 16px;
 
-        &-section {
-            gap: 8px;
-        }
-
         &-info-actions {
             gap: 32px;
         }
@@ -52,8 +48,6 @@ $container-query-max-width: 350px;
 
                 &-truncate {
                     max-width: 255px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
                 }
 
                 &-remove {

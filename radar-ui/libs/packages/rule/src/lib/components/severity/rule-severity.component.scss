@@ -1,0 +1,76 @@
+:host {
+    display: inline-block;
+    vertical-align: text-bottom;
+}
+
+.rule-package-severity {
+    display: flex;
+    flex-direction: row-reverse;
+    min-width: 34px;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 3px;
+
+    svg {
+        width: 10px;
+        height: 12px;
+    }
+
+    &.row {
+        flex-direction: row;
+    }
+
+    &.large {
+        min-width: auto;
+        padding: 4px;
+        border-radius: 6px;
+
+        svg {
+            width: 12px;
+            height: 16px;
+        }
+    }
+
+    &.none svg {
+        width: 9.5px;
+
+        path {
+            stroke: #8c99a5;
+            fill: none;
+        }
+    }
+
+    &.low path {
+        fill: #4187ff;
+    }
+
+    &.medium path {
+        fill: #e19f12;
+    }
+
+    &.high path {
+        fill: #ec764c;
+    }
+
+    &.critical {
+        background-color: #f00;
+
+        path {
+            fill: #fff;
+        }
+    }
+
+    &.undefined {
+        height: 12px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+            transform: translateY(-2px);
+        }
+    }
+
+    &--width-auto {
+        min-width: auto;
+    }
+}

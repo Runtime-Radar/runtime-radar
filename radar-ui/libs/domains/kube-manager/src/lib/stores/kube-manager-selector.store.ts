@@ -43,17 +43,12 @@ export const getKubeManagerLoadStatus = createSelector(
     (state: KubeManagerState) => state.loadStatus
 );
 
-export const getKubeManagerLastUpdate = createSelector(
-    selectKubeManagerState,
-    (state: KubeManagerState) => state.lastUpdate
-);
-
 export const getKubeManagerNodes = createSelector(
     selectKubeManagerEntityState,
     (state: KubeManagerEntityState): KubeManagerNode[] => {
-        const nodes = Object.values(state.entities).reduce(
+        const nodes = Object.values(state.entities).reduce<string[]>(
             (acc, item) => (item && item.node_name ? [...acc, item.node_name] : acc),
-            [] as string[]
+            []
         );
 
         return [...new Set(nodes)].map((node, i) => ({
@@ -65,20 +60,20 @@ export const getKubeManagerNodes = createSelector(
 
 export const getKubeManagerNamespaces = (node?: string) =>
     createSelector(selectKubeManagerEntityState, (state: KubeManagerEntityState): KubeManagerNamespace[] => {
-        const namespaces = Object.values(state.entities).reduce(
+        const namespaces = Object.values(state.entities).reduce<string[]>(
             (acc, item) => (item ? [...acc, item.namespace] : acc),
-            [] as string[]
+            []
         );
 
         return [...new Set(namespaces)].map((namespace, i) => {
             const pods = getPodsByNamespace(state.entities, namespace, node);
-            const nodes = pods.reduce((acc, item) => {
+            const nodes = pods.reduce<string[]>((acc, item) => {
                 if (item.node_name && !acc.includes(item.node_name)) {
                     acc.push(item.node_name);
                 }
 
                 return acc;
-            }, [] as string[]);
+            }, []);
 
             return {
                 id: `namespaceId${i}`,
@@ -92,7 +87,7 @@ export const getKubeManagerNamespaces = (node?: string) =>
 
 export const getKubeManagerGroupNamespaces = (node?: string) =>
     createSelector(getKubeManagerNamespaces(node), (state: KubeManagerNamespace[]): KubeManagerNamespaceGroup[] => {
-        return state.reduce((acc, item, i) => {
+        return state.reduce<KubeManagerNamespaceGroup[]>((acc, item, i) => {
             if (item.nodes.length === 1) {
                 const gi = acc.findIndex(
                     (g) => g.namespaces[0].nodes.length === 1 && g.namespaces[0].nodes[0] === item.nodes[0]
@@ -114,7 +109,7 @@ export const getKubeManagerGroupNamespaces = (node?: string) =>
             }
 
             return acc;
-        }, [] as KubeManagerNamespaceGroup[]);
+        }, []);
     });
 
 export const getKubeManagerPodsByNamespace = (namespace: string, node?: string) =>

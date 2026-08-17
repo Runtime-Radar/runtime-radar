@@ -11,12 +11,12 @@ import { SwitchFeatureRoutingModule } from './switch-routing.module';
 
 @NgModule({
     imports: [
-        CommonModule,
         ClusterDomainModule,
-        LicenseDomainModule,
-        SwitchFeatureRoutingModule,
+        CommonModule,
         I18nModule,
-        SharedModule
+        LicenseDomainModule,
+        SharedModule,
+        SwitchFeatureRoutingModule
     ],
     declarations: [SwitchFeaturePageContainer]
 })

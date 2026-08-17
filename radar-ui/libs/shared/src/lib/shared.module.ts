@@ -20,6 +20,7 @@ import { KbqIconModule } from '@koobiq/components/icon';
 import { KbqInputModule } from '@koobiq/components/input';
 import { KbqLinkModule } from '@koobiq/components/link';
 import { KbqLoaderOverlayModule } from '@koobiq/components/loader-overlay';
+import { KbqOverflowItemsModule } from '@koobiq/components/overflow-items';
 import { KbqPopoverModule } from '@koobiq/components/popover';
 import { KbqProgressBarModule } from '@koobiq/components/progress-bar';
 import { KbqProgressSpinnerModule } from '@koobiq/components/progress-spinner';
@@ -29,6 +30,7 @@ import { KbqTableModule } from '@koobiq/components/table';
 import { KbqTabsModule } from '@koobiq/components/tabs';
 import { KbqTagsModule } from '@koobiq/components/tags';
 import { KbqTextareaModule } from '@koobiq/components/textarea';
+import { KbqTimeRangeModule } from '@koobiq/components/time-range';
 import { KbqTimepickerModule } from '@koobiq/components/timepicker';
 import { KbqToggleModule } from '@koobiq/components/toggle';
 import { KbqToolTipModule } from '@koobiq/components/tooltip';
@@ -54,24 +56,15 @@ import { SharedDatetimePickerComponent } from './components/datetime-picker/shar
 import { SharedDetectorTreeSelectComponent } from './components/detector-tree-select/shared-detector-tree-select.component';
 import { SharedEmptyScreenComponent } from './components/empty-screen/shared-empty-screen.component';
 import { SharedEventActionComponent } from './components/event-action/shared-event-action.component';
+import { SharedFilterPopoverComponent } from './components/filter-popover/shared-filter-popover.component';
 import { SharedHoursFormatterPipe } from './pipes/hours-formatter/shared-hours-formatter.pipe';
 import { SharedMultipleSelectComponent } from './components/multiple-select/shared-multiple-select.component';
 import { SharedNumberFormatterPipe } from './pipes/number-formatter/shared-number-formatter.pipe';
-import { SharedOverlayDirective } from './directives/overlay/shared-overlay.directive';
 import { SharedPaginatorComponent } from './components/paginator/shared-paginator.component';
-import { SharedPasswordModalComponent } from './components/password-modal/password-modal.component';
-import { SharedRuleSidepanelComponent } from './components/rule-sidepanel/shared-rule-sidepanel.component';
-import { SharedRuleSidepanelFormComponent } from './components/rule-sidepanel-form/shared-rule-sidepanel-form.component';
-import { SharedSeverityBgColorDirective } from './directives/severity-bgcolor/shared-severity-bgcolor.directive';
-import { SharedSeverityColorDirective } from './directives/severity-color/shared-severity-color.directive';
-import { SharedSeverityComponent } from './components/severity/shared-severity.component';
-import { SharedSeverityLabelComponent } from './components/severity-label/shared-severity-label.component';
-import { SharedSeverityLocalizationPipe } from './pipes/severity/shared-severity.pipe';
-import { SharedSeverityRadioComponent } from './components/severity-radio/shared-severity-radio.component';
+import { SharedPasswordModalComponent } from './components/password-modal/shared-password-modal.component';
+import { SharedSortPopoverComponent } from './components/sort-popover/shared-sort-popover.component';
 import { SharedTabsComponent } from './components/tabs/shared-tabs.component';
 import { SharedTagInputComponent } from './components/tag-input/shared-tag-input.component';
-import { SharedVerdictLocalizationPipe } from './pipes/verdict/shared-verdict.pipe';
-import { sharedCodeBlockLocalizationProvider } from './providers/shared-code-block-localization.provider';
 
 const KOOBIQ_TOAST_CONFIG: KbqToastConfig = {
     position: KbqToastPosition.TOP_RIGHT,
@@ -96,28 +89,30 @@ const koobiqModules = [
     KbqDividerModule,
     KbqDlModule,
     KbqDropdownModule,
-    KbqHighlightModule,
     KbqFormFieldModule,
+    KbqHighlightModule,
     KbqIconModule,
     KbqInputModule,
     KbqLinkModule,
     KbqLoaderOverlayModule,
     KbqModalModule,
+    KbqOverflowItemsModule,
     KbqPopoverModule,
     KbqProgressBarModule,
     KbqProgressSpinnerModule,
     KbqPseudoCheckboxModule,
     KbqRadioModule,
-    KbqSidepanelModule,
     KbqSelectModule,
+    KbqSidepanelModule,
     KbqTableModule,
     KbqTabsModule,
     KbqTagsModule,
     KbqTextareaModule,
     KbqTimepickerModule,
+    KbqTimeRangeModule,
+    KbqToastModule,
     KbqToggleModule,
     KbqToolTipModule,
-    KbqToastModule,
     KbqTreeModule,
     KbqTreeSelectModule
 ];
@@ -132,45 +127,37 @@ const koobiqImports = [
     KbqDatepickerModule,
     KbqDividerModule,
     KbqEmptyStateModule,
-    KbqHighlightModule,
     KbqFormFieldModule,
+    KbqHighlightModule,
     KbqIconModule,
     KbqInputModule,
     KbqModalModule,
+    KbqPopoverModule,
     KbqProgressBarModule,
-    KbqSidepanelModule,
     KbqSelectModule,
+    KbqSidepanelModule,
     KbqTabsModule,
     KbqTagsModule,
     KbqTimepickerModule,
-    KbqToolTipModule,
     KbqTreeModule,
     KbqTreeSelectModule
 ];
 
 const appDeclarations = [
-    SharedClusterSelectComponent,
     SharedClipboardComponent,
+    SharedClusterSelectComponent,
     SharedDateFormatterPipe,
     SharedDatetimePickerComponent,
     SharedDetectorTreeSelectComponent,
     SharedEmptyScreenComponent,
     SharedEventActionComponent,
+    SharedFilterPopoverComponent,
     SharedHoursFormatterPipe,
     SharedMultipleSelectComponent,
     SharedNumberFormatterPipe,
-    SharedOverlayDirective,
     SharedPaginatorComponent,
     SharedPasswordModalComponent,
-    SharedRuleSidepanelComponent,
-    SharedRuleSidepanelFormComponent,
-    SharedSeverityComponent,
-    SharedSeverityBgColorDirective,
-    SharedSeverityColorDirective,
-    SharedSeverityRadioComponent,
-    SharedSeverityLocalizationPipe,
-    SharedSeverityLabelComponent,
-    SharedVerdictLocalizationPipe,
+    SharedSortPopoverComponent,
     SharedTabsComponent,
     SharedTagInputComponent
 ];
@@ -180,15 +167,14 @@ const appDeclarations = [
         ...koobiqImports,
         CommonModule,
         FormsModule,
-        ReactiveFormsModule,
-        NgOptimizedImage,
         I18nModule,
-        LetDirective
+        LetDirective,
+        NgOptimizedImage,
+        ReactiveFormsModule
     ],
     declarations: [...appDeclarations],
     providers: [
         ...koobiqServices,
-        ...sharedCodeBlockLocalizationProvider(),
         {
             provide: KBQ_TOAST_CONFIG,
             useValue: KOOBIQ_TOAST_CONFIG

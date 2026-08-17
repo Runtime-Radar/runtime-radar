@@ -96,7 +96,7 @@
                     <section class="kbq-form__row kbq-form-row_margin">
                         <label for="ca" class="kbq-form__label">
                             {{ tCluster('Cluster.CreatePage.DataBaseForm.Label.Ca') }}
-                            <i kbq-icon="kbq-question-circle_16"
+                            <i kbq-icon="kbq-circle-question_16"
                                class="cs-help-hover"
                                kbqTooltip="{{ tCluster(
                                     type === 'clickhouse'
@@ -120,7 +120,7 @@
             }
 
             @if (rxlet.isInternal) {
-                <section class="kbq-form__row" [ngClass]="{ 'kbq-form-row_margin': rxlet.isPersistence }">
+                <section class="kbq-form__row" [class]="{ 'kbq-form-row_margin': rxlet.isPersistence }">
                     <kbq-toggle formControlName="isPersistence" data-testid="cluster-database-persistence-toggle">
                         {{ tCluster('Cluster.CreatePage.DataBaseForm.Label.Persistence') }}
                         <span class="kbq-text-compact cs-text-gray cluster-abstract-feature-form-toggle-hint">
@@ -133,7 +133,7 @@
                     <section class="kbq-form__row">
                         <label for="storageClass" class="kbq-form__label">
                             {{ tCluster('Cluster.CreatePage.DataBaseForm.Label.StorageClass') }}
-                            <i kbq-icon="kbq-question-circle_16"
+                            <i kbq-icon="kbq-circle-question_16"
                                class="cs-help-hover"
                                kbqTooltip="{{ tCluster('Cluster.CreatePage.DataBaseForm.Hint.StorageClass') }}"
                                kbqTooltipClass="cluster-abstract-feature-form-tooltip"
@@ -157,7 +157,7 @@
                 <section class="kbq-form__row">
                     <label for="address" class="kbq-form__label">
                         {{ tCluster('Cluster.CreatePage.DataBaseForm.Label.Address') }}
-                        <i kbq-icon="kbq-question-circle_16"
+                        <i kbq-icon="kbq-circle-question_16"
                            class="cs-help-hover"
                            kbqTooltip="{{ tCluster(
                                 type === 'clickhouse'

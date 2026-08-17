@@ -1,5 +1,6 @@
 import { KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { Spy, createSpyFromClass } from 'jest-auto-spies';
+import { createEnvironmentInjector, runInInjectionContext } from '@angular/core';
 
 import { INVENTORY_SIDEPANEL_CONTEXT_NODE } from '../mocks/inventory-context.mock';
 import { DEFAULT_CONTEXT, InventoryFeatureSidepanelContextService } from './inventory-sidepanel-context.service';
@@ -17,8 +18,8 @@ const context = (path: string): InventorySidepanelContext => {
 };
 
 describe('InventoryFeatureSidepanelContextService', () => {
-    let service: InventoryFeatureSidepanelContextService;
     let sidepanelService: Spy<KbqSidepanelService>;
+    let service: InventoryFeatureSidepanelContextService;
 
     beforeEach(() => {
         sidepanelService = createSpyFromClass(KbqSidepanelService, {
@@ -28,7 +29,17 @@ describe('InventoryFeatureSidepanelContextService', () => {
             close: jest.fn()
         } as any);
 
-        service = new InventoryFeatureSidepanelContextService(sidepanelService);
+        const injector = createEnvironmentInjector(
+            [
+                {
+                    provide: KbqSidepanelService,
+                    useValue: sidepanelService
+                }
+            ],
+            null as any
+        );
+
+        service = runInInjectionContext(injector, () => new InventoryFeatureSidepanelContextService());
     });
 
     afterEach(() => {

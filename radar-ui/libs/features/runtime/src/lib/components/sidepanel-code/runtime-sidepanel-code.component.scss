@@ -5,7 +5,25 @@
     height: 100%;
 }
 
+.runtime-feature-sidepanel-code {
+    padding-bottom: 0;
+}
+
 // @todo: replace ::ng-deep to class props
-::ng-deep .runtime-feature-sidepanel-code code {
-    max-height: calc(100vh - 135px);
+::ng-deep .runtime-feature-sidepanel-code-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+::ng-deep .runtime-feature-sidepanel-code {
+    code {
+        max-height: calc(100vh - 175px);
+    }
+
+    .kbq-sidepanel-indent {
+        width: 0 !important;
+    }
+}
+
+:host:has(kbq-sidepanel-footer) ::ng-deep .runtime-feature-sidepanel-code code {
+    max-height: calc(100vh - 235px);
 }

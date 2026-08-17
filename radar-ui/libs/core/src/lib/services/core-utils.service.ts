@@ -1,15 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-    AbstractControl,
-    FormArray,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    FormRecord,
-    Validators
-} from '@angular/forms';
-
-import { FORM_VALIDATION_REG_EXP } from '../constants';
+import { AbstractControl, FormArray, FormControl, FormGroup, FormRecord, Validators } from '@angular/forms';
 
 interface FormControls {
     [key: string]: FormControl | FormRecord | FormArray;
@@ -127,47 +117,6 @@ export class CoreUtilsService {
             control?.setValue(value, { onlySelf: true });
             control?.disable({ onlySelf: true });
             control?.removeValidators(Validators.required);
-        }
-    }
-
-    /**
-     * Enable/disable provided array control and turn on/off validation.
-     *
-     * @param arrayControl - It is a form's link from parent entity.
-     */
-    static toggleArrayControlEnable<T extends AbstractControl<any>>(
-        arrayControl: FormArray<T> | null,
-        isEnable: boolean
-    ) {
-        if (isEnable) {
-            arrayControl?.enable({ onlySelf: true });
-            arrayControl?.addValidators(Validators.required);
-        } else {
-            arrayControl?.clear();
-            arrayControl?.disable({ onlySelf: true });
-            arrayControl?.removeValidators(Validators.required);
-        }
-    }
-
-    /**
-     * Set value to provided array control.
-     *
-     * @param arrayControl - It is a form's link from parent entity.
-     * @param formBuilder - It is a provided form builder.
-     * @param pattern - RegExp pattern for validation.
-     */
-    static setArrayControlValue(
-        arrayControl: FormArray<FormControl<string | null>> | null,
-        values: string[] | undefined,
-        formBuilder: FormBuilder,
-        pattern?: RegExp
-    ) {
-        if (values && arrayControl) {
-            values.forEach((value) => {
-                arrayControl.push(
-                    formBuilder.control(value, Validators.pattern(pattern || FORM_VALIDATION_REG_EXP.TEXT_SYMBOLS))
-                );
-            });
         }
     }
 

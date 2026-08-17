@@ -1,0 +1,69 @@
+<ng-container *transloco="let tRuntime; prefix: 'runtime'">
+    <kbq-sidepanel-header [closeable]="true">{{ tRuntime('Runtime.DetectorSidepanel.Title.Info') }}</kbq-sidepanel-header>
+    <kbq-sidepanel-body class="runtime-feature-sidepanel-detector">
+        <kbq-dl [vertical]="true">
+            <kbq-dt>{{ tRuntime('Runtime.DetectorSidepanel.Label.Id') }}</kbq-dt>
+            <kbq-dd>
+                <span class="layout-column">{{ props.detector.key }}</span>
+                <a kbq-link class="kbq-link_external" (click)="goToDetectorFilter()">
+                    <span class="kbq-link__text kbq-text-compact">{{ tRuntime('Runtime.DetectorSidepanel.Link.GoToFilter') }}</span>
+                    <i kbq-icon="kbq-chevron-right_16" class="runtime-feature-sidepanel-detector-icon-link"></i>
+                </a>
+            </kbq-dd>
+            <kbq-dt>{{ tRuntime('Runtime.DetectorSidepanel.Label.Name') }}</kbq-dt>
+            <kbq-dd>{{ props.detector.name }}</kbq-dd>
+            <kbq-dt>{{ tRuntime('Runtime.DetectorSidepanel.Label.Version') }}</kbq-dt>
+            <kbq-dd>{{ props.detector.version }}</kbq-dd>
+            <kbq-dt>{{ tRuntime('Runtime.DetectorSidepanel.Label.Description') }}</kbq-dt>
+            <kbq-dd>{{ props.detector.description }}</kbq-dd>
+        </kbq-dl>
+
+        @if (props.detector.tactics_covered.length) {
+            <h4 class="kbq-subheading runtime-feature-sidepanel-detector-subheading">
+                {{ tRuntime('Runtime.DetectorSidepanel.SubTitle.MitreAttack') }}
+            </h4>
+
+            <kbq-accordion type="multiple">
+                @for (tactic of props.detector.tactics_covered; track tactic.id) {
+                    <kbq-accordion-item class="runtime-feature-sidepanel-detector-accordion" [expanded]="true">
+                        <button kbq-accordion-trigger type="button" class="layout-padding-no-left layout-padding-no-right">
+                            <cs-runtime-feature-mitre-tactic-component
+                                    [id]="tactic.id"
+                                    [techniques]="tactic.techniques"
+                                    [isOutline]="false" />
+                        </button>
+                        @if (tactic.techniques.length) {
+                            <kbq-accordion-content>
+                                <div class="layout-row layout-wrap layout-gap-s layout-padding-left-m">
+                                    @for (technique of tactic.techniques; track technique) {
+                                        <cs-runtime-feature-mitre-tactic-component
+                                                [id]="technique"
+                                                [tacticId]="tactic.id" />
+                                    }
+                                </div>
+                            </kbq-accordion-content>
+                        }
+                    </kbq-accordion-item>
+                }
+            </kbq-accordion>
+        }
+    </kbq-sidepanel-body>
+
+    @if (props.deleteHandler !== undefined) {
+        <kbq-sidepanel-footer>
+            <kbq-sidepanel-actions align="left">
+                @if (props.deleteHandler !== undefined) {
+                    <button kbq-button
+                            kbqStyle="transparent"
+                            color="error"
+                            type="button"
+                            [disabled]="!props.permissions.has(permissionType.DELETE)"
+                            (click)="deleteDetector()"
+                            data-testid="runtime-detector-delete-button">
+                        {{ tRuntime('Runtime.DetectorSidepanel.Button.Remove') }}
+                    </button>
+                }
+            </kbq-sidepanel-actions>
+        </kbq-sidepanel-footer>
+    }
+</ng-container>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, booleanAttribute } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, booleanAttribute, inject } from '@angular/core';
 
 import { SharedClipboardService } from '@cs/shared';
 
@@ -6,16 +6,17 @@ import { SharedClipboardService } from '@cs/shared';
     selector: 'cs-clipboard-component',
     templateUrl: './shared-clipboard.component.html',
     styleUrl: './shared-clipboard.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SharedClipboardComponent {
+    private readonly clipboardService = inject(SharedClipboardService);
+
     @Input({ required: true }) value!: string | null;
 
     @Input({ transform: booleanAttribute }) isButtonTextVisible = false;
 
     @Input() isDisabled? = false;
-
-    constructor(private readonly clipboardService: SharedClipboardService) {}
 
     copyToClipboard() {
         if (this.value) {

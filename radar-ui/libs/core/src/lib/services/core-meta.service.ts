@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 
 import { PageMeta } from '../interfaces/core-meta.interface';
@@ -7,10 +7,8 @@ import { PageMeta } from '../interfaces/core-meta.interface';
     providedIn: 'root'
 })
 export class CoreMetaService {
-    constructor(
-        private readonly metaService: Meta,
-        private readonly titleService: Title
-    ) {}
+    private readonly metaService = inject(Meta);
+    private readonly titleService = inject(Title);
 
     initPageMetaTags() {
         this.metaService.addTags([

@@ -12,7 +12,7 @@
                         [clusters]="clusters$ | async"
                         [activeClusterHost]="activeClusterHost$ | async"
                         (selectClusterId)="switchCluster($event)"
-                        testLocator="rule-cluster-select"></cs-cluster-select-component>
+                        testLocator="rule-cluster-select" />
                 @if (rxlet.rules?.length) {
                     <button kbq-button
                             kbqStyle="outline"
@@ -31,7 +31,7 @@
         @if (rxlet.rules?.length) {
             <cs-rule-feature-panel-filter-component
                     class="rule-feature-list-filter"
-                    (filterChange)="changeFilter($event)"></cs-rule-feature-panel-filter-component>
+                    (filterChange)="changeFilter($event)" />
         }
 
         @if (rxlet.rules | ruleFilter: filters; as rules) {
@@ -53,15 +53,17 @@
                             <div class="layout-margin-bottom-xxs kbq-text-compact cs-text-gray">
                                 {{ tRule('Rule.ListPage.Table.NotifySeverity') }}
                             </div>
-                            <cs-severity-label-component
+                            <cs-rule-package-severity-label-component
                                     isWidthAuto
                                     [severity]="rule.rule.notify?.severity"
                                     [verdict]="rule.rule.notify?.verdict"
-                                    noneLabelLocalizationKey="Common.Pseudo.Severity.NoneNotifyLabel"></cs-severity-label-component>
+                                    noneLabelLocalizationKey="Common.Pseudo.Severity.NoneNotifyLabel" />
                         </li>
-                        @if (rule.rule.whitelist.threats.length || rule.rule.whitelist.binaries.length) {
+                        @let wl = rule.rule.whitelist;
+                        @if (wl.threats.length || wl.binaries.length) {
+                            @let count = wl.threats.length + wl.binaries.length;
                             <li class="layout-row layout-align-start-center rule-feature-list-card-list-item-whitelist">
-                                <span>{{ rule.rule.whitelist.threats.length + rule.rule.whitelist.binaries.length }}</span>
+                                <span>{{ count }}</span>
                                 <i kbq-icon="kbq-shield-o_16"></i>
                             </li>
                         }
@@ -75,7 +77,7 @@
                                     </div>
                                     @for (image of rule.scope.image_names; track image) {
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true" class="rule-feature-list-card-list-badge">
-                                            <span class="rule-feature-list-card-list-badge-truncate" title="{{ image }}">{{ image }}</span>
+                                            <span class="cs-text-overflow rule-feature-list-card-list-badge-truncate" title="{{ image }}">{{ image }}</span>
                                         </kbq-badge>
                                     }
                                 </li>
@@ -87,7 +89,7 @@
                                     </div>
                                     @for (registry of rule.scope.registries; track registry) {
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true" class="rule-feature-list-card-list-badge">
-                                            <span class="rule-feature-list-card-list-badge-truncate" title="{{ registry }}">{{ registry }}</span>
+                                            <span class="cs-text-overflow rule-feature-list-card-list-badge-truncate" title="{{ registry }}">{{ registry }}</span>
                                         </kbq-badge>
                                     }
                                 </li>
@@ -99,7 +101,7 @@
                                     </div>
                                     @for (namespace of rule.scope.namespaces; track namespace) {
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true" class="rule-feature-list-card-list-badge">
-                                            <span class="rule-feature-list-card-list-badge-truncate" title="{{ namespace }}">{{ namespace }}</span>
+                                            <span class="cs-text-overflow rule-feature-list-card-list-badge-truncate" title="{{ namespace }}">{{ namespace }}</span>
                                         </kbq-badge>
                                     }
                                 </li>
@@ -111,7 +113,7 @@
                                     </div>
                                     @for (pod of rule.scope.pods; track pod) {
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true" class="rule-feature-list-card-list-badge">
-                                            <span class="rule-feature-list-card-list-badge-truncate" title="{{ pod }}">{{ pod }}</span>
+                                            <span class="cs-text-overflow rule-feature-list-card-list-badge-truncate" title="{{ pod }}">{{ pod }}</span>
                                         </kbq-badge>
                                     }
                                 </li>
@@ -123,7 +125,7 @@
                                     </div>
                                     @for (container of rule.scope.containers; track container) {
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true" class="rule-feature-list-card-list-badge">
-                                            <span class="rule-feature-list-card-list-badge-truncate" title="{{ container }}">{{ container }}</span>
+                                            <span class="cs-text-overflow rule-feature-list-card-list-badge-truncate" title="{{ container }}">{{ container }}</span>
                                         </kbq-badge>
                                     }
                                 </li>
@@ -135,7 +137,7 @@
                                     </div>
                                     @for (node of rule.scope.nodes; track node) {
                                         <kbq-badge [badgeColor]="badgeColors.FadeContrast" [outline]="true" class="rule-feature-list-card-list-badge">
-                                            <span class="rule-feature-list-card-list-badge-truncate" title="{{ node }}">{{ node }}</span>
+                                            <span class="cs-text-overflow rule-feature-list-card-list-badge-truncate" title="{{ node }}">{{ node }}</span>
                                         </kbq-badge>
                                     }
                                 </li>
@@ -172,8 +174,7 @@
                 <cs-empty-screen-component
                         imageUrl="/assets/koobiq/light/empty_256@2x.png"
                         [title]="tRule('Rule.ListPage.SubHeading.EmptySearch')"
-                        [description]="tRule('Rule.ListPage.Text.EmptySearch')">
-                </cs-empty-screen-component>
+                        [description]="tRule('Rule.ListPage.Text.EmptySearch')" />
             }
         }
 

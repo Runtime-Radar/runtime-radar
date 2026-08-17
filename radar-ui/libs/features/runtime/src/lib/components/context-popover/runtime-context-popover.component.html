@@ -3,8 +3,11 @@
             kbqPopover
             type="button"
             #kbqPopover="kbqPopover"
+            [kbqPopoverOffset]="4"
             [kbqPopoverContent]="popoverContent"
             [kbqPopoverFooter]="popoverFooter"
+            [kbqPopoverPlacement]="tooltipPlacements.BottomLeft"
+            [kbqPopoverArrow]="false"
             data-testid="runtime-context-popover-open-button">
         <i kbq-icon="kbq-branch_16"></i>
         <span>{{ tRuntime('Runtime.EventsPage.Filter.Button.Context') }}</span>
@@ -24,10 +27,10 @@
             <span class="runtime-feature-context-popover-exec-id">
                 {{ tRuntime('Runtime.EventsPage.Filter.ContextPopover.Label.Event', { id: eventId }) }}
             </span>
-            <kbq-divider class="layout-margin-top-l layout-margin-bottom-l"></kbq-divider>
+            <kbq-divider class="layout-margin-top-l layout-margin-bottom-l" />
             <section class="kbq-form__row">
                 <kbq-radio-group
-                        class="layout-column runtime-feature-context-popover-radio-group"
+                        class="layout-column"
                         [(ngModel)]="contextValue"
                         data-testid="runtime-context-popover-radio-group">
                     @for (option of runtimeContextOptions; track option.id) {
@@ -40,7 +43,7 @@
                 </kbq-radio-group>
             </section>
         } @else {
-            <transloco key="runtime.Runtime.EventsPage.Filter.ContextPopover.Hint.Event" [params]="{ template: emptyContextTemplate }"></transloco>
+            <transloco key="runtime.Runtime.EventsPage.Filter.ContextPopover.Hint.Event" [params]="{ template: emptyContextTemplate }" />
             <ng-template #emptyContextTemplate>
                 <span class="runtime-feature-context-popover-hint">
                     <i kbq-icon="kbq-branch_16"></i>
@@ -52,7 +55,7 @@
 
     <ng-template #popoverFooter>
         <div class="layout-row layout-align-end-center"
-             [ngClass]="{ 'layout-align-space-between-center': eventId }">
+             [class]="{ 'layout-align-space-between-center': eventId }">
             @if (eventId) {
                 <button kbq-button
                         type="button"

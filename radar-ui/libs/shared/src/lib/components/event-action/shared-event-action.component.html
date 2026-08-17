@@ -1,23 +1,26 @@
-<ng-container *transloco="let tCommon; prefix: 'common'">
+<section class="shared-event-action" *transloco="let tCommon; prefix: 'common'">
     @if (blockIds?.length) {
-        <span class="cs-separator shared-event-action-item">
+        <kbq-badge [outline]="true"
+                   [badgeColor]="badgeColors.FadeContrast"
+                   [attr.data-testid]="testLocator ? testLocator + '-block-text' : ''">
             @if (isIconVisible) {
-                <i kbq-icon="kbq-lock_16" class="shared-event-action-item-icon"></i>
+                <i kbq-icon="kbq-lock_16"></i>
             }
-            <span [attr.data-testid]="testLocator ? testLocator + '-block-text' : ''">{{ tCommon('Common.Pseudo.EventAction.Block') }}</span>
-        </span>
+            {{ tCommon('Common.Pseudo.EventAction.Block') }}
+        </kbq-badge>
     }
     @if (notifyIds?.length) {
-        <span class="cs-separator shared-event-action-item">
+        <kbq-badge [outline]="true"
+                   [badgeColor]="badgeColors.FadeContrast"
+                   [attr.data-testid]="testLocator ? testLocator + '-notify-text' : ''">
             @if (isIconVisible) {
-                <i kbq-icon="kbq-envelope_16" class="shared-event-action-item-icon"></i>
+                <i kbq-icon="kbq-envelope_16"></i>
             }
-            <span [attr.data-testid]="testLocator ? testLocator + '-notify-text' : ''">{{ tCommon('Common.Pseudo.EventAction.Notify') }}</span>
-        </span>
+            {{ tCommon('Common.Pseudo.EventAction.Notify') }}
+        </kbq-badge>
     }
 
-    <!-- @todo: refactor this condition -->
-    <ng-template [ngIf]="isEmptyStateShown && (!blockIds?.length && !notifyIds?.length)">
+    @if (isEmptyStateShown && !blockIds?.length && !notifyIds?.length) {
         <span>—</span>
-    </ng-template>
-</ng-container>
+    }
+</section>

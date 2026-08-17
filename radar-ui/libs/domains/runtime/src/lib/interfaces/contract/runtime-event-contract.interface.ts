@@ -1,5 +1,5 @@
-import { Detector } from '@cs/domains/detector';
 import { RuleSeverity } from '@cs/domains/rule';
+import { Detector, DetectorMitreTactic } from '@cs/domains/detector';
 
 export enum RuntimeEventType {
     EXEC = 'process_exec',
@@ -109,6 +109,8 @@ export type RuntimeEventEntity = {
 export interface RuntimeEventThreat {
     detector: Detector;
     severity: RuleSeverity;
+    reason: string;
+    tactics_covered: DetectorMitreTactic[];
 }
 
 export interface RuntimeDetectError {

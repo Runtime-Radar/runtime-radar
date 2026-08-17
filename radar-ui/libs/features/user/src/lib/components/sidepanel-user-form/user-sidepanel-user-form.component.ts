@@ -1,5 +1,5 @@
 import { PasswordRules } from '@koobiq/components/form-field';
-import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelRef } from '@koobiq/components/sidepanel';
 import { Observable, debounceTime, distinctUntilChanged, map, take } from 'rxjs';
@@ -15,9 +15,15 @@ const USER_FORM_USERNAME_VALIDATION_REG_EXP = /^[\w.-]+$/;
 @Component({
     templateUrl: './user-sidepanel-user-form.component.html',
     styleUrl: './user-sidepanel-user-form.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class UserFeatureSidepanelUserFormComponent implements AfterViewInit, OnInit {
+    private readonly formBuilder = inject(FormBuilder);
+    private readonly sidepanelRef = inject(KbqSidepanelRef);
+
+    readonly props = inject<UserSidepanelFormProps>(KBQ_SIDEPANEL_DATA);
+
     // @todo: replace observable to separate permission
     readonly isAdminRole$: Observable<boolean> = this.props.credentials$.pipe(
         take(1),
@@ -42,12 +48,6 @@ export class UserFeatureSidepanelUserFormComponent implements AfterViewInit, OnI
     );
 
     readonly passwordRules = PasswordRules;
-
-    constructor(
-        private readonly formBuilder: FormBuilder,
-        private readonly sidepanelRef: KbqSidepanelRef,
-        @Inject(KBQ_SIDEPANEL_DATA) public readonly props: UserSidepanelFormProps
-    ) {}
 
     ngOnInit() {
         if (!this.props.isEdit) {

@@ -7,7 +7,7 @@
                 <ng-template kbq-tab-label>
                     <div class="layout-column layout-align-center-start cluster-feature-stepper-tab"
                          [attr.data-counter]="$index + 1"
-                         [ngClass]="{ 'done': $index < activeTabIndex$(),
+                         [class]="{ 'done': $index < activeTabIndex$(),
                                       'active': $index === activeTabIndex$() }">
                         <strong class="kbq-text-normal-strong cluster-feature-stepper-tab-title">
                             {{ tCluster(tab.title) }}
@@ -26,7 +26,7 @@
     </kbq-tab-group>
 
     <section class="layout-row cluster-feature-stepper-action"
-             [ngClass]="{ 'layout-align-end': isFirstStep$(),
+             [class]="{ 'layout-align-end': isFirstStep$(),
                           'layout-align-space-between': !isFirstStep$() }">
         @if (!isFirstStep$()) {
             <button kbq-button

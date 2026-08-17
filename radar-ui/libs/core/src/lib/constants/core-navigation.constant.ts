@@ -7,6 +7,12 @@ export const NAVIGATION: NavigationMenu[] = [
         path: RouterName.DEFAULT,
         children: [
             {
+                path: RouterName.INVENTORY,
+                localizationKey: 'Common.Pseudo.Menu.Inventory',
+                testId: 'inventory-navbar-link',
+                icon: 'kbq-map_16'
+            },
+            {
                 path: RouterName.CLUSTERS,
                 localizationKey: 'Common.Pseudo.Menu.Cluster',
                 testId: 'cluster-navbar-link',

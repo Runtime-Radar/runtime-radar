@@ -10,8 +10,8 @@ import { DETECTOR_DOMAIN_KEY, detectorDomainReducer } from './stores/detector-se
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(DETECTOR_DOMAIN_KEY, detectorDomainReducer),
-        EffectsModule.forFeature([DetectorEffectStore])
+        EffectsModule.forFeature([DetectorEffectStore]),
+        StoreModule.forFeature(DETECTOR_DOMAIN_KEY, detectorDomainReducer)
     ]
 })
 export class DetectorDomainModule {}

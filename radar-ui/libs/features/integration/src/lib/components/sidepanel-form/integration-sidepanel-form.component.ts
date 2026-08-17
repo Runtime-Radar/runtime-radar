@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KBQ_SIDEPANEL_DATA, KbqSidepanelRef } from '@koobiq/components/sidepanel';
 
 import { INTEGRATION_TYPE, IntegrationType } from '@cs/domains/integration';
@@ -14,9 +14,14 @@ import {
 @Component({
     templateUrl: './integration-sidepanel-form.component.html',
     styleUrl: './integration-sidepanel-form.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationFeatureSidepanelFormComponent {
+    private readonly sidepanelRef = inject(KbqSidepanelRef);
+
+    readonly props = inject<Partial<IntegrationSidepanelFormProps>>(KBQ_SIDEPANEL_DATA);
+
     readonly isFormValid$ = new BehaviorSubject(false);
 
     readonly integrationType = IntegrationType;
@@ -30,11 +35,6 @@ export class IntegrationFeatureSidepanelFormComponent {
     private webhookFormValues?: IntegrationWebhookForm;
 
     integrationTypeValue = this.props.type || IntegrationType.EMAIL;
-
-    constructor(
-        private readonly sidepanelRef: KbqSidepanelRef,
-        @Inject(KBQ_SIDEPANEL_DATA) public readonly props: Partial<IntegrationSidepanelFormProps>
-    ) {}
 
     changeType() {
         this.isFormValid$.next(false);

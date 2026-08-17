@@ -1,5 +1,5 @@
 import { PopUpPlacements } from '@koobiq/components/core';
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, inject } from '@angular/core';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { Observable, filter, map, of, switchMap, take } from 'rxjs';
 
@@ -7,13 +7,14 @@ import { ApiPathService } from '@cs/api';
 import { DetectorStoreService } from '@cs/domains/detector';
 import { I18nService } from '@cs/i18n';
 import { LicenseStoreService } from '@cs/domains/license';
+import { SharedModalService } from '@cs/shared';
 import { CoreUtilsService as utils } from '@cs/core';
 import { ClusterStoreService, RegisteredCluster } from '@cs/domains/cluster';
 import { Integration, IntegrationStoreService, IntegrationType } from '@cs/domains/integration';
 import { Notification, NotificationStoreService } from '@cs/domains/notification';
 import { PermissionName, PermissionType, RolePermissionMap } from '@cs/domains/role';
 import { Rule, RuleStoreService } from '@cs/domains/rule';
-import { SharedModalService, SharedRuleSidepanelComponent, SharedRuleSidepanelProps } from '@cs/shared';
+import { RulePackageSidepanelInfoComponent, RuleSidepanelInfoProps } from '@cs/packages/rule';
 
 import { IntegrationFeatureSidepanelFormComponent } from '../../components/sidepanel-form/integration-sidepanel-form.component';
 import { IntegrationFeatureSidepanelRecipientFormComponent } from '../../components/sidepanel-recipient-form/integration-sidepanel-recipient-form.component';
@@ -30,9 +31,22 @@ import {
     selector: 'cs-integration-feature-collapse-card-container',
     templateUrl: './integration-collapse-card.container.html',
     styleUrl: './integration-collapse-card.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationFeatureCollapseCardContainer implements OnInit {
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly detectorStoreService = inject(DetectorStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly integrationStoreService = inject(IntegrationStoreService);
+    private readonly licenseStoreService = inject(LicenseStoreService);
+    private readonly notificationStoreService = inject(NotificationStoreService);
+    private readonly ruleStoreService = inject(RuleStoreService);
+    private readonly sharedModalService = inject(SharedModalService);
+
     @Input({ required: true }) type!: IntegrationType;
 
     @Input({ required: true }) permissions!: RolePermissionMap;
@@ -64,19 +78,6 @@ export class IntegrationFeatureCollapseCardContainer implements OnInit {
     readonly integrationType = IntegrationType;
 
     readonly tooltipPlacements = PopUpPlacements;
-
-    constructor(
-        private readonly apiPathService: ApiPathService,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly detectorStoreService: DetectorStoreService,
-        private readonly i18nService: I18nService,
-        private readonly licenseStoreService: LicenseStoreService,
-        private readonly integrationStoreService: IntegrationStoreService,
-        private readonly notificationStoreService: NotificationStoreService,
-        private readonly ruleStoreService: RuleStoreService,
-        private readonly sharedModalService: SharedModalService,
-        private readonly sidepanelService: KbqSidepanelService
-    ) {}
 
     ngOnInit() {
         this.list?.forEach((item) => {
@@ -336,7 +337,7 @@ export class IntegrationFeatureCollapseCardContainer implements OnInit {
             map((list) => list.filter((item) => rule.rule.notify?.targets.includes(item.id)))
         );
 
-        const config: KbqSidepanelConfig<SharedRuleSidepanelProps> = {
+        const config: KbqSidepanelConfig<RuleSidepanelInfoProps> = {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {
@@ -347,6 +348,6 @@ export class IntegrationFeatureCollapseCardContainer implements OnInit {
             }
         };
 
-        this.sidepanelService.open(SharedRuleSidepanelComponent, config).afterClosed().pipe(take(1)).subscribe();
+        this.sidepanelService.open(RulePackageSidepanelInfoComponent, config).afterClosed().pipe(take(1)).subscribe();
     }
 }

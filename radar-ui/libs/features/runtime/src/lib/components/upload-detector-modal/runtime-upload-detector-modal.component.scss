@@ -11,11 +11,7 @@
         }
 
         &-truncate {
-            display: block;
             max-width: 220px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
         }
     }
 

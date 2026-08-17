@@ -14,7 +14,7 @@
                    type="text"
                    (ngModelChange)="searchChange($event)"
                    [attr.data-testid]="testLocator + '-search-input'">
-            <kbq-cleaner></kbq-cleaner>
+            <kbq-cleaner />
         </kbq-form-field>
 
         <div kbq-select-search-empty-result>
@@ -31,10 +31,10 @@
                     *kbqTreeNodeDef="let node"
                     [checkboxThirdState]="true"
                     [disabled]="isExtraOptionDisabled(node)"
-                    [ngClass]="{ 'hidden': isExtraOptionRemoved(node) }"
+                    [class]="{ 'hidden': isExtraOptionRemoved(node) }"
                     [attr.data-testid]="treeControl.getValue(node)">
                 <span class="shared-detector-tree-select-selection-option-prewrap"
-                      [ngClass]="{ 'cs-text-gray removed': node.isExtra }"
+                      [class]="{ 'cs-text-gray removed': node.isExtra }"
                       [innerHTML]="treeControl.getValue(node)"></span>
                 @if (node.isExtra) {
                     <span class="kbq-text-compact cs-text-gray">
@@ -65,6 +65,6 @@
             </kbq-tree-option>
         </kbq-tree-selection>
 
-        <kbq-cleaner #kbqSelectCleaner></kbq-cleaner>
+        <kbq-cleaner #kbqSelectCleaner />
     </kbq-tree-select>
 </kbq-form-field>

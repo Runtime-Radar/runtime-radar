@@ -1,9 +1,9 @@
 import { Action } from '@ngrx/store';
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { NEVER, Observable, of } from 'rxjs';
 import { catchError, concatMap, filter, map, switchMap, take, tap } from 'rxjs/operators';
@@ -38,6 +38,15 @@ import { Cluster, RegisteredCluster } from '../interfaces';
     providedIn: 'root'
 })
 export class ClusterEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly router = inject(Router);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly clusterRequestService = inject(ClusterRequestService);
+    private readonly i18nService = inject(I18nService);
+
     readonly loadClusters$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_CLUSTER_ENTITIES_TODO_ACTION),
@@ -233,14 +242,4 @@ export class ClusterEffectStore {
             map(() => SWITCH_CLUSTER_EVENT_ACTION())
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly apiPathService: ApiPathService,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService,
-        private readonly clusterRequestService: ClusterRequestService,
-        private readonly router: Router,
-        private readonly toastService: KbqToastService
-    ) {}
 }

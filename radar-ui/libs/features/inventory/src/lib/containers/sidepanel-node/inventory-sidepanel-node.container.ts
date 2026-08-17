@@ -1,7 +1,7 @@
 import { KBQ_SIDEPANEL_DATA } from '@koobiq/components/sidepanel';
 import { KbqCodeBlockFile } from '@koobiq/components/code-block';
 import { stringify } from 'yaml';
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import {
@@ -18,9 +18,15 @@ import { INVENTORY_NODE_BG_COLORS, INVENTORY_NODE_TEXT_COLORS } from '../../cons
 @Component({
     templateUrl: './inventory-sidepanel-node.container.html',
     styleUrls: ['./inventory-sidepanel-node.container.scss', '../../components/inventory-abstract.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class InventoryFeatureSidepanelNodeContainer {
+    private readonly kubeManagerRequestService = inject(KubeManagerRequestService);
+    private readonly kubeManagerStoreService = inject(KubeManagerStoreService);
+
+    readonly props = inject<InventorySidepanelNodeProps>(KBQ_SIDEPANEL_DATA);
+
     readonly groupNamespaces$ = (node?: string): Observable<KubeManagerNamespaceGroup[]> =>
         this.kubeManagerStoreService.groupNamespaces$(node);
 
@@ -53,10 +59,4 @@ export class InventoryFeatureSidepanelNodeContainer {
         );
 
     readonly podPhase = KubeManagerPodPhase;
-
-    constructor(
-        private readonly kubeManagerRequestService: KubeManagerRequestService,
-        private readonly kubeManagerStoreService: KubeManagerStoreService,
-        @Inject(KBQ_SIDEPANEL_DATA) public readonly props: InventorySidepanelNodeProps
-    ) {}
 }

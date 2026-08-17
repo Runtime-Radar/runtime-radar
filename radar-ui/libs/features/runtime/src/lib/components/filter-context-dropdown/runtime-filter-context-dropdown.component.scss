@@ -1,0 +1,13 @@
+.runtime-feature-filter-context-dropdown {
+    position: fixed;
+    z-index: 1;
+    padding: 6px;
+    border-radius: var(--kbq-dropdown-size-container-border-radius);
+    background: var(--kbq-dropdown-container-background);
+    box-shadow: var(--kbq-dropdown-container-shadow);
+
+    &-item {
+        display: block;
+        width: 100%;
+    }
+}

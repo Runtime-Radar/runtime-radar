@@ -5,7 +5,8 @@ import { RuleType } from '../interfaces/contract/rule-contract.interface';
 
 @Pipe({
     name: 'ruleTypeLocalization',
-    pure: false
+    pure: false,
+    standalone: false
 })
 export class RuleTypeLocalizationPipe implements PipeTransform {
     transform(type?: RuleType): string {

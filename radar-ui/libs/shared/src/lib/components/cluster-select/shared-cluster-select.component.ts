@@ -6,7 +6,8 @@ import { RegisteredCluster } from '@cs/domains/cluster';
     selector: 'cs-cluster-select-component',
     templateUrl: './shared-cluster-select.component.html',
     styleUrl: './shared-cluster-select.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SharedClusterSelectComponent {
     @Input({ required: true }) clusters!: RegisteredCluster[] | null;

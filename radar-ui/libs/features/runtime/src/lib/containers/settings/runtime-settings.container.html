@@ -5,7 +5,7 @@
                 [clusters]="clusters$ | async"
                 [activeClusterHost]="activeClusterHost$ | async"
                 (selectClusterId)="switchCluster($event)"
-                testLocator="runtime-cluster-select"></cs-cluster-select-component>
+                testLocator="runtime-cluster-select" />
     </header>
 
     <cs-tabs-component
@@ -28,7 +28,7 @@
 
     <div class="layout-row layout-align-space-between runtime-feature-settings-row">
         <form [formGroup]="form" class="flex kbq-form-vertical runtime-feature-settings-form"
-              [ngClass]="{
+              [class]="{
                 'runtime-feature-settings-form--fixed': (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE),
                 'runtime-feature-settings-form--fixed-expert-mode': (runtimeHasPoliciesChanges$ | async) && (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE)
               }"
@@ -69,7 +69,7 @@
                            [alertStyle]="'colored'"
                            [alertColor]="alertColors.Warning"
                            [compact]="true">
-                    <i kbq-icon="kbq-exclamation-triangle_16"></i>
+                    <i kbq-icon="kbq-triangle-exclamation_16"></i>
                     <div kbq-alert-title>{{ tRuntime('Runtime.SettingsPage.Text.ExpertMode') }}</div>
                     {{ tRuntime('Runtime.SettingsPage.Text.ExpertModeDescription') }}
                 </kbq-alert>
@@ -80,7 +80,7 @@
                            [alertStyle]="'colored'"
                            [alertColor]="alertColors.Error"
                            [compact]="true">
-                    <i kbq-icon="kbq-exclamation-triangle_16"></i>
+                    <i kbq-icon="kbq-triangle-exclamation_16"></i>
                     <div kbq-alert-title>{{ tRuntime('Runtime.SettingsPage.Text.ExpertModeError') }}</div>
                     <section class="layout-column">
                         <span>{{ tRuntime('Runtime.SettingsPage.Text.ExpertModeErrorDescriptionMessage') }}: {{ rxlet.configStatus?.last_init_error || '—' }}</span>
@@ -92,15 +92,15 @@
 
             <form class="layout-column runtime-feature-settings-policy"
                   [formGroup]="policiesFormGroup"
-                  [ngClass]="{ 'has-footer': rxlet.runtimeIsExpertMode && !rxlet.configStatus?.default_tracing_policies && rxlet.runtimeGrafanaUrl }"
+                  [class]="{ 'has-footer': rxlet.runtimeIsExpertMode && !rxlet.configStatus?.default_tracing_policies && rxlet.runtimeGrafanaUrl }"
                   data-testid="runtime-policies-checkbox-group">
                 @for (control of policiesFormGroup.controls | keyvalue; track control.key) {
                     <form class="layout-row layout-align-start-center runtime-feature-settings-policy-item"
-                          [ngClass]="{ 'expert': rxlet.runtimeIsExpertMode }"
+                          [class]="{ 'expert': rxlet.runtimeIsExpertMode }"
                           [formGroupName]="control.key">
                         <kbq-checkbox
                                 formControlName="isEnabled"
-                                [ngClass]="{ 'disabled': control.key === tracingPoliciesProcessesKey || !permissions[permissionName.SYSTEM].has(permissionType.UPDATE) }"
+                                [class]="{ 'disabled': control.key === tracingPoliciesProcessesKey || !permissions[permissionName.SYSTEM].has(permissionType.UPDATE) }"
                                 [attr.data-testid]="control.value.get('name')?.value"></kbq-checkbox>
                         @if (rxlet.runtimeIsExpertMode && control.key !== tracingPoliciesProcessesKey) {
                             <button type="button"
@@ -132,7 +132,7 @@
 
             @if (rxlet.runtimeIsExpertMode && !rxlet.configStatus?.default_tracing_policies && rxlet.runtimeGrafanaUrl) {
                 <footer class="layout-row layout-align-start-center runtime-feature-settings-policy-footer">
-                    <i kbq-icon="kbq-question-circle_16" class="layout-margin-right-s"></i>
+                    <i kbq-icon="kbq-circle-question_16" class="layout-margin-right-s"></i>
                     <transloco key="runtime.Runtime.SettingsPage.Policies.Text.HasChanges" [params]="{ template: runtimeGrafanaLink }"></transloco>
                     <ng-template #runtimeGrafanaLink>
                         <a kbq-link
@@ -342,7 +342,7 @@
 
             <section class="kbq-form__row">
                 <kbq-radio-group
-                        class="layout-column runtime-feature-settings-row-radio-group"
+                        class="layout-column layout-gap-l"
                         formControlName="historyControl"
                         data-testid="runtime-event-processor-radio-group">
                     @for (option of runtimeEventProcessorOptions; track option.id) {
@@ -356,7 +356,7 @@
             </section>
 
             <section class="runtime-feature-settings-confirm-drawer"
-                     [ngClass]="{ 'runtime-feature-settings-confirm-drawer--fixed': (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE) }"
+                     [class]="{ 'runtime-feature-settings-confirm-drawer--fixed': (runtimeHasChanges$ | async) && permissions[permissionName.SYSTEM].has(permissionType.CREATE) }"
                      *ngrxLet="runtimeIsOverlayed$ as isOverlayed"
                      [isOverlayed]="isOverlayed"
                      overlay>
@@ -364,7 +364,7 @@
                     <h4 class="kbq-subheading runtime-feature-settings-confirm-drawer-title">
                         {{ tRuntime('Runtime.SettingsPage.ConfirmationDrawer.Title.Changes') }}
                     </h4>
-                    <div class="runtime-feature-settings-confirm-drawer-actions">
+                    <div class="layout-row layout-gap-m">
                         @if (isOverlayed) {
                             <button kbq-button
                                     type="button"
@@ -395,7 +395,7 @@
                                [alertStyle]="'colored'"
                                [alertColor]="alertColors.Warning"
                                [compact]="true">
-                        <i kbq-icon="kbq-exclamation-triangle_16"></i>
+                        <i kbq-icon="kbq-triangle-exclamation_16"></i>
                         {{ tRuntime('Runtime.SettingsPage.Text.ExpertWarning') }}
                     </kbq-alert>
                 }
@@ -404,6 +404,6 @@
 
         <cs-runtime-feature-rules-container
                 class="runtime-feature-settings-rules"
-                [permissions]="permissions[permissionName.RULES]"></cs-runtime-feature-rules-container>
+                [permissions]="permissions[permissionName.RULES]" />
     </div>
 </section>

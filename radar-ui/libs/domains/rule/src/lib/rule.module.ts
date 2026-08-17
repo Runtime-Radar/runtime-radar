@@ -11,8 +11,8 @@ import { RULE_DOMAIN_KEY, ruleDomainReducer } from './stores/rule-selector.store
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(RULE_DOMAIN_KEY, ruleDomainReducer),
-        EffectsModule.forFeature([RuleEffectStore])
+        EffectsModule.forFeature([RuleEffectStore]),
+        StoreModule.forFeature(RULE_DOMAIN_KEY, ruleDomainReducer)
     ],
     declarations: [RuleTypeLocalizationPipe],
     exports: [RuleTypeLocalizationPipe]

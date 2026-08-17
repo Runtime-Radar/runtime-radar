@@ -173,8 +173,25 @@ describe('KubeManagerDomainReducer', () => {
                     namespace: 'namespace1',
                     node_name: 'node1',
                     phase: KubeManagerPodPhase.RUNNING,
-                    containers: ['cntr11', 'cntr12', 'cntr13'],
-                    isVisible: null
+                    owners: [],
+                    isVisible: null,
+                    containers: [
+                        {
+                            name: 'cntr11',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        },
+                        {
+                            name: 'cntr12',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        },
+                        {
+                            name: 'cntr13',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        }
+                    ]
                 },
                 {
                     uid: 'uid2',
@@ -182,8 +199,20 @@ describe('KubeManagerDomainReducer', () => {
                     namespace: 'namespace1',
                     node_name: 'node2',
                     phase: KubeManagerPodPhase.RUNNING,
-                    containers: ['cntr21', 'cntr22'],
-                    isVisible: null
+                    owners: [],
+                    isVisible: null,
+                    containers: [
+                        {
+                            name: 'cntr21',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        },
+                        {
+                            name: 'cntr22',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        }
+                    ]
                 },
                 {
                     uid: 'uid8',
@@ -191,8 +220,15 @@ describe('KubeManagerDomainReducer', () => {
                     namespace: 'namespace1',
                     node_name: '',
                     phase: KubeManagerPodPhase.PENDING,
-                    containers: ['cntr81'],
-                    isVisible: null
+                    owners: [],
+                    isVisible: null,
+                    containers: [
+                        {
+                            name: 'cntr81',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        }
+                    ]
                 }
             ]);
         });
@@ -207,8 +243,25 @@ describe('KubeManagerDomainReducer', () => {
                     namespace: 'namespace1',
                     node_name: 'node1',
                     phase: KubeManagerPodPhase.RUNNING,
-                    containers: ['cntr11', 'cntr12', 'cntr13'],
-                    isVisible: true
+                    owners: [],
+                    isVisible: true,
+                    containers: [
+                        {
+                            name: 'cntr11',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        },
+                        {
+                            name: 'cntr12',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        },
+                        {
+                            name: 'cntr13',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        }
+                    ]
                 },
                 {
                     uid: 'uid2',
@@ -216,8 +269,20 @@ describe('KubeManagerDomainReducer', () => {
                     namespace: 'namespace1',
                     node_name: 'node2',
                     phase: KubeManagerPodPhase.RUNNING,
-                    containers: ['cntr21', 'cntr22'],
-                    isVisible: false
+                    owners: [],
+                    isVisible: false,
+                    containers: [
+                        {
+                            name: 'cntr21',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        },
+                        {
+                            name: 'cntr22',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        }
+                    ]
                 },
                 {
                     uid: 'uid8',
@@ -225,8 +290,15 @@ describe('KubeManagerDomainReducer', () => {
                     namespace: 'namespace1',
                     node_name: '',
                     phase: KubeManagerPodPhase.PENDING,
-                    containers: ['cntr81'],
-                    isVisible: false
+                    owners: [],
+                    isVisible: false,
+                    containers: [
+                        {
+                            name: 'cntr81',
+                            image_url: 'url',
+                            image_digest: 'digest'
+                        }
+                    ]
                 }
             ]);
         });

@@ -16,9 +16,9 @@ import { UserFeatureSidepanelUserFormComponent } from './components/sidepanel-us
         FormsModule,
         I18nModule,
         ReactiveFormsModule,
+        SharedModule,
         UserDomainModule,
-        UserFeatureRoutingModule,
-        SharedModule
+        UserFeatureRoutingModule
     ],
     declarations: [UserFeatureListContainer, UserFeatureSidepanelUserFormComponent]
 })

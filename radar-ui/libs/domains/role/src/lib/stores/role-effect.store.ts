@@ -1,8 +1,8 @@
 import { Action } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
 import { I18nService } from '@cs/i18n';
-import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, of } from 'rxjs';
 import { catchError, switchMap, take } from 'rxjs/operators';
@@ -23,6 +23,12 @@ import {
     providedIn: 'root'
 })
 export class RoleEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly roleRequestService = inject(RoleRequestService);
+
     readonly loadRoles$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(ALLOW_AUTH_EVENT_ACTION),
@@ -52,11 +58,4 @@ export class RoleEffectStore {
             })
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly i18nService: I18nService,
-        private readonly toastService: KbqToastService,
-        private readonly roleRequestService: RoleRequestService
-    ) {}
 }

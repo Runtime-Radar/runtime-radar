@@ -12,5 +12,10 @@
         td {
             vertical-align: middle;
         }
+
+        &-tactics {
+            max-width: 275px;
+            overflow: auto;
+        }
     }
 }

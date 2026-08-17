@@ -25,7 +25,7 @@
                 [testLocator]="testLocator + '-from'"
                 [label]="tRuntime('Runtime.EventsPage.Filter.FilterPopover.Label.DateFrom')"
                 [date]="dateTimeFrom"
-                (dateTimeChange)="changeDateFrom($event)"></cs-datetime-picker-component>
+                (dateTimeChange)="changeDateFrom($event)" />
 
         <cs-datetime-picker-component
                 [id]="id + '-to'"
@@ -33,6 +33,6 @@
                 [label]="tRuntime('Runtime.EventsPage.Filter.FilterPopover.Label.DateTo')"
                 [date]="dateTimeTo"
                 [minDate]="dateTimeFrom"
-                (dateTimeChange)="changeDateTo($event)"></cs-datetime-picker-component>
+                (dateTimeChange)="changeDateTo($event)" />
     </div>
 </ng-container>

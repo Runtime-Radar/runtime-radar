@@ -1,9 +1,9 @@
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 import { Observable, of } from 'rxjs';
 import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
@@ -36,6 +36,14 @@ import { getNotificationLoadStatus, getNotificationsByIntegrationId } from './no
     providedIn: 'root'
 })
 export class NotificationEffectStore {
+    private readonly actions$ = inject(Actions);
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly i18nService = inject(I18nService);
+    private readonly notificationRequestService = inject(NotificationRequestService);
+    private readonly store = inject<Store<NotificationState>>(Store);
+
     readonly loadNotifications$: Observable<Action> = createEffect(() =>
         this.actions$.pipe(
             ofType(LOAD_NOTIFICATION_ENTITIES_TODO_ACTION),
@@ -207,13 +215,4 @@ export class NotificationEffectStore {
             map((ids) => DELETE_NOTIFICATION_ENTITIES_DOC_ACTION({ ids }))
         )
     );
-
-    constructor(
-        private readonly actions$: Actions,
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly i18nService: I18nService,
-        private readonly notificationRequestService: NotificationRequestService,
-        private readonly store: Store<NotificationState>,
-        private readonly toastService: KbqToastService
-    ) {}
 }

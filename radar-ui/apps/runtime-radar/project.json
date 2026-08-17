@@ -47,6 +47,11 @@
                         "output": "./assets/config"
                     },
                     {
+                        "glob": "**/*",
+                        "input": "./apps/runtime-radar/src/assets/files",
+                        "output": "./assets/files"
+                    },
+                    {
                         "glob": "**/*.json",
                         "input": "./libs/i18n-resources",
                         "output": "./assets/i18n"
@@ -118,7 +123,7 @@
             "defaultConfiguration": "development"
         },
         "lint": {
-            "executor": "@nx/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "options": {
                 "lintFilePatterns": ["apps/runtime-radar/src/**/*.ts", "apps/runtime-radar/src/**/*.html"]
             }

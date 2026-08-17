@@ -31,8 +31,8 @@ const dateProviders = [
 ];
 
 describe('KubeManagerEffectStore', () => {
-    let effects: KubeManagerEffectStore;
     let actions$: ReplaySubject<Action>;
+    let effects: KubeManagerEffectStore;
     let kubeManagerRequestService: jest.Mocked<KubeManagerRequestService>;
     let store: jest.Mocked<Store<KubeManagerState>>;
 

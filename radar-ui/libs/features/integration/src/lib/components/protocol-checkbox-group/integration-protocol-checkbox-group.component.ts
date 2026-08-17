@@ -1,4 +1,3 @@
-import { Component } from '@angular/core';
 import {
     AbstractControl,
     ControlValueAccessor,
@@ -7,6 +6,7 @@ import {
     ValidationErrors,
     Validators
 } from '@angular/forms';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { IntegrationProtocolType } from '../../interfaces/integration-form.interface';
 
@@ -14,6 +14,8 @@ import { IntegrationProtocolType } from '../../interfaces/integration-form.inter
     selector: 'cs-integration-feature-protocol-checkbox-group-component',
     templateUrl: './integration-protocol-checkbox-group.component.html',
     styleUrl: './integration-protocol-checkbox-group.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,

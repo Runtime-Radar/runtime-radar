@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { RuleType } from '@cs/domains/rule';
 
@@ -21,6 +21,8 @@ import {
     providedIn: 'root'
 })
 export class NotificationStoreService {
+    private readonly store = inject<Store<NotificationState>>(Store);
+
     readonly notifications$: Observable<Notification[]> = this.store.select(getNotifications);
 
     readonly notificationsByEventType$ = (type: RuleType): Observable<Notification[]> =>
@@ -28,8 +30,6 @@ export class NotificationStoreService {
 
     readonly notificationsByIntegrationId$ = (id: string): Observable<Notification[]> =>
         this.store.select(getNotificationsByIntegrationId(id));
-
-    constructor(private readonly store: Store<NotificationState>) {}
 
     createNotification(item: CreateNotificationRequest) {
         this.store.dispatch(CREATE_NOTIFICATION_ENTITY_TODO_ACTION({ item }));

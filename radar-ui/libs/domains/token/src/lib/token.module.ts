@@ -10,8 +10,8 @@ import { TOKEN_DOMAIN_KEY, tokenDomainReducer } from './stores/token-selector.st
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(TOKEN_DOMAIN_KEY, tokenDomainReducer),
-        EffectsModule.forFeature([TokenEffectStore])
+        EffectsModule.forFeature([TokenEffectStore]),
+        StoreModule.forFeature(TOKEN_DOMAIN_KEY, tokenDomainReducer)
     ]
 })
 export class TokenDomainModule {}

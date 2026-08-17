@@ -1,4 +1,5 @@
 export * from './lib/constants';
+export * from './lib/interfaces/core-filter.interface';
 export * from './lib/interfaces/core-form-scheme.interface';
 export * from './lib/interfaces/core-navigation.interface';
 export * from './lib/interfaces/core-type-utils.interface';
@@ -7,6 +8,7 @@ export * from './lib/services/core-navigation-store.service';
 export * from './lib/services/core-utils.service';
 export * from './lib/services/core-window.service';
 export * from './lib/tokens/core-polling-interval.token';
+export * from './lib/tokens/core-locale.token';
 export * from './lib/tokens/core-refresh-interval.token';
 export * from './lib/tokens/core-child-cluster.token';
 export * from './lib/validators/core.validators';

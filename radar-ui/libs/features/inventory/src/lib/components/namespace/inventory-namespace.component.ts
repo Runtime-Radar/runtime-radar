@@ -13,7 +13,8 @@ import {
     selector: 'cs-inventory-feature-namespace-component',
     templateUrl: './inventory-namespace.component.html',
     styleUrls: ['./inventory-namespace.component.scss', '../inventory-abstract.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class InventoryFeatureNamespaceComponent {
     @Input({ required: true }) namespace!: KubeManagerNamespace;

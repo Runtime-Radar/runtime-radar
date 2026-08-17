@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, Input, booleanAttribute, model } from '@angular/core';
+import { COMMA, ENTER, SPACE } from '@koobiq/cdk/keycodes';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    booleanAttribute,
+    inject,
+    model
+} from '@angular/core';
 import {
     ControlValueAccessor,
     FormBuilder,
@@ -6,17 +15,17 @@ import {
     NG_VALIDATORS,
     NG_VALUE_ACCESSOR,
     ValidationErrors,
-    ValidatorFn,
     Validators
 } from '@angular/forms';
 import { KbqTagEditChange, KbqTagInputEvent } from '@koobiq/components/tags';
 
-import { FORM_SEPARATOR_KEY_CODES } from '@cs/core';
+import { FORM_VALIDATION_REG_EXP } from '@cs/core';
 
 @Component({
     selector: 'cs-tag-input-component',
     templateUrl: './shared-tag-input.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -31,13 +40,18 @@ import { FORM_SEPARATOR_KEY_CODES } from '@cs/core';
     ]
 })
 export class SharedTagInputComponent implements ControlValueAccessor {
+    private readonly cdr = inject(ChangeDetectorRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input({ transform: booleanAttribute }) editable = false;
 
-    @Input() validators?: ValidatorFn[];
+    @Input() validationRegExp: RegExp = FORM_VALIDATION_REG_EXP.TEXT_SYMBOLS;
 
     @Input() placeholder?: string;
 
-    @Input() hintText?: string;
+    @Input() error?: string;
+
+    @Input() hint?: string;
 
     @Input() testLocator?: string;
 
@@ -51,9 +65,7 @@ export class SharedTagInputComponent implements ControlValueAccessor {
 
     readonly editInputModel = model<string>('');
 
-    readonly separatorKeyCodes = FORM_SEPARATOR_KEY_CODES;
-
-    constructor(private readonly formBuilder: FormBuilder) {}
+    readonly separatorKeyCodes = [ENTER, COMMA, SPACE];
 
     /* eslint @typescript-eslint/no-empty-function: "off" */
     onChange = (tags: string[]) => {};
@@ -95,19 +107,18 @@ export class SharedTagInputComponent implements ControlValueAccessor {
     writeValue(tags: string[] | null) {
         if (tags?.length) {
             tags.forEach((tag) => {
-                this.control.push(
-                    this.formBuilder.nonNullable.control(tag, this.validators?.length ? this.validators : null)
-                );
+                this.control.push(this.formBuilder.nonNullable.control(tag, Validators.pattern(this.validationRegExp)));
             });
+        } else {
+            this.control.clear();
+            this.cdr.markForCheck();
         }
     }
 
     addTag(event: KbqTagInputEvent) {
         const value = event.value.trim();
         if (value) {
-            this.control.push(
-                this.formBuilder.nonNullable.control(value, this.validators?.length ? this.validators : null)
-            );
+            this.control.push(this.formBuilder.nonNullable.control(value, Validators.pattern(this.validationRegExp)));
             event.input.value = '';
             this.onChange(this.control.value);
         }

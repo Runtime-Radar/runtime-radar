@@ -1,8 +1,16 @@
 import { PopUpPlacements } from '@koobiq/components/core';
 import { Router } from '@angular/router';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, booleanAttribute } from '@angular/core';
+import { BehaviorSubject, filter, take } from 'rxjs';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    Input,
+    Output,
+    booleanAttribute,
+    inject
+} from '@angular/core';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
-import { filter, take } from 'rxjs';
 
 import { PermissionType } from '@cs/domains/role';
 import {
@@ -14,25 +22,30 @@ import {
     RuleStoreService,
     RuleType
 } from '@cs/domains/rule';
+import { GridColumnKey, GridColumns } from '@cs/packages/grid';
 import {
     RUNTIME_CONTEXT,
     RuntimeCapabilityType,
     RuntimeContext,
     RuntimeDetectError,
-    RuntimeEventEntity,
     RuntimeEventProcess,
     RuntimeEventThreat,
     RuntimeEventType
 } from '@cs/domains/runtime';
 import { RouterName, CoreUtilsService as utils } from '@cs/core';
-import { SharedRuleSidepanelFormComponent, SharedRuleSidepanelFormProps } from '@cs/shared';
+import { RuleForm, RulePackageSidepanelFormComponent, RuleSidepanelFormProps } from '@cs/packages/rule';
 
 import { RuntimeFeatureSidepanelCodeComponent } from '../../components/sidepanel-code/runtime-sidepanel-code.component';
 import { RuntimeFeatureSidepanelIncidentComponent } from '../../components/sidepanel-incident/runtime-sidepanel-incident.component';
 import { RuntimeFeatureSidepanelThreatsComponent } from '../../components/sidepanel-threats/runtime-sidepanel-threats.component';
 import { RuntimeRouterName } from '../../interfaces/runtime-navigation.interface';
-import { RuntimeRuleForm } from '../../interfaces/runtime-form.interface';
 import { RuntimeEventExtended, RuntimeEventsGridContextId } from '../../interfaces/runtime-events.interface';
+import {
+    RuntimeEventFilterContextDropdown,
+    RuntimeEventFilterKey,
+    RuntimeEventFilters
+} from '../../interfaces/runtime-filter.interface';
+
 import {
     RuntimeSidepanelCodeProps,
     RuntimeSidepanelIncidentProps,
@@ -43,9 +56,15 @@ import {
     selector: 'cs-runtime-feature-events-grid-container',
     templateUrl: './runtime-events-grid.container.html',
     styleUrl: './runtime-events-grid.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class RuntimeFeatureEventsGridContainer {
+    private readonly router = inject(Router);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly ruleStoreService = inject(RuleStoreService);
+
     localEvents: RuntimeEventExtended[] = [];
     @Input({ required: true }) set events(values: RuntimeEventExtended[] | null) {
         if (values) {
@@ -53,13 +72,27 @@ export class RuntimeFeatureEventsGridContainer {
         }
     }
 
+    @Input() filters?: RuntimeEventFilters | null;
+
+    @Input() columns: Partial<GridColumns> = {};
+
     @Input() activeContextId?: string | null;
 
     @Input() rulePermissions = new Map<PermissionType, boolean>();
 
     @Input({ transform: booleanAttribute }) isContextChangeAvailable = false;
 
+    @Input({ transform: booleanAttribute }) isGridCustomizationAvailable = false;
+
     @Output() contextIdChange = new EventEmitter<RuntimeEventsGridContextId>();
+
+    @Output() filterChange = new EventEmitter<RuntimeEventFilterContextDropdown>();
+
+    @Output() columnChange = new EventEmitter<GridColumnKey>();
+
+    private activeViewCodeGridIndex = 0;
+
+    readonly activeViewCodeId$ = new BehaviorSubject<string | null>(null);
 
     readonly ruleSeverityOptions: RuleSeverityOption[] = [...RULE_SEVERITIES].sort(
         (a, b) => RULE_SEVERITY_ORDER[a.id] - RULE_SEVERITY_ORDER[b.id]
@@ -71,7 +104,7 @@ export class RuntimeFeatureEventsGridContainer {
 
     readonly runtimeEventType = RuntimeEventType;
 
-    readonly ruleSeverity = RuleSeverity;
+    readonly runtimeEventFilterKey = RuntimeEventFilterKey;
 
     readonly permissionType = PermissionType;
 
@@ -79,11 +112,7 @@ export class RuntimeFeatureEventsGridContainer {
 
     readonly runtimeCapabilityType = RuntimeCapabilityType;
 
-    constructor(
-        private readonly router: Router,
-        private readonly ruleStoreService: RuleStoreService,
-        private readonly sidepanelService: KbqSidepanelService
-    ) {}
+    readonly gridColumnKey = GridColumnKey;
 
     goToDetailsPage(id: string) {
         this.router.navigate([RouterName.DEFAULT, RouterName.RUNTIME, RuntimeRouterName.EVENTS, id]);
@@ -98,6 +127,10 @@ export class RuntimeFeatureEventsGridContainer {
                 parentExecId
             });
         }
+    }
+
+    changeFilterContext(context: RuntimeEventFilterContextDropdown) {
+        this.filterChange.emit(context);
     }
 
     openThreatsSidepanel(
@@ -123,7 +156,7 @@ export class RuntimeFeatureEventsGridContainer {
     }
 
     openCreateRuleSidepanel(event: RuntimeEventExtended, process: RuntimeEventProcess) {
-        const config: KbqSidepanelConfig<Partial<SharedRuleSidepanelFormProps>> = {
+        const config: KbqSidepanelConfig<Partial<RuleSidepanelFormProps>> = {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
             data: {
@@ -158,10 +191,10 @@ export class RuntimeFeatureEventsGridContainer {
         };
 
         this.sidepanelService
-            .open(SharedRuleSidepanelFormComponent, config)
+            .open(RulePackageSidepanelFormComponent, config)
             .afterClosed()
             .pipe(take(1), filter(utils.isDefined))
-            .subscribe((form: RuntimeRuleForm) => {
+            .subscribe((form: RuleForm) => {
                 const request: CreateRuleRequest = {
                     name: form.name,
                     type: RuleType.TYPE_RUNTIME,
@@ -218,12 +251,23 @@ export class RuntimeFeatureEventsGridContainer {
             .subscribe();
     }
 
-    openViewCodeSidepanel(entity: RuntimeEventEntity) {
+    openViewCodeSidepanel(index: number) {
+        this.activeViewCodeGridIndex = index;
+        this.activeViewCodeId$.next(this.localEvents[index].id);
+
         const config: KbqSidepanelConfig<RuntimeSidepanelCodeProps> = {
-            position: KbqSidepanelPosition.Right,
+            id: `sidepanelCode${index}`,
             hasBackdrop: true,
+            overlayPanelClass: 'runtime-feature-sidepanel-code',
+            backdropClass: 'runtime-feature-sidepanel-code-backdrop',
+            position: KbqSidepanelPosition.Right,
             data: {
-                content: JSON.stringify(entity)
+                content: JSON.stringify(this.localEvents[index].event),
+                nextHandler:
+                    this.activeViewCodeGridIndex + 1 === this.localEvents.length
+                        ? undefined
+                        : this.changeEvent.bind(this),
+                prevHandler: !this.activeViewCodeGridIndex ? undefined : this.changeEvent.bind(this)
             }
         };
 
@@ -231,7 +275,16 @@ export class RuntimeFeatureEventsGridContainer {
             .open(RuntimeFeatureSidepanelCodeComponent, config)
             .afterClosed()
             .pipe(take(1))
-            .subscribe();
+            .subscribe(() => {
+                if (!this.sidepanelService.openedSidepanels.length) {
+                    this.activeViewCodeId$.next(null);
+                }
+            });
+    }
+
+    private changeEvent(isNext: boolean) {
+        this.sidepanelService.getSidepanelById(`sidepanelCode${this.activeViewCodeGridIndex}`)?.close();
+        this.openViewCodeSidepanel(isNext ? this.activeViewCodeGridIndex + 1 : this.activeViewCodeGridIndex - 1);
     }
 
     private extendEventsBySeverity(events: RuntimeEventExtended[]): RuntimeEventExtended[] {

@@ -1,5 +1,6 @@
 import { of } from 'rxjs';
 import { Spy, createSpyFromClass } from 'jest-auto-spies';
+import { createEnvironmentInjector, runInInjectionContext } from '@angular/core';
 
 import { DEFAULT_PAGINATOR_PAGE_SIZE } from '@cs/shared';
 import {
@@ -22,7 +23,7 @@ import {
 import { RuntimeEventContext, RuntimeEventFilters } from '../interfaces/runtime-filter.interface';
 
 describe('RuntimeFeatureRequestAdapterService', () => {
-    let requestService: Spy<RuntimeRequestService>;
+    let runtimeRequestService: Spy<RuntimeRequestService>;
     let service: RuntimeFeatureRequestAdapterService;
 
     const getEventsResponse: GetRuntimeEventsResponse = {
@@ -32,10 +33,21 @@ describe('RuntimeFeatureRequestAdapterService', () => {
     };
 
     beforeEach(() => {
-        requestService = createSpyFromClass(RuntimeRequestService, {
+        runtimeRequestService = createSpyFromClass(RuntimeRequestService, {
             methodsToSpyOn: ['getEvents', 'getEventsByFilter']
         });
-        service = new RuntimeFeatureRequestAdapterService(requestService);
+
+        const injector = createEnvironmentInjector(
+            [
+                {
+                    provide: RuntimeRequestService,
+                    useValue: runtimeRequestService
+                }
+            ],
+            null as any
+        );
+
+        service = runInInjectionContext(injector, () => new RuntimeFeatureRequestAdapterService());
     });
 
     afterEach(() => {
@@ -43,7 +55,7 @@ describe('RuntimeFeatureRequestAdapterService', () => {
     });
 
     it('should call getEvents when filters are empty', () => {
-        requestService.getEvents.mockReturnValue(of(getEventsResponse));
+        runtimeRequestService.getEvents.mockReturnValue(of(getEventsResponse));
 
         service.getEvents(
             RUNTIME_EVENTS_PAGINATION,
@@ -52,7 +64,7 @@ describe('RuntimeFeatureRequestAdapterService', () => {
             DEFAULT_PAGINATOR_PAGE_SIZE
         );
 
-        expect(requestService.getEvents).toHaveBeenCalledWith(RuntimeEventCursorDirection.RIGHT, {
+        expect(runtimeRequestService.getEvents).toHaveBeenCalledWith(RuntimeEventCursorDirection.RIGHT, {
             cursor: RUNTIME_EVENTS_CURSOR,
             slice_size: DEFAULT_PAGINATOR_PAGE_SIZE
         });
@@ -102,11 +114,11 @@ describe('RuntimeFeatureRequestAdapterService', () => {
                 to: '2025-09-19'
             }
         };
-        requestService.getEventsByFilter.mockReturnValue(of(getEventsResponse));
+        runtimeRequestService.getEventsByFilter.mockReturnValue(of(getEventsResponse));
 
         service.getEvents(RUNTIME_EVENTS_PAGINATION, filters, context, DEFAULT_PAGINATOR_PAGE_SIZE);
 
-        expect(requestService.getEventsByFilter).toHaveBeenCalledWith(RuntimeEventCursorDirection.RIGHT, {
+        expect(runtimeRequestService.getEventsByFilter).toHaveBeenCalledWith(RuntimeEventCursorDirection.RIGHT, {
             cursor: RUNTIME_EVENTS_CURSOR,
             slice_size: DEFAULT_PAGINATOR_PAGE_SIZE,
             filter: filterResponse

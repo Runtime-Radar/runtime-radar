@@ -1,4 +1,4 @@
-import { RuleForm } from '@cs/shared';
+import { RuleForm } from '@cs/packages/rule';
 import { RuleSeverity } from '@cs/domains/rule';
 
 export const RULE_FORM: RuleForm = {

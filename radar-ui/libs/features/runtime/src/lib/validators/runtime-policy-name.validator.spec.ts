@@ -7,7 +7,7 @@ import { RuntimeFeaturePolicyNameService } from '../services/runtime-policy-name
 import { RuntimeFeaturePolicyNameValidator } from './runtime-policy-name.validator';
 
 describe('RuntimeFeaturePolicyNameValidator', () => {
-    let runtimePolicyNameService: jest.Mocked<RuntimeFeaturePolicyNameService>;
+    let runtimeFeaturePolicyNameService: jest.Mocked<RuntimeFeaturePolicyNameService>;
     let nameUniqueValidator: AsyncValidatorFn;
 
     beforeEach(async () => {
@@ -15,12 +15,15 @@ describe('RuntimeFeaturePolicyNameValidator', () => {
             providers: [provideAutoSpy(RuntimeFeaturePolicyNameService)]
         });
 
-        runtimePolicyNameService = fixture.debugElement.injector.get(
+        runtimeFeaturePolicyNameService = fixture.debugElement.injector.get(
             RuntimeFeaturePolicyNameService
         ) as jest.Mocked<RuntimeFeaturePolicyNameService>;
-        nameUniqueValidator = RuntimeFeaturePolicyNameValidator.isNameUnique(runtimePolicyNameService, 'originName');
+        nameUniqueValidator = RuntimeFeaturePolicyNameValidator.isNameUnique(
+            runtimeFeaturePolicyNameService,
+            'originName'
+        );
 
-        runtimePolicyNameService.get.mockReturnValue(['originName', 'controlName']);
+        runtimeFeaturePolicyNameService.get.mockReturnValue(['originName', 'controlName']);
     });
 
     afterEach(() => {

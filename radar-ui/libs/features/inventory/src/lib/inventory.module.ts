@@ -4,11 +4,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { I18nModule } from '@cs/i18n';
 import { KubeManagerDomainModule } from '@cs/domains/kube-manager';
+import { RulePackageModule } from '@cs/packages/rule';
 import { SharedModule } from '@cs/shared';
 
 import { InventoryFeatureDetectorTableComponent } from './components/detector-table/inventory-detector-table.component';
 import { InventoryFeatureDragAreaDirective } from './directives/inventory-drag-area.directive';
-import { InventoryFeatureFilterPopoverComponent } from './components/filter-popover/inventory-filter-popover.component';
 import { InventoryFeatureLegendComponent } from './components/legend/inventory-legend.component';
 import { InventoryFeatureMapContainer } from './containers/map/inventory-map.container';
 import { InventoryFeatureNamespaceComponent } from './components/namespace/inventory-namespace.component';
@@ -24,15 +24,15 @@ import { InventoryFeatureSidepanelPodComponent } from './components/sidepanel-po
         CommonModule,
         FormsModule,
         I18nModule,
-        ReactiveFormsModule,
-        InventoryFeatureRoutingModule,
         KubeManagerDomainModule,
-        SharedModule
+        ReactiveFormsModule,
+        RulePackageModule,
+        SharedModule,
+        InventoryFeatureRoutingModule
     ],
     declarations: [
         InventoryFeatureDetectorTableComponent,
         InventoryFeatureDragAreaDirective,
-        InventoryFeatureFilterPopoverComponent,
         InventoryFeatureLegendComponent,
         InventoryFeatureMapContainer,
         InventoryFeatureNamespaceComponent,

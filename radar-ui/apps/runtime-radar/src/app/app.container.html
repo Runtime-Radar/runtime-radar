@@ -1,18 +1,18 @@
 <div class="layout-row layout-align-stretch-start app">
     <ng-container *ngrxLet="{
-        loadStatus: (loadStatus$ | async),
         routerName: (routerName$ | async),
-        role: (role$ | async),
-        credentials: (credentials$ | async)!,
+        loadStatus: (loadStatus$ | async),
         appVersion: (appVersion$ | async),
         hostAppVersion: (hostAppVersion$ | async),
-        isVersionDiff: (isVersionDiff$ | async)
+        isVersionDiff: (isVersionDiff$ | async),
+        credentials: (credentials$ | async)!,
+        role: (role$ | async)
     } as rxlet">
         @if (rxlet.loadStatus === loadStatus.LOADED) {
             <cs-navbar-component
                     [role]="rxlet.role?.role_name"
                     [credentials]="rxlet.credentials"
-                    (signOut)="signOut()"></cs-navbar-component>
+                    (signOut)="signOut()" />
         }
 
         <section class="app-router">

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { ErrorHandler, Injectable } from '@angular/core';
+import { ErrorHandler, Injectable, inject } from '@angular/core';
 import { KbqToastService, KbqToastStyle } from '@koobiq/components/toast';
 
 import { I18nService } from '@cs/i18n';
@@ -12,12 +12,11 @@ import { AuthLocalStorageService } from '../services/auth-local-storage.services
     providedIn: 'root'
 })
 export class AuthChunksLoadHandler implements ErrorHandler {
-    constructor(
-        private readonly authLocalStorageService: AuthLocalStorageService,
-        private readonly i18nService: I18nService,
-        private readonly toastService: KbqToastService,
-        private readonly router: Router
-    ) {}
+    private readonly router = inject(Router);
+    private readonly toastService = inject(KbqToastService);
+
+    private readonly authLocalStorageService = inject(AuthLocalStorageService);
+    private readonly i18nService = inject(I18nService);
 
     handleError(error: HttpErrorResponse) {
         const chunkRegExp = /Loading chunk [^\s]+ failed/;

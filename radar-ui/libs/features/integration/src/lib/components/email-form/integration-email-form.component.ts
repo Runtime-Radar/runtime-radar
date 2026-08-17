@@ -7,7 +7,8 @@ import {
     EventEmitter,
     Input,
     OnInit,
-    Output
+    Output,
+    inject
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, startWith, tap } from 'rxjs';
@@ -26,9 +27,13 @@ import { IntegrationEmailForm, IntegrationProtocolType } from '../../interfaces/
 @Component({
     selector: 'cs-integration-feature-email-form-component',
     templateUrl: './integration-email-form.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationFeatureEmailFormComponent implements AfterViewInit, OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly formBuilder = inject(FormBuilder);
+
     @Input() values?: IntegrationEmail;
 
     @Output() formChange = new EventEmitter<IntegrationEmailForm | undefined>();
@@ -95,11 +100,6 @@ export class IntegrationFeatureEmailFormComponent implements AfterViewInit, OnIn
     );
 
     readonly integrationEmailAuthTypeOptions = INTEGRATION_EMAIL_AUTH_TYPE;
-
-    constructor(
-        private readonly destroyRef: DestroyRef,
-        private readonly formBuilder: FormBuilder
-    ) {}
 
     ngOnInit() {
         this.onFormValidChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe();

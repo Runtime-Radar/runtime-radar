@@ -10,8 +10,8 @@ const translateDictionaryCollection = new Set<string>();
 
 const i18nTranslationActivate = (route: ActivatedRouteSnapshot): Observable<boolean> => {
     const i18nService = inject(I18nService);
-    const translocoService = inject(TranslocoService);
     const toastService = inject(KbqToastService);
+    const translocoService = inject(TranslocoService);
 
     /* eslint @typescript-eslint/dot-notation: "off" */
     const translateDicts: string[] | undefined = route.data['translateDicts'];

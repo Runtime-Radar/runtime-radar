@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { Injectable, inject } from '@angular/core';
 
 import { LoadStatus } from '@cs/core';
 
@@ -17,6 +17,8 @@ import { getRule, getRuleLoadStatus, getRules, getRulesByNotificationId } from '
     providedIn: 'root'
 })
 export class RuleStoreService {
+    private readonly store = inject<Store<RuleState>>(Store);
+
     readonly rules$: Observable<Rule[]> = this.store.select(getRules);
 
     readonly rulesByNotificationId$ = (id: string): Observable<Rule[]> =>
@@ -25,8 +27,6 @@ export class RuleStoreService {
     readonly rule$ = (id: string): Observable<Rule | undefined> => this.store.select(getRule(id));
 
     readonly loadStatus$: Observable<LoadStatus> = this.store.select(getRuleLoadStatus);
-
-    constructor(private readonly store: Store<RuleState>) {}
 
     createRule(item: CreateRuleRequest) {
         this.store.dispatch(CREATE_RULE_ENTITY_TODO_ACTION({ item }));

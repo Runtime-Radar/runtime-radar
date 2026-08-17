@@ -62,7 +62,7 @@
     "Integration.CreateForm.Button.ConfirmWithoutCheck": "Connect without checking",
     "Integration.CreateForm.Button.Cancel": "Cancel",
 
-    "Integration.EditForm.Title.Edit": "Editing the notification service",
+    "Integration.EditForm.Title.Edit": "Edit notification service",
     "Integration.EditForm.Button.Confirm": "Save",
     "Integration.EditForm.Button.ConfirmWithoutCheck": "Save without checking",
 
@@ -77,11 +77,6 @@
     "Integration.RecipientForm.Placeholder.CentralUrl": "https://central.cs.example.com",
     "Integration.RecipientForm.Label.Template": "Notification body",
     "Integration.RecipientForm.Label.Subject": "Message subject",
-    "Integration.RecipientForm.Value.Subject.Image": "Runtime Radar: incident while scanning the image {{.event.GetImageName}}",
-    "Integration.RecipientForm.Value.Subject.Malware": "Runtime Radar: software incident while scanning the image {{.event.GetImageName}}",
-    "Integration.RecipientForm.Value.Subject.Iac": "Runtime Radar: incident while scanning the configuration {{.event.GetIacPath}}",
-    "Integration.RecipientForm.Value.Subject.PeriodicScan": "Runtime Radar: incident during a scheduled scan of the image {{.event.GetImageName}}",
-    "Integration.RecipientForm.Value.Subject.Admission": "Runtime Radar: incident while checking an event via the admission controller",
     "Integration.RecipientForm.Value.Subject.Runtime": "Runtime Radar: incident in a runtime event",
     "Integration.RecipientForm.Label.Path": "Path",
     "Integration.RecipientForm.Placeholder.Path": "/",
@@ -92,7 +87,7 @@
     "Integration.RecipientForm.Button.Confirm": "Add",
     "Integration.RecipientForm.Button.Cancel": "Cancel",
 
-    "Integration.EditRecipientForm.Title.Edit": "Editing the notification template",
+    "Integration.EditRecipientForm.Title.Edit": "Edit notification template",
     "Integration.EditRecipientForm.Text.Type": "<<<type>>> \"<<<name>>>\"",
     "Integration.EditRecipientForm.Button.Confirm": "Save",
 

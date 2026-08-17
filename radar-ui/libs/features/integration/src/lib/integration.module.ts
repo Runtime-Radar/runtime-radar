@@ -7,6 +7,7 @@ import { I18nModule } from '@cs/i18n';
 import { IntegrationDomainModule } from '@cs/domains/integration';
 import { NotificationDomainModule } from '@cs/domains/notification';
 import { RuleDomainModule } from '@cs/domains/rule';
+import { RulePackageModule } from '@cs/packages/rule';
 import { SharedModule } from '@cs/shared';
 
 import { IntegrationFeatureCollapseCardContainer } from './containers/collapse-card/integration-collapse-card.container';
@@ -22,14 +23,15 @@ import { IntegrationFeatureWebhookFormComponent } from './components/webhook-for
 @NgModule({
     imports: [
         CommonModule,
+        DetectorDomainModule,
         FormsModule,
         I18nModule,
-        ReactiveFormsModule,
-        DetectorDomainModule,
         IntegrationDomainModule,
         IntegrationFeatureRoutingModule,
         NotificationDomainModule,
+        ReactiveFormsModule,
         RuleDomainModule,
+        RulePackageModule,
         SharedModule
     ],
     declarations: [

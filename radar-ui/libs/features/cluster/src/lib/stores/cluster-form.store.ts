@@ -1,7 +1,7 @@
 import { ComponentStore } from '@ngrx/component-store';
 import { DateAdapter } from '@koobiq/components/core';
 import { DateTime } from 'luxon';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, distinctUntilChanged } from 'rxjs';
 
 import { CoreWindowService, CoreUtilsService as utils } from '@cs/core';
@@ -34,6 +34,9 @@ const CLUSTER_FORM_INITIAL_STATE: Omit<ClusterFormState, 'id'> = {
 
 @Injectable()
 export class ClusterFeatureFormComponentStore extends ComponentStore<ClusterFormState> {
+    private readonly dateAdapter = inject<DateAdapter<DateTime>>(DateAdapter);
+    private readonly coreWindowService = inject(CoreWindowService);
+
     form: ClusterFormState | null = null;
 
     readonly form$: Observable<ClusterFormState> = this.select((state) => state);
@@ -51,10 +54,7 @@ export class ClusterFeatureFormComponentStore extends ComponentStore<ClusterForm
         return object;
     });
 
-    constructor(
-        private readonly dateAdapter: DateAdapter<DateTime>,
-        private readonly coreWindowService: CoreWindowService
-    ) {
+    constructor() {
         super();
 
         const initialState = this.getInitialState();

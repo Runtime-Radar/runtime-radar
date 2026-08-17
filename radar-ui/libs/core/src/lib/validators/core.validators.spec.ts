@@ -1,6 +1,7 @@
 import { FormControl, ValidatorFn } from '@angular/forms';
 
-import { CoreValidators, FORM_VALIDATION_DENIED_IP } from '@cs/core';
+import { CoreValidators } from '../validators/core.validators';
+import { FORM_VALIDATION_DENIED_IP } from '../constants';
 
 describe('CoreValidators', () => {
     let segmentValidator: ValidatorFn;

@@ -11,11 +11,7 @@
     }
 
     .text-overflow {
-        display: block;
         max-width: 195px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
     }
 
     &-loader {

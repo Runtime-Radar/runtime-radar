@@ -12,13 +12,13 @@ import { RuntimeState } from '../interfaces';
 import { runtimeActivateGuard } from './runtime-activate.guard';
 
 describe('runtimeActivateGuard', () => {
+    let injector: EnvironmentInjector;
+    let loadStatus$: ReplaySubject<LoadStatus>;
     let store: jest.Mocked<Store<RuntimeState>>;
     let router: jest.Mocked<Router>;
-    let status$: ReplaySubject<LoadStatus>;
-    let injector: EnvironmentInjector;
 
     beforeEach(async () => {
-        status$ = new ReplaySubject<LoadStatus>(LoadStatus.IN_PROGRESS);
+        loadStatus$ = new ReplaySubject<LoadStatus>(LoadStatus.IN_PROGRESS);
 
         const { fixture } = await render('<div></div>', {
             providers: [provideAutoSpy(Store<RuntimeState>), provideAutoSpy(Router)]
@@ -26,9 +26,8 @@ describe('runtimeActivateGuard', () => {
 
         injector = fixture.componentRef.injector.get(EnvironmentInjector);
         store = fixture.debugElement.injector.get(Store) as jest.Mocked<Store<RuntimeState>>;
+        store.select.mockReturnValue(loadStatus$.asObservable());
         router = fixture.debugElement.injector.get(Router) as jest.Mocked<Router>;
-
-        store.select.mockReturnValue(status$.asObservable());
         router.createUrlTree.mockReturnValue({} as UrlTree);
     });
 
@@ -44,8 +43,8 @@ describe('runtimeActivateGuard', () => {
             });
         });
 
-        status$.next(LoadStatus.INIT);
-        status$.next(LoadStatus.LOADED);
+        loadStatus$.next(LoadStatus.INIT);
+        loadStatus$.next(LoadStatus.LOADED);
     });
 
     it('should return UrlTree when status is ERROR', (done) => {
@@ -56,6 +55,6 @@ describe('runtimeActivateGuard', () => {
             });
         });
 
-        status$.next(LoadStatus.ERROR);
+        loadStatus$.next(LoadStatus.ERROR);
     });
 });

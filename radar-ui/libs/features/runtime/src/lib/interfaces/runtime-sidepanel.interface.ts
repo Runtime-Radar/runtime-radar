@@ -1,3 +1,4 @@
+import { DetectorExtended } from '@cs/domains/detector';
 import { PermissionType } from '@cs/domains/role';
 import { RuleSeverity } from '@cs/domains/rule';
 import {
@@ -25,6 +26,8 @@ export interface RuntimeSidepanelPermissionFormProps {
 
 export interface RuntimeSidepanelCodeProps {
     content: string;
+    nextHandler?: (isNext: boolean) => void;
+    prevHandler?: (isNext: boolean) => void;
 }
 
 export interface RuntimeSidepanelPolicyProps {
@@ -47,4 +50,10 @@ export interface RuntimeSidepanelIncidentProps {
     threats: RuntimeEventThreat[];
     ruleIds: string[];
     permissions: Map<PermissionType, boolean>;
+}
+
+export interface RuntimeSidepanelDetectorProps {
+    detector: DetectorExtended;
+    permissions: Map<PermissionType, boolean>;
+    deleteHandler?: (key: string, version: number) => void;
 }

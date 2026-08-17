@@ -1,6 +1,7 @@
 import { ActivatedRoute } from '@angular/router';
 import { DateTime } from 'luxon';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { PopUpPlacements } from '@koobiq/components/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { KbqSidepanelConfig, KbqSidepanelPosition, KbqSidepanelService } from '@koobiq/components/sidepanel';
 import { Observable, filter, map, switchMap, take } from 'rxjs';
 
@@ -20,9 +21,20 @@ import { TokenForm, TokenPermissionForm, TokenPermissionType } from '../../inter
 @Component({
     templateUrl: './token-list.container.html',
     styleUrl: './token-list.container.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class TokenFeatureListContainer {
+    private readonly route = inject(ActivatedRoute);
+    private readonly sidepanelService = inject(KbqSidepanelService);
+
+    private readonly apiPathService = inject(ApiPathService);
+    private readonly authStoreService = inject(AuthStoreService);
+    private readonly clusterStoreService = inject(ClusterStoreService);
+    private readonly i18nService = inject(I18nService);
+    private readonly sharedModalService = inject(SharedModalService);
+    private readonly tokenStoreService = inject(TokenStoreService);
+
     readonly tokens$: Observable<Token[]> = this.tokenStoreService.tokens$.pipe(
         map((tokens) => tokens.sort((a, b) => (a.access_token === b.access_token ? 0 : a.access_token ? -1 : 1)))
     );
@@ -44,18 +56,9 @@ export class TokenFeatureListContainer {
 
     readonly tokenPermissionName = TokenPermissionName;
 
-    readonly dateTimeFullFormat = DateTime.DATETIME_FULL;
+    readonly tooltipPlacements = PopUpPlacements;
 
-    constructor(
-        private readonly authStoreService: AuthStoreService,
-        private readonly apiPathService: ApiPathService,
-        private readonly clusterStoreService: ClusterStoreService,
-        private readonly i18nService: I18nService,
-        private readonly route: ActivatedRoute,
-        private readonly sharedModalService: SharedModalService,
-        private readonly sidepanelService: KbqSidepanelService,
-        private readonly tokenStoreService: TokenStoreService
-    ) {}
+    readonly dateTimeFullFormat = DateTime.DATETIME_FULL;
 
     openCreateSidepanel() {
         const config: KbqSidepanelConfig<TokenSidepanelFormProps> = {
@@ -88,6 +91,10 @@ export class TokenFeatureListContainer {
                     expires_at: form.date ? form.date.toJSDate().toISOString() : null, // RFC3339
                     user_id: userId,
                     permissions: {
+                        [TokenPermissionName.CLUSTERS]: {
+                            actions: this.getPermissionActions(form.permissions[TokenPermissionName.CLUSTERS]),
+                            description: ''
+                        },
                         [TokenPermissionName.RULES]: {
                             actions: this.getPermissionActions(form.permissions[TokenPermissionName.RULES]),
                             description: ''
@@ -132,7 +139,7 @@ export class TokenFeatureListContainer {
     }
 
     private getPermissionActions(form: TokenPermissionForm): PermissionType[] {
-        return Object.entries(form).reduce((acc, [key, value]) => {
+        return Object.entries(form).reduce<PermissionType[]>((acc, [key, value]) => {
             if (!value) {
                 return acc;
             }
@@ -153,6 +160,6 @@ export class TokenFeatureListContainer {
             }
 
             return acc;
-        }, [] as PermissionType[]);
+        }, []);
     }
 }

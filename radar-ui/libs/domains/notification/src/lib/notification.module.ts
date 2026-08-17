@@ -10,8 +10,8 @@ import { NOTIFICATION_DOMAIN_KEY, notificationDomainReducer } from './stores/not
 @NgModule({
     imports: [
         ApiModule,
-        StoreModule.forFeature(NOTIFICATION_DOMAIN_KEY, notificationDomainReducer),
-        EffectsModule.forFeature([NotificationEffectStore])
+        EffectsModule.forFeature([NotificationEffectStore]),
+        StoreModule.forFeature(NOTIFICATION_DOMAIN_KEY, notificationDomainReducer)
     ]
 })
 export class NotificationDomainModule {}
