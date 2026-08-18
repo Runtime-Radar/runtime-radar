@@ -3,13 +3,13 @@ package server
 import (
 	"crypto/tls"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/cors"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
 	"github.com/runtime-radar/runtime-radar/lib/server/middleware"
 	local_middleware "github.com/runtime-radar/runtime-radar/public-api/pkg/server/middleware"
@@ -22,6 +22,9 @@ const (
 	writeTimeout = 5 * time.Second
 )
 
+// corsAllowedHeaders adds X-Auth-Key, which public-api accepts on top of the shared headers.
+var corsAllowedHeaders = append(slices.Clone(middleware.DefaultCORSHeaders), "X-Auth-Key")
+
 // New constructs and configures new *http.Server capable of serving application endpoints.
 func New(
 	httpAddr string,
@@ -32,6 +35,7 @@ func New(
 	configSvc service.Config,
 	nodeSvc service.Node,
 	podSvc service.Pod,
+	corsAllowedOrigins []string,
 ) *http.Server {
 	r := mux.NewRouter()
 
@@ -39,7 +43,7 @@ func New(
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		Addr:         httpAddr,
-		Handler:      setupRouter(r, accessTokenSvc, ruleSvc, runtimeHistorySvc, configSvc, nodeSvc, podSvc),
+		Handler:      setupRouter(r, accessTokenSvc, ruleSvc, runtimeHistorySvc, configSvc, nodeSvc, podSvc, corsAllowedOrigins),
 		TLSConfig:    tlsConfig,
 	}
 }
@@ -73,19 +77,14 @@ func setupRouter(
 	configSvc service.Config,
 	nodeSvc service.Node,
 	podSvc service.Pod,
+	corsAllowedOrigins []string,
 ) http.Handler {
 	r.StrictSlash(true)
-
-	corsOpts := cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "X-Requested-With", "Authorization", "X-Auth-Key"},
-	}
 
 	h := alice.New(
 		middleware.Log,
 		middleware.Recovery,
-		cors.New(corsOpts).Handler,
+		middleware.CORS(corsAllowedOrigins, corsAllowedHeaders),
 		local_middleware.JWT,
 		local_middleware.AccessToken,
 		local_middleware.Correlation,

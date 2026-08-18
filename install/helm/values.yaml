@@ -106,6 +106,8 @@ global:
   centralCsUrl: ""
   # -- Is this a child cluster
   isChildCluster: false
+  # -- Comma separated origins allowed cross-origin. Empty means same-origin only; child clusters fall back to `centralCsUrl`
+  corsAllowedOrigins: ""
   # @skip global.csVersion
   csVersion: ""
 

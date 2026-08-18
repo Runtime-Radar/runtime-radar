@@ -18,6 +18,7 @@ type Config struct {
 	AdministratorUsername    string // Administrator user
 	AdministratorPassword    string // Administrator password
 	LogLevel                 string // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
+	CORSAllowedOrigins       string // comma separated origins allowed cross-origin
 	LogFile                  string // path to log file
 	ListenGRPCAddr           string // address "[host]:port" that server should be listening on
 	ListenHTTPAddr           string // address "[host]:port" that server should be listening for health checks
@@ -59,7 +60,14 @@ func New() *Config {
 	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
 
+	flag.StringVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", config.LookupEnvString("CORS_ALLOWED_ORIGINS", ""), "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
+
 	flag.Parse()
 
 	return c
+}
+
+// CORSOrigins returns the allowed origins; empty means same-origin only.
+func (c *Config) CORSOrigins() []string {
+	return config.SplitList(c.CORSAllowedOrigins)
 }

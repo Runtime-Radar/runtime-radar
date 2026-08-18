@@ -11,7 +11,6 @@ import (
 	"github.com/justinas/alice"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/cors"
 	"github.com/runtime-radar/runtime-radar/history-api/api"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
 	"github.com/runtime-radar/runtime-radar/lib/server/middleware"
@@ -29,14 +28,14 @@ const (
 )
 
 // New constructs and configures new *http.Server capable of serving application and gRPC gateway endpoints.
-func New(httpAddr, grpcAddr string, tlsConfig *tls.Config) (*http.Server, error) {
+func New(httpAddr, grpcAddr string, tlsConfig *tls.Config, corsAllowedOrigins []string) (*http.Server, error) {
 	mux := http.NewServeMux()
 	gwMux, err := newGWMux(context.Background(), grpcAddr, tlsConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	h := setupRouter(mux, gwMux)
+	h := setupRouter(mux, gwMux, corsAllowedOrigins)
 
 	s := &http.Server{
 		ReadTimeout:  readTimeout,
@@ -69,19 +68,13 @@ func NewInstrumentation(listenAddress string, gatherer prometheus.Gatherer) *htt
 	}
 }
 
-func setupRouter(mux *http.ServeMux, gwMux *runtime.ServeMux) http.Handler {
+func setupRouter(mux *http.ServeMux, gwMux *runtime.ServeMux, corsAllowedOrigins []string) http.Handler {
 	mux.Handle("/", gwMux)
-
-	corsOpts := cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "X-Requested-With", "Authorization"},
-	}
 
 	h := alice.New(
 		middleware.Log,
 		middleware.Recovery,
-		cors.New(corsOpts).Handler,
+		middleware.CORS(corsAllowedOrigins, middleware.DefaultCORSHeaders),
 	).Then(mux)
 
 	return h
