@@ -80,6 +80,9 @@ func (ac *AccessTokenGeneric) ListPage(ctx context.Context, pageNum, pageSize in
 
 	accessTokens, err := ac.AccessTokenRepository.GetPage(ctx, pageNum, pageSize, filter, order)
 	if err != nil {
+		if errors.Is(err, database.ErrInvalidOrder) {
+			return nil, 0, status.Error(codes.InvalidArgument, err.Error())
+		}
 		return nil, 0, status.Errorf(codes.Internal, "can't get token list: %v", err)
 	}
 
