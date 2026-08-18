@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -56,4 +57,17 @@ func LookupEnvDuration(key string, defaultVal time.Duration) time.Duration {
 		return v
 	}
 	return defaultVal
+}
+
+// SplitList turns a comma separated setting into a list, dropping empty entries and whitespace.
+func SplitList(value string) []string {
+	res := []string{}
+
+	for _, item := range strings.Split(value, ",") {
+		if item = strings.TrimSpace(item); item != "" {
+			res = append(res, item)
+		}
+	}
+
+	return res
 }
