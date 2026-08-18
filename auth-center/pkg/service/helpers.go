@@ -29,6 +29,11 @@ func maskTokens(resp *api.SignInResp) *api.SignInResp {
 	return masked
 }
 
+// gRPC errdetails.ErrorInfo.Reason codes used in service responses.
+const (
+	RoleAssignmentRestricted = "ROLE_ASSIGNMENT_RESTRICTED"
+)
+
 func haveUpper(s string) bool {
 	for _, r := range s {
 		if unicode.IsUpper(r) && unicode.IsLetter(r) {

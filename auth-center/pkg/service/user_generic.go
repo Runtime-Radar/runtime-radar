@@ -101,6 +101,10 @@ func (ug *UserGeneric) Create(ctx context.Context, req *api.CreateUserReq) (resp
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse role id: %v", err)
 	}
 
+	if err := ug.verifyRoleAssignment(ctx, uuid.Nil, roleID); err != nil {
+		return nil, err
+	}
+
 	_, err = mail.ParseAddress(req.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse email: %v", err)
@@ -167,13 +171,38 @@ func (ug *UserGeneric) Create(ctx context.Context, req *api.CreateUserReq) (resp
 	return resp, nil
 }
 
+// verifyRoleAssignment checks that the caller may grant newRoleID; currentRoleID is uuid.Nil on create.
+// Without it users:create and users:update are a privilege escalation path.
+func (ug *UserGeneric) verifyRoleAssignment(ctx context.Context, currentRoleID, newRoleID uuid.UUID) error {
+	token, err := tokens.AccessTokenFromContext(ctx, ug.TokenKey)
+	if err != nil {
+		return status.Errorf(codes.Unauthenticated, "can't get token: %v", err)
+	}
+
+	if token.Role.ID == model.AdminRoleID {
+		return nil
+	}
+
+	if currentRoleID == model.AdminRoleID {
+		return errcommon.StatusWithReason(codes.PermissionDenied, RoleAssignmentRestricted,
+			"can't modify an administrator account").Err()
+	}
+
+	if newRoleID != token.Role.ID {
+		return errcommon.StatusWithReason(codes.PermissionDenied, RoleAssignmentRestricted,
+			"can't assign a role other than your own").Err()
+	}
+
+	return nil
+}
+
 func (ug *UserGeneric) Update(ctx context.Context, req *api.UpdateUserReq) (resp *api.UserResp, err error) {
 	id, err := uuid.Parse(req.GetId())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse id: %v", err)
 	}
 
-	_, err = ug.UserRepository.GetByID(ctx, id)
+	current, err := ug.UserRepository.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "user does not exist")
@@ -193,6 +222,10 @@ func (ug *UserGeneric) Update(ctx context.Context, req *api.UpdateUserReq) (resp
 	roleID, err := uuid.Parse(req.RoleId)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse role id")
+	}
+
+	if err := ug.verifyRoleAssignment(ctx, current.RoleID, roleID); err != nil {
+		return nil, err
 	}
 
 	user := &model.User{
