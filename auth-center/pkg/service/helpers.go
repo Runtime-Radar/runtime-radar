@@ -8,9 +8,26 @@ import (
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/model"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/protobuf/proto"
 )
 
-const maskedPassword = "******"
+const (
+	maskedPassword = "******"
+	maskedToken    = "******"
+)
+
+// maskTokens returns a copy of resp safe to log: the issued tokens are replayable credentials.
+func maskTokens(resp *api.SignInResp) *api.SignInResp {
+	if resp == nil {
+		return nil
+	}
+
+	masked := proto.Clone(resp).(*api.SignInResp)
+	masked.AccessToken = maskedToken
+	masked.RefreshToken = maskedToken
+
+	return masked
+}
 
 func haveUpper(s string) bool {
 	for _, r := range s {

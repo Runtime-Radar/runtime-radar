@@ -24,7 +24,7 @@ func (al *AuthLogging) SignIn(ctx context.Context, req *api.SignInReq) (resp *ap
 
 		log.Err(err).Str("delay", time.Since(t0).String()).
 			Interface("args", masked).
-			Interface("result", resp).
+			Interface("result", maskTokens(resp)).
 			Stringer("correlation_id", corrID).
 			Msg("Called AuthServer.SignIn")
 	}(time.Now())
@@ -39,7 +39,7 @@ func (al *AuthLogging) RefreshTokens(ctx context.Context, empty *emptypb.Empty) 
 
 		log.Err(err).Str("delay", time.Since(t0).String()).
 			Interface("args", empty).
-			Interface("result", resp).
+			Interface("result", maskTokens(resp)).
 			Stringer("correlation_id", corrID).
 			Msg("Called AuthServer.RefreshTokens")
 	}(time.Now())
