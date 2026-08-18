@@ -102,7 +102,7 @@ func (ul *UserLogging) ChangePassword(ctx context.Context, req *api.ChangePasswo
 
 		log.Err(err).Str("delay", time.Since(t0).String()).
 			Interface("args", masked).
-			Interface("result", resp).
+			Interface("result", maskTokens(resp)).
 			Stringer("correlation_id", corrID).
 			Msg("Called UserServer.ChangePassword")
 	}(time.Now())
