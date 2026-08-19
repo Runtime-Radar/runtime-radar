@@ -57,6 +57,11 @@ export class ApiPathService {
         return `${host}${this.apiPath}${path}`;
     }
 
+    /** True when url targets this app or the cluster the user switched to, and may carry the token. */
+    isOwnRequest(url: string): boolean {
+        return url.startsWith(this.apiPath) || (!!this.host && url.startsWith(`${this.host}${this.apiPath}`));
+    }
+
     setHost(value: string) {
         this.host = value;
         this.host$.next(value);
