@@ -1,9 +1,9 @@
-FROM node:20.18.0-alpine3.20 AS builder
+FROM node:20.19.6-alpine AS builder
 
 RUN --mount=type=cache,target=/var/cache/apk \
     apk update && \
     apk add --no-cache \
-        jq=1.7.1-r0 \
+        jq \
         git \
         openssh \
         bash \
