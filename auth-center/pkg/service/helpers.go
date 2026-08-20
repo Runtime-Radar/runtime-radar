@@ -32,6 +32,7 @@ func maskTokens(resp *api.SignInResp) *api.SignInResp {
 // gRPC errdetails.ErrorInfo.Reason codes used in service responses.
 const (
 	RoleAssignmentRestricted = "ROLE_ASSIGNMENT_RESTRICTED"
+	LastAdminRemovingDenied  = "LAST_ADMIN_REMOVING_DENIED"
 )
 
 func haveUpper(s string) bool {
