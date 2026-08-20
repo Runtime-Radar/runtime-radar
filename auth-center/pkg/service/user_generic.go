@@ -180,6 +180,10 @@ func (ug *UserGeneric) verifyRoleAssignment(ctx context.Context, currentRoleID, 
 	}
 
 	if token.Role.ID == model.AdminRoleID {
+		if currentRoleID == model.AdminRoleID && newRoleID != model.AdminRoleID {
+			return ug.verifyNotLastAdmin(ctx)
+		}
+
 		return nil
 	}
 
@@ -188,9 +192,24 @@ func (ug *UserGeneric) verifyRoleAssignment(ctx context.Context, currentRoleID, 
 			"can't modify an administrator account").Err()
 	}
 
-	if newRoleID != token.Role.ID {
+	if newRoleID != token.Role.ID && newRoleID != currentRoleID {
 		return errcommon.StatusWithReason(codes.PermissionDenied, RoleAssignmentRestricted,
 			"can't assign a role other than your own").Err()
+	}
+
+	return nil
+}
+
+// verifyNotLastAdmin rejects demoting the only administrator left, the same way Delete guards the last one.
+func (ug *UserGeneric) verifyNotLastAdmin(ctx context.Context) error {
+	adminUsers, err := ug.UserRepository.GetUsersByRoleID(ctx, model.AdminRoleID)
+	if err != nil {
+		return status.Error(codes.Internal, "internal error")
+	}
+
+	if len(adminUsers) == 1 {
+		return errcommon.StatusWithReason(codes.PermissionDenied, LastAdminRemovingDenied,
+			"can't demote last administrator").Err()
 	}
 
 	return nil
@@ -280,7 +299,7 @@ func (ug *UserGeneric) Delete(ctx context.Context, req *api.DeleteUserReq) (resp
 			return nil, status.Error(codes.Internal, "internal error")
 		}
 		if len(adminUsers) == 1 {
-			return nil, errcommon.StatusWithReason(codes.PermissionDenied, "LAST_ADMIN_REMOVING_DENIED", "can't delete last administrator").Err()
+			return nil, errcommon.StatusWithReason(codes.PermissionDenied, LastAdminRemovingDenied, "can't delete last administrator").Err()
 		}
 	}
 

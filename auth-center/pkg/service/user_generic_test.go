@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/runtime-radar/runtime-radar/auth-center/pkg/database"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/model"
 	"github.com/runtime-radar/runtime-radar/auth-center/pkg/tokens"
 	"github.com/runtime-radar/runtime-radar/lib/errcommon"
@@ -14,7 +15,26 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var securityEngineerRoleID = uuid.MustParse("00000000-0000-0000-0000-000000000002")
+var (
+	securityEngineerRoleID = uuid.MustParse("00000000-0000-0000-0000-000000000002")
+	analystRoleID          = uuid.MustParse("00000000-0000-0000-0000-000000000003")
+)
+
+// stubUserRepository answers with a fixed number of administrators; the other methods are unused here.
+type stubUserRepository struct {
+	database.UserRepository
+
+	admins int
+}
+
+func (s *stubUserRepository) GetUsersByRoleID(_ context.Context, roleID uuid.UUID) ([]*model.User, error) {
+	users := make([]*model.User, 0, s.admins)
+	for i := 0; i < s.admins; i++ {
+		users = append(users, &model.User{RoleID: roleID, Role: model.Role{ID: roleID}})
+	}
+
+	return users, nil
+}
 
 // ctxWithCallerRole builds an incoming gRPC context carrying an access token issued for a user
 // holding roleID, the way the interceptor would populate it for a real call.
@@ -41,13 +61,13 @@ func ctxWithCallerRole(t *testing.T, key []byte, roleID uuid.UUID) context.Conte
 
 func TestVerifyRoleAssignment(t *testing.T) {
 	key := []byte("test-token-key")
-	ug := &UserGeneric{TokenKey: key}
 
 	tests := []struct {
 		name          string
 		callerRoleID  uuid.UUID
 		currentRoleID uuid.UUID
 		newRoleID     uuid.UUID
+		admins        int
 		wantReason    string
 	}{
 		{
@@ -61,6 +81,21 @@ func TestVerifyRoleAssignment(t *testing.T) {
 			callerRoleID:  model.AdminRoleID,
 			currentRoleID: model.AdminRoleID,
 			newRoleID:     securityEngineerRoleID,
+			admins:        2,
+		},
+		{
+			name:          "admin demotes the last admin",
+			callerRoleID:  model.AdminRoleID,
+			currentRoleID: model.AdminRoleID,
+			newRoleID:     securityEngineerRoleID,
+			admins:        1,
+			wantReason:    LastAdminRemovingDenied,
+		},
+		{
+			name:          "non-admin keeps another user role unchanged",
+			callerRoleID:  securityEngineerRoleID,
+			currentRoleID: analystRoleID,
+			newRoleID:     analystRoleID,
 		},
 		{
 			name:          "non-admin keeps role unchanged",
@@ -107,6 +142,7 @@ func TestVerifyRoleAssignment(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := ctxWithCallerRole(t, key, tt.callerRoleID)
+			ug := &UserGeneric{TokenKey: key, UserRepository: &stubUserRepository{admins: tt.admins}}
 
 			err := ug.verifyRoleAssignment(ctx, tt.currentRoleID, tt.newRoleID)
 
