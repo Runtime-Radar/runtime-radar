@@ -40,6 +40,7 @@ export class RulePackageSidepanelFormComponent implements OnInit, AfterViewInit 
         registries: [[] as string[], Validators.required],
         binaries: [[] as string[]],
         notifySeverity: [RuleSeverity.NONE],
+        blockSeverity: [RuleSeverity.NONE],
         mailIds: [[] as string[]],
         detectors: [[] as string[]]
     });
@@ -57,8 +58,8 @@ export class RulePackageSidepanelFormComponent implements OnInit, AfterViewInit 
         distinctUntilChanged(),
         map(() => {
             const values = utils.getFormValues<RuleForm>(this.form.controls);
-
-            return utils.isFormValid(this.form.controls) && values.notifySeverity !== RuleSeverity.NONE;
+            const hasSeverity = values.blockSeverity !== RuleSeverity.NONE || values.notifySeverity !== RuleSeverity.NONE;
+            return utils.isFormValid(this.form.controls) && hasSeverity;
         })
     );
 
@@ -93,6 +94,7 @@ export class RulePackageSidepanelFormComponent implements OnInit, AfterViewInit 
                 imageNames: this.props.rule.scope?.image_names || [],
                 registries: this.props.rule?.scope?.registries || [],
                 notifySeverity: this.props.rule.rule?.notify?.severity || RuleSeverity.NONE,
+                blockSeverity: this.props.rule.rule?.block?.severity || RuleSeverity.NONE,
                 mailIds: this.props.rule.rule?.notify?.targets || [],
                 detectors: this.props.rule.rule?.whitelist.threats || []
             });

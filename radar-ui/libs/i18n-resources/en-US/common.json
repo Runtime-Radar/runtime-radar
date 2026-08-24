@@ -64,6 +64,7 @@
     "Common.Pseudo.Severity.Medium": "Medium",
     "Common.Pseudo.Severity.High": "High",
     "Common.Pseudo.Severity.Critical": "Critical",
+    "Common.Pseudo.Severity.NoneBlockLabel": "Do not block",
     "Common.Pseudo.Severity.NoneNotifyLabel": "Do not notify",
 
     "Common.Pseudo.Verdict.None": "Not assigned",
@@ -112,7 +113,9 @@
     "Common.RuleSidepanel.SubTitle.Nodes": "Nodes",
     "Common.RuleSidepanel.SubTitle.Containers": "Containers",
     "Common.RuleSidepanel.SubTitle.Binaries": "Binaries",
+    "Common.RuleSidepanel.SubTitle.Block": "Block",
     "Common.RuleSidepanel.SubTitle.Notify": "Notify",
+    "Common.RuleSidepanel.Text.RuntimeSeverityBlock": "Block actions with threats of this severity and higher.",
     "Common.RuleSidepanel.Text.RuntimeSeverityNotify": "Notify about threats of this severity and higher.",
     "Common.RuleSidepanel.SubTitle.Recipients": "Notification templates",
     "Common.RuleSidepanel.SubTitle.WhiteList": "Exclusions",
