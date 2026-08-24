@@ -3,7 +3,8 @@ import { RolePermission } from '@cs/domains/role';
 export enum TokenPermissionName {
     CLUSTERS = 'clusters',
     RULES = 'rules',
-    EVENTS = 'events'
+    EVENTS = 'events',
+    SYSTEM = 'system_settings'
 }
 
 export type TokenPermissions = {

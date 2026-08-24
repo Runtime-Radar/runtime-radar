@@ -17,12 +17,16 @@ export class TokenFeaturePermissionTypePipe implements PipeTransform {
             case PermissionType.CREATE:
                 if (permissionName === TokenPermissionName.RULES) {
                     return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanCreate');
+                } else if (permissionName === TokenPermissionName.SYSTEM) {
+                    return this.i18nService.translate('Token.CreateForm.SettingPermissions.Label.CanCreate');
                 } else {
                     return '—';
                 }
             case PermissionType.READ:
                 if (permissionName === TokenPermissionName.RULES) {
                     return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanRead');
+                } else if (permissionName === TokenPermissionName.SYSTEM) {
+                    return this.i18nService.translate('Token.CreateForm.SettingPermissions.Label.CanRead');
                 } else if (permissionName === TokenPermissionName.EVENTS) {
                     return this.i18nService.translate('Token.CreateForm.EventPermissions.Label.CanRead');
                 } else if (permissionName === TokenPermissionName.CLUSTERS) {
@@ -33,12 +37,22 @@ export class TokenFeaturePermissionTypePipe implements PipeTransform {
             case PermissionType.UPDATE:
                 if (permissionName === TokenPermissionName.RULES) {
                     return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanUpdate');
+                } else if (permissionName === TokenPermissionName.SYSTEM) {
+                    return this.i18nService.translate('Token.CreateForm.SettingPermissions.Label.CanUpdate');
                 } else {
                     return '—';
                 }
             case PermissionType.DELETE:
                 if (permissionName === TokenPermissionName.RULES) {
                     return this.i18nService.translate('Token.CreateForm.RulePermissions.Label.CanDelete');
+                } else if (permissionName === TokenPermissionName.SYSTEM) {
+                    return this.i18nService.translate('Token.CreateForm.SettingPermissions.Label.CanDelete');
+                } else {
+                    return '—';
+                }
+            case PermissionType.EXECUTE:
+                if (permissionName === TokenPermissionName.SYSTEM) {
+                    return this.i18nService.translate('Token.CreateForm.SettingPermissions.Label.CanExecute');
                 } else {
                     return '—';
                 }
