@@ -356,15 +356,32 @@
                                                 </p>
                                             </td>
                                         </tr>
-                                        {{if $t.GetDetectorDescription}}
+                                        {{if or $t.GetReason $t.GetDetectorDescription}}
                                         <tr>
                                             <td>&nbsp;</td>
                                             <td>
                                                 <p style="margin: 0; padding: 0; padding-top: 12px; text-align: left;">
-                                                    <span style="display: block; font-family: Arial, sans-serif; font-size: 15px; font-weight: normal; color: #19252F;">{{$t.GetDetectorDescription}}</span>
+                                                    <span style="display: block; font-family: Arial, sans-serif; font-size: 15px; font-weight: normal; color: #19252F;">{{if $t.GetReason}}{{$t.GetReason}}{{else}}{{$t.GetDetectorDescription}}{{end}}</span>
                                                 </p>
                                             </td>
                                         </tr>
+                                        {{end}}
+                                        {{if $tactics := $t.GetTacticsCovered}}
+                                        {{if gt (len $tactics) 0}}
+                                        <tr>
+                                            <td>&nbsp;</td>
+                                            <td>
+                                                <p style="margin: 0; padding: 0; padding-top: 12px; text-align: left;">
+                                                    <span style="display: block; font-family: Arial, sans-serif; font-size: 13px; font-weight: normal; color: #6D7A86;">MITRE tactics:</span>
+                                                    <span style="display: block; font-family: Arial, sans-serif; font-size: 15px; font-weight: normal; color: #19252F; padding-top: 4px;">
+                                                        {{range $i, $tactic := $tactics}}
+                                                            {{$tactic.GetId | tacticName}}{{if $tactic.GetTechniques}} ({{range $j, $tech := $tactic.GetTechniques}}{{$tech | techniqueName}}{{if not (eq $j (sub (len $tactic.GetTechniques) 1))}}, {{end}}{{end}}){{end}}{{if not (eq $i (sub (len $tactics) 1))}}, {{end}}
+                                                        {{end}}
+                                                    </span>
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        {{end}}
                                         {{end}}
                                     </table>
                                     <!-- // threat -->
