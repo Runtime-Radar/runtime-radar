@@ -32,8 +32,10 @@ var funcs = template.FuncMap{
 	"parseFloat64": parseFloat64,
 	"sub":          sub,
 	"queryJSON":    queryJSON,
-	"escapeJSON":   escapeJSON,
-	"sum":          sum,
+	"escapeJSON":    escapeJSON,
+	"sum":           sum,
+	"tacticName":    tacticName,
+	"techniqueName": techniqueName,
 }
 
 var translations = map[string]string{
