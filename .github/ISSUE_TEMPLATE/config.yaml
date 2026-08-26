@@ -3,3 +3,6 @@ contact_links:
   - name: 📚 Documentation
     url: https://github.com/Runtime-Radar/runtime-radar/tree/main/docs
     about: Please check our documentation before submitting issues
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/Runtime-Radar/runtime-radar/blob/main/SECURITY.md
+    about: Please do not report security vulnerabilities in public issues — see our security policy
