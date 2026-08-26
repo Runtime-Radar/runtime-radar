@@ -231,6 +231,10 @@ Before creating a new issue, please:
 
 ## Reporting Issues
 
+### Security Issues
+
+Please do not report security vulnerabilities in public GitHub issues. Instead, email us at runtimeradar@outlook.com — see our [Security Policy](https://github.com/Runtime-Radar/runtime-radar/blob/main/SECURITY.md) for details.
+
 ### Bug Reports
 
 When reporting bugs, please include:
