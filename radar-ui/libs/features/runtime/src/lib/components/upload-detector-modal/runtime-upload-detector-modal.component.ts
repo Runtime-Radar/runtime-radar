@@ -40,14 +40,12 @@ export class RuntimeFeatureUploadDetectorModalComponent {
             return;
         }
 
-        const files = input.files ? Array.from(input.files) : [];
+        const wasmFiles = input.files ? Array.from(input.files).filter((file) => this.isWasmFile(file)) : [];
 
         input.value = '';
 
-        const wasmFiles = files.filter((file) => this.isWasmFile(file));
-
-        if (wasmFiles.length === 0) {
-            this.warnInvalidFile();
+        if (!wasmFiles.length) {
+            console.warn('wasm must be provided');
             return;
         }
 
@@ -68,13 +66,13 @@ export class RuntimeFeatureUploadDetectorModalComponent {
                     if (this.isWasmBase64(base64)) {
                         this.files$.next(this.getPatchedFiles(file, base64));
                     } else {
-                        this.warnInvalidFile(file.name);
+                        console.warn(`${file.name} must be valid`);
                     }
                 }
             };
 
             reader.onerror = () => {
-                this.warnInvalidFile(file.name);
+                console.warn(`${file.name} must be valid`);
             };
 
             reader.onloadend = () => {
@@ -106,12 +104,6 @@ export class RuntimeFeatureUploadDetectorModalComponent {
         this.modal.destroy(isSuccessful ? base64values : undefined);
     }
 
-    private warnInvalidFile(fileName?: string) {
-        const message = fileName ? `File "${fileName}" is not a valid WASM` : 'No valid WASM files selected';
-
-        console.warn(message);
-    }
-
     private isWasmFile(file: File): boolean {
         return file.type === 'application/wasm' || file.name.toLowerCase().endsWith('.wasm');
     }
@@ -124,7 +116,6 @@ export class RuntimeFeatureUploadDetectorModalComponent {
     private getPatchedFiles(file: File, base64: string): RuntimeDetectorFile[] {
         const files = this.files$.value;
         const item = files.find((obj) => obj.base64 === base64 && obj.name === file.name);
-
         const value: RuntimeDetectorFile = {
             id: utils.generateUuid(),
             name: file.name,
