@@ -153,9 +153,28 @@ export class TokenFeatureSidepanelFormComponent implements OnInit {
             ]
         });
 
+        const systemPermissionsForm = this.formBuilder.group({
+            [TokenPermissionType.CREATE]: [
+                { value: false, disabled: !this.props.permissions[PermissionName.SYSTEM].has(PermissionType.CREATE) }
+            ],
+            [TokenPermissionType.READ]: [
+                { value: false, disabled: !this.props.permissions[PermissionName.SYSTEM].has(PermissionType.READ) }
+            ],
+            [TokenPermissionType.UPDATE]: [
+                { value: false, disabled: !this.props.permissions[PermissionName.SYSTEM].has(PermissionType.UPDATE) }
+            ],
+            [TokenPermissionType.DELETE]: [
+                { value: false, disabled: !this.props.permissions[PermissionName.SYSTEM].has(PermissionType.DELETE) }
+            ],
+            [TokenPermissionType.EXECUTE]: [
+                { value: false, disabled: !this.props.permissions[PermissionName.SYSTEM].has(PermissionType.EXECUTE) }
+            ]
+        });
+
         this.permissionsFormGroup.addControl(TokenPermissionName.CLUSTERS, clusterPermissionsForm);
         this.permissionsFormGroup.addControl(TokenPermissionName.RULES, rulePermissionsForm);
         this.permissionsFormGroup.addControl(TokenPermissionName.EVENTS, eventPermissionsForm);
+        this.permissionsFormGroup.addControl(TokenPermissionName.SYSTEM, systemPermissionsForm);
     }
 
     confirm() {

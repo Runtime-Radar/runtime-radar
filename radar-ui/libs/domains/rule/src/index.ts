@@ -1,4 +1,5 @@
 export * from './lib/constants/rule.constant';
+export * from './lib/constants/rule-order.constant';
 export * from './lib/guards/rule-activate.guard';
 export * from './lib/guards/rule-lazy-activate.guard';
 export * from './lib/interfaces';

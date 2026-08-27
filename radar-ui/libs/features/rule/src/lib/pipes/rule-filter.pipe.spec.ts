@@ -23,6 +23,7 @@ describe('RuleFeatureFilterPipe', () => {
         const filters: RuleFilters = {
             name: 'name',
             type: [RuleType.TYPE_RUNTIME],
+            blockSeverity: [],
             notifySeverity: []
         };
 

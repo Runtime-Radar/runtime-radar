@@ -27,12 +27,14 @@ export class RuleFeaturePanelFilterComponent implements OnInit {
 
     readonly filterForm: FormGroup<FormScheme<RuleFiltersPopover>> = this.formBuilder.group({
         type: [[] as RuleType[]],
-        notifySeverity: [[] as RuleSeverity[]]
+        notifySeverity: [[] as RuleSeverity[]],
+        blockSeverity: [[] as RuleSeverity[]]
     });
 
     readonly defaultFilterValues: RuleFiltersPopover = {
         type: [],
-        notifySeverity: []
+        notifySeverity: [],
+        blockSeverity: []
     };
 
     private readonly queryHandler$: Observable<string> = this.queryForm.valueChanges.pipe(

@@ -146,6 +146,7 @@ export class InventoryFeatureMapContainer implements OnInit, OnDestroy {
 
     switchCluster(id: string) {
         this.clusterStoreService.switchCluster(id);
+        this.filterForm.patchValue(this.defaultFilterValues);
     }
 
     zoomIn() {

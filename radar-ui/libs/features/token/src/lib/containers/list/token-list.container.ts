@@ -102,6 +102,10 @@ export class TokenFeatureListContainer {
                         [TokenPermissionName.EVENTS]: {
                             actions: this.getPermissionActions(form.permissions[TokenPermissionName.EVENTS]),
                             description: ''
+                        },
+                        [TokenPermissionName.SYSTEM]: {
+                            actions: this.getPermissionActions(form.permissions[TokenPermissionName.SYSTEM]),
+                            description: ''
                         }
                     }
                 };
@@ -156,6 +160,9 @@ export class TokenFeatureListContainer {
                     break;
                 case TokenPermissionType.DELETE:
                     acc.push(PermissionType.DELETE);
+                    break;
+                case TokenPermissionType.EXECUTE:
+                    acc.push(PermissionType.EXECUTE);
                     break;
             }
 
