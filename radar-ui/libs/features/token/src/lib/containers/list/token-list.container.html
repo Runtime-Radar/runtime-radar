@@ -104,6 +104,11 @@
                                         <span class="cs-separator">{{ item | tokenPermissionType: tokenPermissionName.RULES }}</span>
                                     }
                                 }
+                                @if (token.permissions[tokenPermissionName.SYSTEM]; as systemPermissions) {
+                                    @for (item of systemPermissions.actions; track item) {
+                                        <span class="cs-separator">{{ item | tokenPermissionType: tokenPermissionName.SYSTEM }}</span>
+                                    }
+                                }
                             </li>
                         </ul>
                     </article>

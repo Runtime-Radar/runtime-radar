@@ -125,6 +125,22 @@
 
                 <section class="rule-package-sidepanel-info-section">
                     <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
+                        {{ tCommon('Common.RuleSidepanel.SubTitle.Block') }}
+                    </h4>
+                    <div class="kbq-text-compact cs-text-gray layout-margin-top-xxs">
+                        {{ tCommon('Common.RuleSidepanel.Text.RuntimeSeverityBlock') }}
+                    </div>
+                    <cs-rule-package-severity-label-component
+                            class="rule-package-sidepanel-info-section-severity"
+                            isWidthAuto
+                            [severity]="rule.rule.block?.severity"
+                            [verdict]="rule.rule.block?.verdict"
+                            noneLabelLocalizationKey="Common.Pseudo.Severity.NoneBlockLabel" />
+                </section>
+                <kbq-divider />
+
+                <section class="rule-package-sidepanel-info-section">
+                    <h4 class="kbq-subheading rule-package-sidepanel-info-section-subheading">
                         {{ tCommon('Common.RuleSidepanel.SubTitle.Notify') }}
                     </h4>
                     <div class="kbq-text-compact cs-text-gray layout-margin-top-xxs">

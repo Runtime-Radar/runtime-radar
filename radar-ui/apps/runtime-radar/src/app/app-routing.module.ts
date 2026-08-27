@@ -115,7 +115,8 @@ const routes: Routes = [
                 PermissionName.RULES,
                 PermissionName.EVENTS,
                 PermissionName.TOKENS,
-                PermissionName.INVALIDATE_TOKENS
+                PermissionName.INVALIDATE_TOKENS,
+                PermissionName.SYSTEM
             ],
             guards: [PermissionName.TOKENS]
         }

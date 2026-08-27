@@ -5,6 +5,7 @@ export const RULE_FORM: RuleForm = {
     name: 'name',
     namespaces: [],
     notifySeverity: RuleSeverity.MEDIUM,
+    blockSeverity: RuleSeverity.LOW,
     mailIds: ['mail@example.com'],
     detectors: ['detector1'],
     pods: [],

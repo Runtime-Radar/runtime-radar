@@ -51,6 +51,16 @@
                         </li>
                         <li>
                             <div class="layout-margin-bottom-xxs kbq-text-compact cs-text-gray">
+                                {{ tRule('Rule.ListPage.Table.BlockSeverity') }}
+                            </div>
+                            <cs-rule-package-severity-label-component
+                                    isWidthAuto
+                                    [severity]="rule.rule.block?.severity"
+                                    [verdict]="rule.rule.block?.verdict"
+                                    noneLabelLocalizationKey="Common.Pseudo.Severity.NoneBlockLabel" />
+                        </li>
+                        <li>
+                            <div class="layout-margin-bottom-xxs kbq-text-compact cs-text-gray">
                                 {{ tRule('Rule.ListPage.Table.NotifySeverity') }}
                             </div>
                             <cs-rule-package-severity-label-component

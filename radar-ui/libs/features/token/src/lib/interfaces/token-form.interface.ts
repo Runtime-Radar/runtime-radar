@@ -19,7 +19,8 @@ export enum TokenPermissionType {
     CREATE = 'canCreate',
     READ = 'canRead',
     UPDATE = 'canUpdate',
-    DELETE = 'canDelete'
+    DELETE = 'canDelete',
+    EXECUTE = 'canExecute'
 }
 
 export type TokenPermissionForm = {

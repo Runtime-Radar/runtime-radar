@@ -11,6 +11,7 @@
     "Rule.ListPage.Filter.Label.Block": "Block",
     "Rule.ListPage.Filter.Label.Notify": "Notify",
     "Rule.ListPage.Table.Type": "Event type",
+    "Rule.ListPage.Table.BlockSeverity": "Block",
     "Rule.ListPage.Table.NotifySeverity": "Notify",
     "Rule.ListPage.Table.ImageNames": "Images",
     "Rule.ListPage.Table.Registries": "Registries",
@@ -56,6 +57,8 @@
     "Rule.CreateForm.Hint.Binaries": "You can use * to replace any number of characters and ? to replace one character",
     "Rule.CreateForm.Label.Recipients": "Notification templates",
     "Rule.CreateForm.Placeholder.Recipients": "Choose template",
+    "Rule.CreateForm.SubTitle.Block": "Block",
+    "Rule.CreateForm.Text.RuntimeSeverityBlockHint": "Block events with threats of this severity and higher. (A pod where the event occured will be deleted.)",
     "Rule.CreateForm.SubTitle.Notify": "Notify",
     "Rule.CreateForm.Text.RuntimeSeverityNotifyHint": "Notify about threats of this severity and higher.",
     "Rule.CreateForm.SubHeading.EmptyNotifySeverity": "No notification services",
@@ -70,7 +73,6 @@
     "Rule.EditForm.Button.Confirm": "Save",
 
     "Rule.DeleteModal.Title.Text": "Delete the rule?",
-    "Rule.DeleteModal.Content.Text": "Image scanning according to this rule will no longer be performed. The scan history will remain.",
     "Rule.DeleteModal.Button.Confirm": "Delete",
     "Rule.DeleteModal.Button.Cancel": "Cancel"
 }

@@ -119,6 +119,7 @@ export class RuleFeatureListContainer {
                     type: RuleType.TYPE_RUNTIME,
                     rule: {
                         version: '1', // @todo: create environment constant
+                        block: ruleHelper.convertFormValuesToBlockEntity(form),
                         notify: ruleHelper.convertFormValuesToNotifyEntity(form),
                         whitelist: ruleHelper.convertWhiteListToRequestNode(form)
                     },
@@ -158,6 +159,7 @@ export class RuleFeatureListContainer {
                     type: RuleType.TYPE_RUNTIME,
                     rule: {
                         version: '1', // @todo: create environment constant
+                        block: ruleHelper.convertFormValuesToBlockEntity(form),
                         notify: ruleHelper.convertFormValuesToNotifyEntity(form),
                         whitelist: ruleHelper.convertWhiteListToRequestNode(form)
                     },
@@ -180,8 +182,7 @@ export class RuleFeatureListContainer {
 
     openDeleteModal(id: string) {
         this.sharedModalService.delete({
-            title: this.i18nService.translate('Rule.DeleteModal.Title.Text'),
-            content: this.i18nService.translate('Rule.DeleteModal.Content.Text'),
+            content: this.i18nService.translate('Rule.DeleteModal.Title.Text'),
             confirmText: this.i18nService.translate('Rule.DeleteModal.Button.Confirm'),
             cancelText: this.i18nService.translate('Rule.DeleteModal.Button.Cancel'),
             confirmHandler: () => {

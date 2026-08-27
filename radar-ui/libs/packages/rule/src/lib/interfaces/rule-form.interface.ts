@@ -4,6 +4,7 @@ export interface RuleForm {
     name: string;
     namespaces: string[];
     notifySeverity: RuleSeverity;
+    blockSeverity: RuleSeverity;
     mailIds: string[];
     detectors: string[];
     pods: string[];

@@ -34,6 +34,11 @@ export interface RuleWhiteList {
     binaries: string[];
 }
 
+export type RuleBlockEntity = OneOf<{
+    severity: RuleSeverity;
+    verdict: RuleVerdict;
+}>;
+
 export type RuleNotifyEntity = {
     targets: string[]; // targetIds - ids for notification
 } & OneOf<{
@@ -43,6 +48,7 @@ export type RuleNotifyEntity = {
 
 export interface RuleEntity {
     version: string;
+    block?: RuleBlockEntity | null;
     notify?: RuleNotifyEntity | null;
     whitelist: RuleWhiteList;
 }

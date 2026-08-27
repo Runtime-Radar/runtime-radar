@@ -6,6 +6,10 @@ export const RULE_DATE_TIME = DateTime.fromISO('2025-09-18T12:00:00Z');
 
 const RULE_ENTITY: RuleEntity = {
     version: '1',
+    block: {
+        severity: RuleSeverity.LOW,
+        verdict: null
+    },
     notify: {
         severity: RuleSeverity.MEDIUM,
         verdict: null,
