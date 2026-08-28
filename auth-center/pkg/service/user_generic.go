@@ -101,7 +101,7 @@ func (ug *UserGeneric) Create(ctx context.Context, req *api.CreateUserReq) (resp
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse role id: %v", err)
 	}
 
-	if err := ug.verifyUserModification(ctx, nil, roleID); err != nil {
+	if err := ug.verifyUserCreation(ctx); err != nil {
 		return nil, err
 	}
 
@@ -171,33 +171,44 @@ func (ug *UserGeneric) Create(ctx context.Context, req *api.CreateUserReq) (resp
 	return resp, nil
 }
 
-// verifyUserModification checks that the caller may apply the requested change; current is nil on create.
-// Only an administrator manages other accounts and hands out roles, otherwise users:update escalates.
-func (ug *UserGeneric) verifyUserModification(ctx context.Context, current *model.User, newRoleID uuid.UUID) error {
+// verifyUserCreation checks that the caller may add an account. Only an administrator creates users,
+// since creating one also assigns its role and would otherwise hand out administrator itself.
+func (ug *UserGeneric) verifyUserCreation(ctx context.Context) error {
+	token, err := tokens.AccessTokenFromContext(ctx, ug.TokenKey)
+	if err != nil {
+		return status.Errorf(codes.Unauthenticated, "can't get token: %v", err)
+	}
+
+	if token.Role.ID != model.AdminRoleID {
+		return errcommon.StatusWithReason(codes.PermissionDenied, UserManagementRestricted,
+			"can't create users").Err()
+	}
+
+	return nil
+}
+
+// verifyUserUpdate checks that the caller may apply the requested change to target. Only an
+// administrator edits other accounts and hands out roles, otherwise users:update escalates.
+func (ug *UserGeneric) verifyUserUpdate(ctx context.Context, target *model.User, newRoleID uuid.UUID) error {
 	token, err := tokens.AccessTokenFromContext(ctx, ug.TokenKey)
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "can't get token: %v", err)
 	}
 
 	if token.Role.ID == model.AdminRoleID {
-		if current != nil && current.RoleID == model.AdminRoleID && newRoleID != model.AdminRoleID {
+		if target.RoleID == model.AdminRoleID && newRoleID != model.AdminRoleID {
 			return ug.verifyNotLastAdmin(ctx)
 		}
 
 		return nil
 	}
 
-	if current == nil {
-		return errcommon.StatusWithReason(codes.PermissionDenied, UserManagementRestricted,
-			"can't create users").Err()
-	}
-
-	if token.UserID != current.ID.String() {
+	if token.UserID != target.ID.String() {
 		return errcommon.StatusWithReason(codes.PermissionDenied, UserManagementRestricted,
 			"can't modify another user").Err()
 	}
 
-	if newRoleID != current.RoleID {
+	if newRoleID != target.RoleID {
 		return errcommon.StatusWithReason(codes.PermissionDenied, RoleAssignmentRestricted,
 			"can't change your own role").Err()
 	}
@@ -226,7 +237,7 @@ func (ug *UserGeneric) Update(ctx context.Context, req *api.UpdateUserReq) (resp
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse id: %v", err)
 	}
 
-	current, err := ug.UserRepository.GetByID(ctx, id)
+	target, err := ug.UserRepository.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "user does not exist")
@@ -248,7 +259,7 @@ func (ug *UserGeneric) Update(ctx context.Context, req *api.UpdateUserReq) (resp
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse role id")
 	}
 
-	if err := ug.verifyUserModification(ctx, current, roleID); err != nil {
+	if err := ug.verifyUserUpdate(ctx, target, roleID); err != nil {
 		return nil, err
 	}
 
