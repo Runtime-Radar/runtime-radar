@@ -9,41 +9,41 @@ import (
 
 // Config represents system configuration.
 type Config struct {
-	NewDB                      bool          // forces recreation of DB
-	PopulateNum                int           // populates DB with some test data according to given number
-	PostgresAddr               string        // Postgres address in host[:port] format
-	PostgresDB                 string        // Postgres db name
-	PostgresUser               string        // Postgres user
-	PostgresPassword           string        // Postgres password
-	PostgresSSLMode            bool          // Postgres SSL mode
-	PostgresSSLCheckCert       bool          // Check postgres SSL cert
-	ClickhouseAddr             string        // Clickhouse address in host[:port] format
-	ClickhouseDB               string        // Clickhouse db name
-	ClickhouseUser             string        // Clickhouse user
-	ClickhousePassword         string        // Clickhouse password
-	ClickhouseSSLMode          bool          // Clickhouse SSL mode
-	ClickhouseSSLCheckCert     bool          // Check clickhouse SSL cert
-	RabbitAddr                 string        // RabbitMQ address in host[:port] format
-	RabbitUser                 string        // RabbitMQ user
-	RabbitPassword             string        // RabbitMQ password
-	RabbitQueue                string        // RabbitMQ queue name to consume events from
-	RabbitQueuePrefetchCount   int           // RabbitMQ prefetch count for queue to consume events from
-	RuntimeEventsBatchSize     int           // Size of runtime events buffer
-	RuntimeEventsSaveInterval  time.Duration // Interval between savings of runtime buffer
-	RuntimeEventsLimit         int           // Max number of runtime events to be stored in database
-	RuntimeEventsCleanInterval time.Duration // Interval between cleans of runtime events table
-	LogLevel                   string        // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
-	CORSAllowedOrigins         string        // comma separated origins allowed cross-origin
-	LogFile                    string        // path to log file
-	ListenGRPCAddr             string        // address "[host]:port" that server should be listening on
-	ListenHTTPAddr             string        // address "[host]:port" that server should be listening for health checks
-	InstrumentationAddr        string        // address "[host]:port" that instrumentation server should be listening on
-	TLS                        bool          // is TLS enabled?
-	RetentionInterval          time.Duration // Interval during which events are kept in DB
-	TokenKey                   string        // key for jwt token
-	Auth                       bool          // is auth enabled?
-	OwnCSURL                   string        // URL of current CS (http(s)://host[:port]).
-	GopsAddr                   string        // gops listen address
+	NewDB                      bool              // forces recreation of DB
+	PopulateNum                int               // populates DB with some test data according to given number
+	PostgresAddr               string            // Postgres address in host[:port] format
+	PostgresDB                 string            // Postgres db name
+	PostgresUser               string            // Postgres user
+	PostgresPassword           string            // Postgres password
+	PostgresSSLMode            bool              // Postgres SSL mode
+	PostgresSSLCheckCert       bool              // Check postgres SSL cert
+	ClickhouseAddr             string            // Clickhouse address in host[:port] format
+	ClickhouseDB               string            // Clickhouse db name
+	ClickhouseUser             string            // Clickhouse user
+	ClickhousePassword         string            // Clickhouse password
+	ClickhouseSSLMode          bool              // Clickhouse SSL mode
+	ClickhouseSSLCheckCert     bool              // Check clickhouse SSL cert
+	RabbitAddr                 string            // RabbitMQ address in host[:port] format
+	RabbitUser                 string            // RabbitMQ user
+	RabbitPassword             string            // RabbitMQ password
+	RabbitQueue                string            // RabbitMQ queue name to consume events from
+	RabbitQueuePrefetchCount   int               // RabbitMQ prefetch count for queue to consume events from
+	RuntimeEventsBatchSize     int               // Size of runtime events buffer
+	RuntimeEventsSaveInterval  time.Duration     // Interval between savings of runtime buffer
+	RuntimeEventsLimit         int               // Max number of runtime events to be stored in database
+	RuntimeEventsCleanInterval time.Duration     // Interval between cleans of runtime events table
+	LogLevel                   string            // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
+	CORSAllowedOrigins         config.StringList // origins allowed to call the API cross-origin
+	LogFile                    string            // path to log file
+	ListenGRPCAddr             string            // address "[host]:port" that server should be listening on
+	ListenHTTPAddr             string            // address "[host]:port" that server should be listening for health checks
+	InstrumentationAddr        string            // address "[host]:port" that instrumentation server should be listening on
+	TLS                        bool              // is TLS enabled?
+	RetentionInterval          time.Duration     // Interval during which events are kept in DB
+	TokenKey                   string            // key for jwt token
+	Auth                       bool              // is auth enabled?
+	OwnCSURL                   string            // URL of current CS (http(s)://host[:port]).
+	GopsAddr                   string            // gops listen address
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -85,14 +85,9 @@ func New() *Config {
 	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation (metrics, probes...) HTTP server should be listening on.`)
 
-	flag.StringVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", config.LookupEnvString("CORS_ALLOWED_ORIGINS", ""), "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
+	config.StringListVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", "CORS_ALLOWED_ORIGINS", "", "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
 
 	flag.Parse()
 
 	return c
-}
-
-// CORSOrigins returns the allowed origins; empty means same-origin only.
-func (c *Config) CORSOrigins() []string {
-	return config.SplitList(c.CORSAllowedOrigins)
 }

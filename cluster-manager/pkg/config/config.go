@@ -8,29 +8,29 @@ import (
 
 // Config represents system configuration.
 type Config struct {
-	NewDB                    bool   // forces recreation of DB
-	PostgresAddr             string // Postgres address in host[:port] format
-	PostgresDB               string // Postgres db name
-	PostgresUser             string // Postgres user
-	PostgresPassword         string // Postgres password
-	PostgresSSLMode          bool   // Postgres SSL mode
-	PostgresSSLCheckCert     bool   // Check postgres SSL cert
-	AdministratorUsername    string // Administrator user
-	AdministratorPassword    string // Administrator password
-	LogLevel                 string // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
-	CORSAllowedOrigins       string // comma separated origins allowed cross-origin
-	LogFile                  string // path to log file
-	ListenGRPCAddr           string // address "[host]:port" that server should be listening on
-	ListenHTTPAddr           string // address "[host]:port" that server should be listening for health checks
-	InstrumentationAddr      string // address "[host]:port" that instrumentation server should be listening for health checks and metrics
-	TLS                      bool   // is TLS enabled?
-	TokenKey                 string // key for jwt token
-	EncryptionKey            string // encryption key for child clusters
-	PublicAccessTokenSaltKey string // publicAccessTokenSaltKey key for public api service
-	Auth                     bool   // is auth enabled?
-	OwnCSURL                 string // URL of current CS (http(s)://host[:port]).
-	GopsAddr                 string // gops listen address
-	CSVersion                string // CS version
+	NewDB                    bool              // forces recreation of DB
+	PostgresAddr             string            // Postgres address in host[:port] format
+	PostgresDB               string            // Postgres db name
+	PostgresUser             string            // Postgres user
+	PostgresPassword         string            // Postgres password
+	PostgresSSLMode          bool              // Postgres SSL mode
+	PostgresSSLCheckCert     bool              // Check postgres SSL cert
+	AdministratorUsername    string            // Administrator user
+	AdministratorPassword    string            // Administrator password
+	LogLevel                 string            // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
+	CORSAllowedOrigins       config.StringList // origins allowed to call the API cross-origin
+	LogFile                  string            // path to log file
+	ListenGRPCAddr           string            // address "[host]:port" that server should be listening on
+	ListenHTTPAddr           string            // address "[host]:port" that server should be listening for health checks
+	InstrumentationAddr      string            // address "[host]:port" that instrumentation server should be listening for health checks and metrics
+	TLS                      bool              // is TLS enabled?
+	TokenKey                 string            // key for jwt token
+	EncryptionKey            string            // encryption key for child clusters
+	PublicAccessTokenSaltKey string            // publicAccessTokenSaltKey key for public api service
+	Auth                     bool              // is auth enabled?
+	OwnCSURL                 string            // URL of current CS (http(s)://host[:port]).
+	GopsAddr                 string            // gops listen address
+	CSVersion                string            // CS version
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -60,14 +60,9 @@ func New() *Config {
 	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
 
-	flag.StringVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", config.LookupEnvString("CORS_ALLOWED_ORIGINS", ""), "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
+	config.StringListVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", "CORS_ALLOWED_ORIGINS", "", "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
 
 	flag.Parse()
 
 	return c
-}
-
-// CORSOrigins returns the allowed origins; empty means same-origin only.
-func (c *Config) CORSOrigins() []string {
-	return config.SplitList(c.CORSAllowedOrigins)
 }
