@@ -157,7 +157,7 @@ func main() {
 	}()
 	log.Info().Msgf("gRPC server listening at %v", lis.Addr())
 
-	httpSrv, err := server.New(cfg.ListenHTTPAddr, cfg.ListenGRPCAddr, tlsConfig, cfg.CORSOrigins())
+	httpSrv, err := server.New(cfg.ListenHTTPAddr, cfg.ListenGRPCAddr, tlsConfig, cfg.CORSAllowedOrigins)
 	if err != nil {
 		log.Fatal().Msgf("### Can't setup HTTP server: %v", err)
 	}
