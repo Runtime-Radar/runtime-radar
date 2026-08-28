@@ -17,7 +17,7 @@ import (
 
 var (
 	securityEngineerRoleID = uuid.MustParse("00000000-0000-0000-0000-000000000002")
-	analystRoleID          = uuid.MustParse("00000000-0000-0000-0000-000000000003")
+	cicdRoleID             = uuid.MustParse("00000000-0000-0000-0000-000000000003")
 )
 
 // stubUserRepository answers with a fixed number of administrators; the other methods are unused here.
@@ -36,13 +36,13 @@ func (s *stubUserRepository) GetUsersByRoleID(_ context.Context, roleID uuid.UUI
 	return users, nil
 }
 
-// ctxWithCallerRole builds an incoming gRPC context carrying an access token issued for a user
-// holding roleID, the way the interceptor would populate it for a real call.
-func ctxWithCallerRole(t *testing.T, key []byte, roleID uuid.UUID) context.Context {
+// ctxWithCaller builds an incoming gRPC context carrying an access token issued for the given user,
+// the way the interceptor would populate it for a real call.
+func ctxWithCaller(t *testing.T, key []byte, userID, roleID uuid.UUID) context.Context {
 	t.Helper()
 
 	user := model.User{
-		Base:                  model.Base{ID: uuid.New()},
+		Base:                  model.Base{ID: userID},
 		Username:              "caller",
 		RoleID:                roleID,
 		Role:                  model.Role{ID: roleID},
@@ -59,25 +59,35 @@ func ctxWithCallerRole(t *testing.T, key []byte, roleID uuid.UUID) context.Conte
 	return metadata.NewIncomingContext(context.Background(), md)
 }
 
-func TestVerifyRoleAssignment(t *testing.T) {
+func TestVerifyUserModification(t *testing.T) {
 	key := []byte("test-token-key")
 
 	tests := []struct {
-		name          string
-		callerRoleID  uuid.UUID
-		currentRoleID uuid.UUID
-		newRoleID     uuid.UUID
-		admins        int
-		wantReason    string
+		name         string
+		callerRoleID uuid.UUID
+		// create leaves the request without an existing user; targetIsCaller tells whether the
+		// updated account is the caller's own one.
+		create         bool
+		targetIsCaller bool
+		currentRoleID  uuid.UUID
+		newRoleID      uuid.UUID
+		admins         int
+		wantReason     string
 	}{
 		{
-			name:          "admin grants admin",
+			name:         "admin creates an admin",
+			callerRoleID: model.AdminRoleID,
+			create:       true,
+			newRoleID:    model.AdminRoleID,
+		},
+		{
+			name:          "admin promotes another user",
 			callerRoleID:  model.AdminRoleID,
 			currentRoleID: securityEngineerRoleID,
 			newRoleID:     model.AdminRoleID,
 		},
 		{
-			name:          "admin demotes admin",
+			name:          "admin demotes another admin",
 			callerRoleID:  model.AdminRoleID,
 			currentRoleID: model.AdminRoleID,
 			newRoleID:     securityEngineerRoleID,
@@ -92,59 +102,67 @@ func TestVerifyRoleAssignment(t *testing.T) {
 			wantReason:    LastAdminRemovingDenied,
 		},
 		{
-			name:          "non-admin keeps another user role unchanged",
-			callerRoleID:  securityEngineerRoleID,
-			currentRoleID: analystRoleID,
-			newRoleID:     analystRoleID,
+			name:           "non-admin edits its own account",
+			callerRoleID:   securityEngineerRoleID,
+			targetIsCaller: true,
+			currentRoleID:  securityEngineerRoleID,
+			newRoleID:      securityEngineerRoleID,
 		},
 		{
-			name:          "non-admin keeps role unchanged",
-			callerRoleID:  securityEngineerRoleID,
-			currentRoleID: securityEngineerRoleID,
-			newRoleID:     securityEngineerRoleID,
+			name:         "non-admin creates a user",
+			callerRoleID: securityEngineerRoleID,
+			create:       true,
+			newRoleID:    securityEngineerRoleID,
+			wantReason:   UserManagementRestricted,
 		},
 		{
-			name:          "non-admin creates user with own role",
+			name:          "non-admin edits another user",
 			callerRoleID:  securityEngineerRoleID,
-			currentRoleID: uuid.Nil,
-			newRoleID:     securityEngineerRoleID,
+			currentRoleID: cicdRoleID,
+			newRoleID:     cicdRoleID,
+			wantReason:    UserManagementRestricted,
 		},
 		{
-			name:          "non-admin escalates a user to admin",
-			callerRoleID:  securityEngineerRoleID,
-			currentRoleID: securityEngineerRoleID,
-			newRoleID:     model.AdminRoleID,
-			wantReason:    RoleAssignmentRestricted,
-		},
-		{
-			name:          "non-admin creates an admin",
-			callerRoleID:  securityEngineerRoleID,
-			currentRoleID: uuid.Nil,
-			newRoleID:     model.AdminRoleID,
-			wantReason:    RoleAssignmentRestricted,
-		},
-		{
-			name:          "non-admin modifies an admin account",
+			name:          "non-admin edits an admin account",
 			callerRoleID:  securityEngineerRoleID,
 			currentRoleID: model.AdminRoleID,
 			newRoleID:     model.AdminRoleID,
-			wantReason:    RoleAssignmentRestricted,
+			wantReason:    UserManagementRestricted,
 		},
 		{
-			name:          "non-admin demotes an admin",
-			callerRoleID:  securityEngineerRoleID,
-			currentRoleID: model.AdminRoleID,
-			newRoleID:     securityEngineerRoleID,
-			wantReason:    RoleAssignmentRestricted,
+			name:           "non-admin escalates itself to admin",
+			callerRoleID:   securityEngineerRoleID,
+			targetIsCaller: true,
+			currentRoleID:  securityEngineerRoleID,
+			newRoleID:      model.AdminRoleID,
+			wantReason:     RoleAssignmentRestricted,
+		},
+		{
+			name:           "non-admin changes its own role",
+			callerRoleID:   securityEngineerRoleID,
+			targetIsCaller: true,
+			currentRoleID:  securityEngineerRoleID,
+			newRoleID:      cicdRoleID,
+			wantReason:     RoleAssignmentRestricted,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := ctxWithCallerRole(t, key, tt.callerRoleID)
+			callerID := uuid.New()
+			ctx := ctxWithCaller(t, key, callerID, tt.callerRoleID)
 			ug := &UserGeneric{TokenKey: key, UserRepository: &stubUserRepository{admins: tt.admins}}
 
-			err := ug.verifyRoleAssignment(ctx, tt.currentRoleID, tt.newRoleID)
+			var current *model.User
+			if !tt.create {
+				targetID := uuid.New()
+				if tt.targetIsCaller {
+					targetID = callerID
+				}
+				current = &model.User{Base: model.Base{ID: targetID}, RoleID: tt.currentRoleID}
+			}
+
+			err := ug.verifyUserModification(ctx, current, tt.newRoleID)
 
 			if tt.wantReason == "" {
 				if err != nil {
@@ -167,10 +185,10 @@ func TestVerifyRoleAssignment(t *testing.T) {
 	}
 }
 
-func TestVerifyRoleAssignmentWithoutToken(t *testing.T) {
+func TestVerifyUserModificationWithoutToken(t *testing.T) {
 	ug := &UserGeneric{TokenKey: []byte("test-token-key")}
 
-	err := ug.verifyRoleAssignment(context.Background(), uuid.Nil, model.AdminRoleID)
+	err := ug.verifyUserModification(context.Background(), nil, model.AdminRoleID)
 
 	st, ok := status.FromError(err)
 	if !ok {
