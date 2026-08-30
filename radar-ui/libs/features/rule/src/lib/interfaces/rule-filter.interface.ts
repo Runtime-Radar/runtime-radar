@@ -4,6 +4,7 @@ import { RuleSeverity, RuleType } from '@cs/domains/rule';
 export interface RuleFiltersPopover extends AbstractFilters {
     type: RuleType[];
     notifySeverity: RuleSeverity[];
+    blockSeverity: RuleSeverity[];
 }
 
 export interface RuleFilters extends RuleFiltersPopover {

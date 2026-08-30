@@ -33,9 +33,12 @@ export class RuleFeatureFilterPipe implements PipeTransform {
                 }
 
                 const notify = item.rule.notify?.severity || RuleSeverity.NONE;
+                const block = item.rule.block?.severity || RuleSeverity.NONE;
 
                 if (key === 'notifySeverity') {
                     return filters.notifySeverity.includes(notify);
+                } else if (key === 'blockSeverity') {
+                    return filters.blockSeverity.includes(block);
                 }
 
                 return true;

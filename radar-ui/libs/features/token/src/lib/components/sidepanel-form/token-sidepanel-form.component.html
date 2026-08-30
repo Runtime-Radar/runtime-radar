@@ -81,6 +81,8 @@
                                     {{ tToken('Token.CreateForm.EventPermissions.SubTitle.Events') }}
                                 } @else if (subform.key === permissionName.RULES) {
                                     {{ tToken('Token.CreateForm.RulePermissions.SubTitle.Rules') }}
+                                } @else if (subform.key === permissionName.SYSTEM) {
+                                    {{ tToken('Token.CreateForm.SettingPermissions.SubTitle.Settings') }}
                                 }
                             </button>
                             <kbq-accordion-content class="token-feature-sidepanel-form-accordion-content">
@@ -93,6 +95,8 @@
                                             <kbq-toggle formControlName="canCreate" data-testid="token-permissions-create-toggle">
                                                 @if (subform.key === permissionName.RULES) {
                                                     {{ tToken('Token.CreateForm.RulePermissions.Label.CanCreate') }}
+                                                } @else if (subform.key === permissionName.SYSTEM) {
+                                                    {{ tToken('Token.CreateForm.SettingPermissions.Label.CanCreate') }}
                                                 }
                                                 @if (!props.permissions[subform.key].has(permissionType.CREATE)) {
                                                     <div class="kbq-text-compact cs-text-gray">{{ tToken('Token.CreateForm.Text.Unavailable') }}</div>
@@ -110,6 +114,8 @@
                                                     {{ tToken('Token.CreateForm.EventPermissions.Label.CanRead') }}
                                                 } @else if (subform.key === permissionName.RULES) {
                                                     {{ tToken('Token.CreateForm.RulePermissions.Label.CanRead') }}
+                                                } @else if (subform.key === permissionName.SYSTEM) {
+                                                    {{ tToken('Token.CreateForm.SettingPermissions.Label.CanRead') }}
                                                 }
                                                 @if (!props.permissions[subform.key].has(permissionType.READ)) {
                                                     <div class="kbq-text-compact cs-text-gray">{{ tToken('Token.CreateForm.Text.Unavailable') }}</div>
@@ -123,6 +129,8 @@
                                             <kbq-toggle formControlName="canUpdate" data-testid="token-permissions-update-toggle">
                                                 @if (subform.key === permissionName.RULES) {
                                                     {{ tToken('Token.CreateForm.RulePermissions.Label.CanUpdate') }}
+                                                } @else if (subform.key === permissionName.SYSTEM) {
+                                                    {{ tToken('Token.CreateForm.SettingPermissions.Label.CanUpdate') }}
                                                 }
                                                 @if (!props.permissions[subform.key].has(permissionType.UPDATE)) {
                                                     <div class="kbq-text-compact cs-text-gray">{{ tToken('Token.CreateForm.Text.Unavailable') }}</div>
@@ -136,8 +144,23 @@
                                             <kbq-toggle formControlName="canDelete" data-testid="token-permissions-delete-toggle">
                                                 @if (subform.key === permissionName.RULES) {
                                                     {{ tToken('Token.CreateForm.RulePermissions.Label.CanDelete') }}
+                                                } @else if (subform.key === permissionName.SYSTEM) {
+                                                    {{ tToken('Token.CreateForm.SettingPermissions.Label.CanDelete') }}
                                                 }
                                                 @if (!props.permissions[subform.key].has(permissionType.DELETE)) {
+                                                    <div class="kbq-text-compact cs-text-gray">{{ tToken('Token.CreateForm.Text.Unavailable') }}</div>
+                                                }
+                                            </kbq-toggle>
+                                        </section>
+                                    }
+
+                                    @if (subform.value.value[tokenPermissionType.EXECUTE] !== undefined) {
+                                        <section class="kbq-form__row">
+                                            <kbq-toggle formControlName="canExecute" data-testid="token-permissions-execute-toggle">
+                                                @if (subform.key === permissionName.SYSTEM) {
+                                                    {{ tToken('Token.CreateForm.SettingPermissions.Label.CanExecute') }}
+                                                }
+                                                @if (!props.permissions[subform.key].has(permissionType.EXECUTE)) {
                                                     <div class="kbq-text-compact cs-text-gray">{{ tToken('Token.CreateForm.Text.Unavailable') }}</div>
                                                 }
                                             </kbq-toggle>

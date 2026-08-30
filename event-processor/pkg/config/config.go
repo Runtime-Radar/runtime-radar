@@ -9,36 +9,37 @@ import (
 
 // Config represents system configuration.
 type Config struct {
-	NewDB                                 bool          // forces recreation of DB
-	PostgresAddr                          string        // Postgres address in host[:port] format
-	PostgresDB                            string        // Postgres db name
-	PostgresUser                          string        // Postgres user
-	PostgresPassword                      string        // Postgres password
-	PostgresSSLMode                       bool          // Postgres SSL mode
-	PostgresSSLCheckCert                  bool          // Check postgres SSL cert
-	LogLevel                              string        // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
-	LogFile                               string        // path to log file
-	ListenGRPCAddr                        string        // address "[host]:port" that server should be listening on
-	ListenHTTPAddr                        string        // address "[host]:port" that server should be listening on
-	InstrumentationAddr                   string        // address "[host]:port" that instrumentation server should be listening for health checks and metrics
-	TLS                                   bool          // is TLS enabled?
-	TokenKey                              string        // key for jwt token
-	Auth                                  bool          // is auth enabled?
-	ConfigUpdateInterval                  time.Duration // interval for config periodic update check
-	RabbitAddr                            string        // RabbitMQ address in host[:port] format
-	RabbitUser                            string        // RabbitMQ user
-	RabbitPassword                        string        // RabbitMQ password
-	RabbitRuntimeEventsQueue              string        // RabbitMQ queue name for consuming runtime events
-	RabbitRuntimeEventsQueuePrefetchCount int           // RabbitMQ prefetch count when consuming runtime events
-	RabbitHistoryEventsQueue              string        // RabbitMQ queue name for publishing processed events
-	GopsAddr                              string        // gops listen address
-	WorkersPoolSize                       int           // how many workers will process the events in parallel, 0 means auto-adjust to available cpu cores (minimum 2)
-	JobsBufferSize                        int           // how many events will be read and kept in memory when all workers are busy
-	DeployDir                             string        // directory to load detectors from
-	PolicyEnforcerGRPCAddr                string        // Policy Enforcer address in host[:port] format
-	NotifierGRPCAddr                      string        // Notifier address in host[:port] format
-	KubeManagerGRPCAddr                   string        // Kube Manager address in host[:port] format
-	OwnCSURL                              string        // URL of current CS (http(s)://host[:port]).
+	NewDB                                 bool              // forces recreation of DB
+	PostgresAddr                          string            // Postgres address in host[:port] format
+	PostgresDB                            string            // Postgres db name
+	PostgresUser                          string            // Postgres user
+	PostgresPassword                      string            // Postgres password
+	PostgresSSLMode                       bool              // Postgres SSL mode
+	PostgresSSLCheckCert                  bool              // Check postgres SSL cert
+	LogLevel                              string            // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
+	CORSAllowedOrigins                    config.StringList // origins allowed to call the API cross-origin
+	LogFile                               string            // path to log file
+	ListenGRPCAddr                        string            // address "[host]:port" that server should be listening on
+	ListenHTTPAddr                        string            // address "[host]:port" that server should be listening on
+	InstrumentationAddr                   string            // address "[host]:port" that instrumentation server should be listening for health checks and metrics
+	TLS                                   bool              // is TLS enabled?
+	TokenKey                              string            // key for jwt token
+	Auth                                  bool              // is auth enabled?
+	ConfigUpdateInterval                  time.Duration     // interval for config periodic update check
+	RabbitAddr                            string            // RabbitMQ address in host[:port] format
+	RabbitUser                            string            // RabbitMQ user
+	RabbitPassword                        string            // RabbitMQ password
+	RabbitRuntimeEventsQueue              string            // RabbitMQ queue name for consuming runtime events
+	RabbitRuntimeEventsQueuePrefetchCount int               // RabbitMQ prefetch count when consuming runtime events
+	RabbitHistoryEventsQueue              string            // RabbitMQ queue name for publishing processed events
+	GopsAddr                              string            // gops listen address
+	WorkersPoolSize                       int               // how many workers will process the events in parallel, 0 means auto-adjust to available cpu cores (minimum 2)
+	JobsBufferSize                        int               // how many events will be read and kept in memory when all workers are busy
+	DeployDir                             string            // directory to load detectors from
+	PolicyEnforcerGRPCAddr                string            // Policy Enforcer address in host[:port] format
+	NotifierGRPCAddr                      string            // Notifier address in host[:port] format
+	KubeManagerGRPCAddr                   string            // Kube Manager address in host[:port] format
+	OwnCSURL                              string            // URL of current CS (http(s)://host[:port]).
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -75,6 +76,8 @@ func New() *Config {
 	flag.StringVar(&c.KubeManagerGRPCAddr, "kubeManagerGRPCAddr", config.LookupEnvString("KUBE_MANAGER_GRPC_ADDR", "127.0.0.1:12000"), "Kube Manager gRPC address in host[:port] format.")
 	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
+
+	config.StringListVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", "CORS_ALLOWED_ORIGINS", "", "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
 
 	flag.Parse()
 

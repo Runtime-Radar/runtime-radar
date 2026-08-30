@@ -101,6 +101,10 @@ func (ug *UserGeneric) Create(ctx context.Context, req *api.CreateUserReq) (resp
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse role id: %v", err)
 	}
 
+	if err := ug.verifyUserCreation(ctx); err != nil {
+		return nil, err
+	}
+
 	_, err = mail.ParseAddress(req.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse email: %v", err)
@@ -167,13 +171,73 @@ func (ug *UserGeneric) Create(ctx context.Context, req *api.CreateUserReq) (resp
 	return resp, nil
 }
 
+// verifyUserCreation checks that the caller may add an account. Only an administrator creates users,
+// since creating one also assigns its role and would otherwise hand out administrator itself.
+func (ug *UserGeneric) verifyUserCreation(ctx context.Context) error {
+	token, err := tokens.AccessTokenFromContext(ctx, ug.TokenKey)
+	if err != nil {
+		return status.Errorf(codes.Unauthenticated, "can't get token: %v", err)
+	}
+
+	if token.Role.ID != model.AdminRoleID {
+		return errcommon.StatusWithReason(codes.PermissionDenied, UserManagementRestricted,
+			"can't create users").Err()
+	}
+
+	return nil
+}
+
+// verifyUserUpdate checks that the caller may apply the requested change to target. Only an
+// administrator edits other accounts and hands out roles, otherwise users:update escalates.
+func (ug *UserGeneric) verifyUserUpdate(ctx context.Context, target *model.User, newRoleID uuid.UUID) error {
+	token, err := tokens.AccessTokenFromContext(ctx, ug.TokenKey)
+	if err != nil {
+		return status.Errorf(codes.Unauthenticated, "can't get token: %v", err)
+	}
+
+	if token.Role.ID == model.AdminRoleID {
+		if target.RoleID == model.AdminRoleID && newRoleID != model.AdminRoleID {
+			return ug.verifyNotLastAdmin(ctx)
+		}
+
+		return nil
+	}
+
+	if token.UserID != target.ID.String() {
+		return errcommon.StatusWithReason(codes.PermissionDenied, UserManagementRestricted,
+			"can't modify another user").Err()
+	}
+
+	if newRoleID != target.RoleID {
+		return errcommon.StatusWithReason(codes.PermissionDenied, RoleAssignmentRestricted,
+			"can't change your own role").Err()
+	}
+
+	return nil
+}
+
+// verifyNotLastAdmin rejects demoting the only administrator left, the same way Delete guards the last one.
+func (ug *UserGeneric) verifyNotLastAdmin(ctx context.Context) error {
+	adminUsers, err := ug.UserRepository.GetUsersByRoleID(ctx, model.AdminRoleID)
+	if err != nil {
+		return status.Error(codes.Internal, "internal error")
+	}
+
+	if len(adminUsers) == 1 {
+		return errcommon.StatusWithReason(codes.PermissionDenied, LastAdminRemovingDenied,
+			"can't demote last administrator").Err()
+	}
+
+	return nil
+}
+
 func (ug *UserGeneric) Update(ctx context.Context, req *api.UpdateUserReq) (resp *api.UserResp, err error) {
 	id, err := uuid.Parse(req.GetId())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse id: %v", err)
 	}
 
-	_, err = ug.UserRepository.GetByID(ctx, id)
+	target, err := ug.UserRepository.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "user does not exist")
@@ -193,6 +257,10 @@ func (ug *UserGeneric) Update(ctx context.Context, req *api.UpdateUserReq) (resp
 	roleID, err := uuid.Parse(req.RoleId)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "can't parse role id")
+	}
+
+	if err := ug.verifyUserUpdate(ctx, target, roleID); err != nil {
+		return nil, err
 	}
 
 	user := &model.User{
@@ -247,7 +315,7 @@ func (ug *UserGeneric) Delete(ctx context.Context, req *api.DeleteUserReq) (resp
 			return nil, status.Error(codes.Internal, "internal error")
 		}
 		if len(adminUsers) == 1 {
-			return nil, errcommon.StatusWithReason(codes.PermissionDenied, "LAST_ADMIN_REMOVING_DENIED", "can't delete last administrator").Err()
+			return nil, errcommon.StatusWithReason(codes.PermissionDenied, LastAdminRemovingDenied, "can't delete last administrator").Err()
 		}
 	}
 

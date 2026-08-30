@@ -9,30 +9,31 @@ import (
 
 // Config represents system configuration.
 type Config struct {
-	NewDB                 bool          // forces recreation of DB
-	PostgresAddr          string        // Postgres address in host[:port] format
-	PostgresDB            string        // Postgres db name
-	PostgresUser          string        // Postgres user
-	PostgresPassword      string        // Postgres password
-	PostgresSSLMode       bool          // Postgres SSL mode
-	PostgresSSLCheckCert  bool          // Check postgres SSL cert
-	LogLevel              string        // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
-	LogFile               string        // path to log file
-	ListenGRPCAddr        string        // address "[host]:port" that server should be listening on
-	ListenHTTPAddr        string        // address "[host]:port" that server should be listening for health checks
-	InstrumentationAddr   string        // address "[host]:port" that instrumentation server should be listening for health checks and metrics
-	TLS                   bool          // is TLS enabled?
-	CSVersion             string        // CS version
-	TokenKey              string        // key for jwt token
-	Auth                  bool          // is auth enabled?
-	GopsAddr              string        // gops listen address
-	IsChildCluster        bool          // is CS in child cluster
-	OwnCSURL              string        // URL of current CS
-	CentralCSURL          string        // URL of central CS
-	GrafanaURL            string        // URL to Grafana with CS metrics
-	CentralCSTLSCheckCert bool          // Check central CS TLS certificate
-	RegistrationToken     string        // token of current cluster to register in central CS
-	RegistrationInterval  time.Duration // interval for registration in central CS
+	NewDB                 bool              // forces recreation of DB
+	PostgresAddr          string            // Postgres address in host[:port] format
+	PostgresDB            string            // Postgres db name
+	PostgresUser          string            // Postgres user
+	PostgresPassword      string            // Postgres password
+	PostgresSSLMode       bool              // Postgres SSL mode
+	PostgresSSLCheckCert  bool              // Check postgres SSL cert
+	LogLevel              string            // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
+	CORSAllowedOrigins    config.StringList // origins allowed to call the API cross-origin
+	LogFile               string            // path to log file
+	ListenGRPCAddr        string            // address "[host]:port" that server should be listening on
+	ListenHTTPAddr        string            // address "[host]:port" that server should be listening for health checks
+	InstrumentationAddr   string            // address "[host]:port" that instrumentation server should be listening for health checks and metrics
+	TLS                   bool              // is TLS enabled?
+	CSVersion             string            // CS version
+	TokenKey              string            // key for jwt token
+	Auth                  bool              // is auth enabled?
+	GopsAddr              string            // gops listen address
+	IsChildCluster        bool              // is CS in child cluster
+	OwnCSURL              string            // URL of current CS
+	CentralCSURL          string            // URL of central CS
+	GrafanaURL            string            // URL to Grafana with CS metrics
+	CentralCSTLSCheckCert bool              // Check central CS TLS certificate
+	RegistrationToken     string            // token of current cluster to register in central CS
+	RegistrationInterval  time.Duration     // interval for registration in central CS
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -63,6 +64,8 @@ func New() *Config {
 	flag.StringVar(&c.RegistrationToken, "registrationToken", config.LookupEnvString("REGISTRATION_TOKEN", ""), `Token of current cluster for use in management procedures with central cluster. Token consists of 16 hex-encoded bytes. Different formats supported, such as "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", "urn:uuid:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" or "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx". For full list and details please refer to uuid.Parse documentation.`)
 	flag.DurationVar(&c.RegistrationInterval, "registrationInterval", config.LookupEnvDuration("REGISTRATION_INTERVAL", time.Minute*5), "Interval for registration in central CS.")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
+
+	config.StringListVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", "CORS_ALLOWED_ORIGINS", "", "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
 
 	flag.Parse()
 

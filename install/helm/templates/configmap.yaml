@@ -20,6 +20,8 @@ data:
   CENTRAL_CS_URL: {{ $centralCsUrl | quote }}
   CENTRAL_CS_TLS_CHECK_CERT: {{ .Values.tls.verify | quote }}
   CENTRAL_CS_HOSTNAME: {{ $centralCsUrl | urlParse | pluck "hostname" | first | quote }}
+  {{- /* Only a child cluster is called cross-origin, by the UI of the central CS. */}}
+  CORS_ALLOWED_ORIGINS: {{ default (ternary $centralCsUrl "" (eq (include "common.cs.isChildCluster" .) "true")) (.Values.global).corsAllowedOrigins | quote }}
   GOPS_CONFIG_DIR: "/tmp"
   {{- if ((.Values.global).logger).enabled }}
   LOGGER_ENABLED: "true"

@@ -8,28 +8,29 @@ import (
 
 // Config represents system configuration.
 type Config struct {
-	NewDB                bool   // forces recreation of DB
-	PostgresAddr         string // Postgres address in host[:port] format
-	PostgresDB           string // Postgres db name
-	PostgresUser         string // Postgres user
-	PostgresPassword     string // Postgres password
-	PostgresSSLMode      bool   // Postgres SSL mode
-	PostgresSSLCheckCert bool   // Check postgres SSL cert
-	LogLevel             string // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
-	LogFile              string // path to log file
-	ListenGRPCAddr       string // address "[host]:port" that server should be listening on
-	ListenHTTPAddr       string // address "[host]:port" that server should be listening on
-	InstrumentationAddr  string // address "[host]:port" that instrumentation server should be listening for health checks and metrics
-	TLS                  bool   // is TLS enabled?
-	TokenKey             string // key for jwt token
-	Auth                 bool   // is auth enabled?
-	RedisAddr            string // Redis address in host[:port] format
-	RedisUser            string // Redis user
-	RedisPassword        string // Redis password
-	RedisTLSMode         bool   // Redis TLS mode
-	RedisTLSCheckCert    bool   // Check redis TLS cert
-	OwnCSURL             string // URL of current CS (http(s)://host[:port]).
-	GopsAddr             string // gops listen address
+	NewDB                bool              // forces recreation of DB
+	PostgresAddr         string            // Postgres address in host[:port] format
+	PostgresDB           string            // Postgres db name
+	PostgresUser         string            // Postgres user
+	PostgresPassword     string            // Postgres password
+	PostgresSSLMode      bool              // Postgres SSL mode
+	PostgresSSLCheckCert bool              // Check postgres SSL cert
+	LogLevel             string            // log level can be INFO, WARN, ERROR, FATAL, DEBUG or ALL
+	CORSAllowedOrigins   config.StringList // origins allowed to call the API cross-origin
+	LogFile              string            // path to log file
+	ListenGRPCAddr       string            // address "[host]:port" that server should be listening on
+	ListenHTTPAddr       string            // address "[host]:port" that server should be listening on
+	InstrumentationAddr  string            // address "[host]:port" that instrumentation server should be listening for health checks and metrics
+	TLS                  bool              // is TLS enabled?
+	TokenKey             string            // key for jwt token
+	Auth                 bool              // is auth enabled?
+	RedisAddr            string            // Redis address in host[:port] format
+	RedisUser            string            // Redis user
+	RedisPassword        string            // Redis password
+	RedisTLSMode         bool              // Redis TLS mode
+	RedisTLSCheckCert    bool              // Check redis TLS cert
+	OwnCSURL             string            // URL of current CS (http(s)://host[:port]).
+	GopsAddr             string            // gops listen address
 }
 
 // New reads config from environment and returns pointer to a new Config.
@@ -58,6 +59,8 @@ func New() *Config {
 	flag.StringVar(&c.GopsAddr, "listenGopsAddr", config.LookupEnvString("LISTEN_GOPS_ADDR", "127.0.0.1:7000"), `Address in form of "[host]:port" that gops agent should be listening on. It's not safe to listen to interfaces other than loopback in production.`)
 	flag.StringVar(&c.OwnCSURL, "ownCSURL", config.LookupEnvString("OWN_CS_URL", ""), "URL of current CS (http(s)://host[:port]).")
 	flag.StringVar(&c.InstrumentationAddr, "listenInstrumentationAddr", config.LookupEnvString("LISTEN_INSTRUMENTATION_ADDR", ":9090"), `Address in form of "[host]:port" that instrumentation HTTP server should be listening on.`)
+
+	config.StringListVar(&c.CORSAllowedOrigins, "corsAllowedOrigins", "CORS_ALLOWED_ORIGINS", "", "Comma separated list of origins allowed to call the API cross-origin. Empty value allows same-origin requests only.")
 
 	flag.Parse()
 

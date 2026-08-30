@@ -40,6 +40,7 @@ export class RulePackageSidepanelFormComponent implements OnInit, AfterViewInit 
         registries: [[] as string[], Validators.required],
         binaries: [[] as string[]],
         notifySeverity: [RuleSeverity.NONE],
+        blockSeverity: [RuleSeverity.NONE],
         mailIds: [[] as string[]],
         detectors: [[] as string[]]
     });
@@ -57,8 +58,8 @@ export class RulePackageSidepanelFormComponent implements OnInit, AfterViewInit 
         distinctUntilChanged(),
         map(() => {
             const values = utils.getFormValues<RuleForm>(this.form.controls);
-
-            return utils.isFormValid(this.form.controls) && values.notifySeverity !== RuleSeverity.NONE;
+            const hasSeverity = values.blockSeverity !== RuleSeverity.NONE || values.notifySeverity !== RuleSeverity.NONE;
+            return utils.isFormValid(this.form.controls) && hasSeverity;
         })
     );
 
@@ -83,18 +84,6 @@ export class RulePackageSidepanelFormComponent implements OnInit, AfterViewInit 
 
     ngAfterViewInit() {
         if (this.props.rule) {
-            const registriesSub: string[] = [];
-            const imageNamesSub: string[] = [];
-            this.props.rule.scope?.image_names.forEach((item) => {
-                if (item.indexOf('/') !== -1) {
-                    const [r, i] = item.split(/\/(.*)/);
-                    registriesSub.push(r);
-                    imageNamesSub.push(i);
-                } else {
-                    imageNamesSub.push(item);
-                }
-            });
-
             this.form.patchValue({
                 name: this.props.rule.name || '',
                 namespaces: this.props.rule.scope?.namespaces || [],
@@ -102,9 +91,10 @@ export class RulePackageSidepanelFormComponent implements OnInit, AfterViewInit 
                 nodes: this.props.rule.scope?.nodes || [],
                 containers: this.props.rule.scope?.containers || [],
                 binaries: this.props.rule.rule?.whitelist.binaries || [],
-                imageNames: imageNamesSub,
-                registries: registriesSub.concat(this.props.rule?.scope?.registries || []),
+                imageNames: this.props.rule.scope?.image_names || [],
+                registries: this.props.rule?.scope?.registries || [],
                 notifySeverity: this.props.rule.rule?.notify?.severity || RuleSeverity.NONE,
+                blockSeverity: this.props.rule.rule?.block?.severity || RuleSeverity.NONE,
                 mailIds: this.props.rule.rule?.notify?.targets || [],
                 detectors: this.props.rule.rule?.whitelist.threats || []
             });

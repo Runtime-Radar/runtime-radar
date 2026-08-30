@@ -169,6 +169,7 @@ func main() {
 		services.configSvc,
 		services.nodeSvc,
 		services.podSvc,
+		cfg.CORSAllowedOrigins,
 	)
 
 	go func() {

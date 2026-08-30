@@ -113,6 +113,21 @@
             </section>
 
             <section class="kbq-form__row kbq-form-row_margin">
+                <h4 class="kbq-subheading rule-package-sidepanel-form-subheading">{{ tRule('Rule.CreateForm.SubTitle.Block') }}</h4>
+                <span class="kbq-text-compact cs-text-gray">
+                    {{ tRule('Rule.CreateForm.Text.RuntimeSeverityBlockHint') }}
+                </span>
+            </section>
+
+            <section class="kbq-form__row kbq-form-row_margin">
+                <cs-rule-package-severity-radio-component
+                        formControlName="blockSeverity"
+                        noneLabelLocalizationKey="Common.Pseudo.Severity.NoneBlockLabel"
+                        id="blockSeverity"
+                        testLocator="rule-block-severity" />
+            </section>
+
+            <section class="kbq-form__row kbq-form-row_margin">
                 <h4 class="kbq-subheading rule-package-sidepanel-form-subheading">{{ tRule('Rule.CreateForm.SubTitle.Notify') }}</h4>
                 <span class="kbq-text-compact cs-text-gray">
                     {{ tRule('Rule.CreateForm.Text.RuntimeSeverityNotifyHint') }}

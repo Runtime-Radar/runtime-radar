@@ -36,9 +36,14 @@ func (db *AccessTokenDatabase) GetPage(ctx context.Context, pageNum, pageSize in
 		filter = ""
 	}
 
-	err := db.WithContext(ctx).
+	sanitizedOrder, err := sanitizeOrder(order)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.WithContext(ctx).
 		Where(filter).
-		Order(order).
+		Order(sanitizedOrder).
 		Limit(pageSize).
 		Offset(pageSize * (pageNum - 1)).
 		Find(&res).
