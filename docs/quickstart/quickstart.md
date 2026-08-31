@@ -14,7 +14,7 @@ To install Runtime Radar using Helm,
      --set-string 'global.administrator.username=admin' \
      --set-string 'global.administrator.password=Password' \
      --set-string 'reverse-proxy.service.type=NodePort' \
-     --set-string 'reverse-proxy.service.nodePorts.http=32000'
+     --set-string 'reverse-proxy.service.nodePorts.http=32000' \
      --set 'prometheus.deploy=true' \
      --set 'prometheus.persistence.enabled=false' \
      --set 'grafana.deploy=true' \
