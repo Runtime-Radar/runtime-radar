@@ -3,22 +3,15 @@ run:
   timeout: 2m
   issues-exit-code: 1
   tests: true
-  skip-dirs:
-    - bin
-    - vendor
-    - tmp
-  skip-files:
-    - \.pb\.go$
-    - \.pb\.gw\.go$
 
 output:
-  format: colored-line-number
+  formats: colored-line-number
   print-issued-lines: true
   print-linter-name: true
 
 linters-settings:
   govet:
-    check-shadowing: true
+    shadow: true
   dupl:
     threshold: 100
   goconst:
@@ -40,7 +33,15 @@ linters:
     - typecheck
     - unused # will be used instead of varcheck + deadcode + structcheck. More info https://github.com/golangci/golangci-lint/issues/1841
     - exptostd
+
 issues:
+  exclude-files:
+    - \.pb\.go$
+    - \.pb\.gw\.go$
+  exclude-dirs:
+    - bin
+    - vendor
+    - tmp
   exclude-use-default: true
   exclude:
     - "func.*is unused"
