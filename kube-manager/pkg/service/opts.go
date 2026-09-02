@@ -23,13 +23,13 @@ type ListOpts struct {
 
 func (l *ListOpts) isPodMatched(pod *v1.Pod) (bool, error) {
 	podMatched, err := isMatched(l.pods, pod.Name)
-	log.Debug().Err(err).Msgf("pod matched: %v", podMatched)
+	log.Debug().Err(err).Msgf("pod matched: %s", pod.Name)
 	if err != nil || !podMatched {
 		return false, err
 	}
 
 	nodeMatched, err := isMatched(l.nodes, pod.Spec.NodeName)
-	log.Debug().Err(err).Msgf("node matched: %v", nodeMatched)
+	log.Debug().Err(err).Msgf("node matched: %s", pod.Spec.NodeName)
 	if err != nil || !nodeMatched {
 		return false, err
 	}
@@ -40,7 +40,7 @@ func (l *ListOpts) isPodMatched(pod *v1.Pod) (bool, error) {
 
 	for _, container := range pod.Spec.Containers {
 		containerMatched, err := isMatched(l.containers, container.Name)
-		log.Debug().Err(err).Msgf("container matched: %v", containerMatched)
+		log.Debug().Err(err).Msgf("container matched: %s", container.Name)
 		if err != nil {
 			return false, err
 		}
@@ -54,7 +54,7 @@ func (l *ListOpts) isPodMatched(pod *v1.Pod) (bool, error) {
 
 func (l *ListOpts) isNodeMatched(node *v1.Node) (bool, error) {
 	nodeMatched, err := isMatched(l.nodes, node.Name)
-	log.Debug().Err(err).Msgf("node matched: %v", nodeMatched)
+	log.Debug().Err(err).Msgf("node matched: %s", node.Name)
 
 	return nodeMatched, err
 }

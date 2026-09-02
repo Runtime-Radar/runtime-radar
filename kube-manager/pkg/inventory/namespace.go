@@ -27,7 +27,7 @@ func (i *Inventory) Get(_, name string) (*corev1.Namespace, error) {
 	return item.(*corev1.Namespace), nil
 }
 
-func (i *Inventory) List(_ []string) ([]*corev1.Namespace, int) {
+func (i *Inventory) List(_ ...string) ([]*corev1.Namespace, int) {
 	l := i.nsInformer.GetStore().List()
 	nss := make([]*corev1.Namespace, 0, len(l))
 	for _, n := range l {

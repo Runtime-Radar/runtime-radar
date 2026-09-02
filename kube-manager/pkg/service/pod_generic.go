@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/kube-manager/api"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/client"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/informers"
@@ -21,6 +22,8 @@ type PodGeneric struct {
 	api.UnimplementedPodControllerServer
 
 	Pods       informers.Getter[*v1.Pod]
+	Namespaces informers.Getter[*v1.Namespace]
+
 	Kubernetes *client.Kubernetes
 }
 
@@ -53,7 +56,7 @@ func (pg *PodGeneric) ListMeta(_ context.Context, req *api.ListPodMetaReq) (*api
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	list, total := pg.Pods.List(namespaces...)
+	list, total := pg.Pods.List(pg.filterNamespaces(namespaces)...)
 
 	prepared, err := pg.withOpts(list, opts)
 	if err != nil {
@@ -95,7 +98,7 @@ func (pg *PodGeneric) ListPage(_ context.Context, req *api.ListPodPageReq) (*api
 	opts.PageSize = req.PageSize
 	opts.PageNum = req.PageNum
 
-	prepared, total := pg.Pods.List(namespaces...)
+	prepared, total := pg.Pods.List(pg.filterNamespaces(namespaces)...)
 
 	pods, err := pg.withOpts(prepared, opts)
 	if err != nil {
@@ -129,19 +132,32 @@ func (pg *PodGeneric) Kill(ctx context.Context, req *api.KillPodReq) (*emptypb.E
 func (pg *PodGeneric) withOpts(pods []*v1.Pod, opts *ListOpts) ([]*v1.Pod, error) {
 	var filtered []*v1.Pod
 	for _, pod := range pods {
-		isMatched, err := opts.isPodMatched(pod)
+		matched, err := opts.isPodMatched(pod)
 		if err != nil {
 			return nil, err
 		}
 
-		if !isMatched {
-			continue
+		if matched {
+			filtered = append(filtered, pod)
 		}
-
-		filtered = append(filtered, pod)
 	}
 
 	return withPagination(withSort(filtered, opts), opts), nil
+}
+
+func (pg *PodGeneric) filterNamespaces(patterns []string) (filtered []string) {
+	namespaces, _ := pg.Namespaces.List()
+
+	for _, ns := range namespaces {
+		nsMatched, err := isMatched(patterns, ns.Name)
+		log.Debug().Err(err).Msgf("namespace matched: %s", ns.Name)
+
+		if nsMatched {
+			filtered = append(filtered, ns.Name)
+		}
+	}
+
+	return filtered
 }
 
 func digest(pod *v1.Pod, containerName string) string {

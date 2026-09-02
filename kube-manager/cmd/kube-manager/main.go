@@ -147,16 +147,16 @@ func main() {
 
 	infs := createInformers()
 
-	configService, podService, nodeService := composeServices(
-		db, cfg, updateSrv, verifier, k8sClient, infs,
-	)
-	if err != nil {
-		log.Fatal().Msgf("### Failed to initialize informers: %v", err)
-	}
-
 	inv, err := inventory.New(updateSrv, k8sCfg, cfg.K8SSyncInterval, infs.setters()...)
 	if err != nil {
 		log.Fatal().Msgf("### Failed to initialize inventory: %v", err)
+	}
+
+	configService, podService, nodeService := composeServices(
+		db, cfg, updateSrv, verifier, k8sClient, infs, inv,
+	)
+	if err != nil {
+		log.Fatal().Msgf("### Failed to initialize informers: %v", err)
 	}
 
 	if err := inv.Run(shutdown); err != nil {
@@ -238,6 +238,7 @@ func composeServices(
 	verifier jwt.Verifier,
 	k8s *client.Kubernetes,
 	infs *Informers,
+	namespaceInformer informers.Getter[*corev1.Namespace],
 ) (
 	configService api.ConfigControllerServer,
 	podService api.PodControllerServer,
@@ -250,6 +251,7 @@ func composeServices(
 		},
 	}
 	podService = &service.PodGeneric{
+		Namespaces: namespaceInformer,
 		Pods:       infs.Pods,
 		Kubernetes: k8s,
 	}
