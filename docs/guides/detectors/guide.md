@@ -11,43 +11,68 @@ A detector is a Go program that searches for threats in runtime events. The gene
 **Detector code structure**
 
 The detector code is logically divided into several sections:
-1. The section with the detector metadata starts with the `const` keyword and contains the following parameters: `ID`, `Name`, `Description`, `Author`, `Contact` (author's contact information), and `Lisense`. After a detector is uploaded to Runtime Radar, this metadata will be displayed in the web interface.
-   ```
+1. The section with the detector metadata starts with the `const` keyword and contains the following parameters: `ID`, `Name`, `Description`, `Author`, and `License`. After a detector is uploaded to Runtime Radar, this metadata will be displayed in the web interface.
+   ```go
    const (
-     ID = "TEST_NETCAT_LISTEN"
-     Name = "Use of netcat for creating incoming connections"
-     Description = "The detector detects network activity related to the use of netcat to create incoming connections.
-     Version = 1
-     Author = "CS Team"
-     Contact = "email: cs@example.com"
-     License = "Apache License 2.0"
+     ID          = "TEST_NETCAT_LISTEN"
+     Name        = "Use of netcat for creating incoming connections"
+     Description = "The detector detects network activity related to the use of netcat to create incoming connections."
+     Version     = 1
+     Author      = "CS Team"
+     License     = "Apache License 2.0"
+   )
+   ```
+1. The section with reason format strings starts with the `const` keyword. Reason strings provide human-readable context about what exactly was detected. They are displayed in the web interface and in notifications.
+   ```go
+   const (
+     ReasonNetcatListen = "Detected netcat listening on port `%d` via the `%s` process"
    )
    ```
 1. The section with detector trigger criteria required for its optimization starts with the `var` keyword. Criteria allow you to trigger the detector only for specific event types and functions and reduce the event processing time. You can specify types of events the detector must process and function names (if relevant for the type). For event type details, visit [tetragon.io](https://tetragon.io/docs/reference/grpc-api/#eventtype). The detector can manage different event types and different functions simultaneously. When describing criteria, make sure that the specified functions are traced by the policies (TracingPolicy). If you want the detector to trigger on all events, you must specify all event types. The policies [provided](https://github.com/Runtime-Radar/runtime-radar/tree/main/runtime-monitor/pkg/model/tracingpolicy) together with the Runtime Radar current version support the `PROCESS_EXEC` and `PROCESS_KPROBE` event types. For the detector to trigger on all of the called functions, you must leave the list of functions empty or enter `*`. The detector example contains only the `inet_csk_listen_start` kernel function because the detector must not be triggered when other functions are called or when events of other types occur.
-   ```
+   ```go
    var (
-     // triggerCriteria sets trigger criteria as a map between event types and corresponding functions
-     // to be used by the detector. If function names are not applicable to
-     // a particular event type, such as "PROCESS_EXEC", leave the slice empty or use
-     // the "*" wildcard.
      triggerCriteria = map[string][]string{
        "PROCESS_KPROBE": {"inet_csk_listen_start"},
-       // Examples:
-       //
-       // "PROCESS_KPROBE": {"security_file_permission", "security_mmap_file", "security_path_truncate"},
-       // In order to process all possible functions, leave the right-hand part empty or use the "*" wildcard:
-       // "PROCESS_EXEC": {},
-       // same as:
-       // "PROCESS_EXEC": {"*"},
+     }
+   )
+   ```
+1. The section with MITRE ATT&CK mapping starts with the `var` keyword. This maps the detector's findings to the MITRE ATT&CK framework. Each entry represents a tactic (e.g. `TA0011` — Command and Control) and lists the specific techniques the detector covers. This metadata is displayed in the web interface and included in notifications.
+   ```go
+   var (
+     mitreTactics = []*api.MitreTactic{
+       {
+         Id:         "TA0011",
+         Techniques: []string{"T1571"},
+       },
      }
    )
    ```
 1. The section with global variables starts with the `var` keyword.
-   ```
+   ```go
    var ( nc = glob.MustCompile("*/nc") )
    ```
-1. The section for selecting an action (switch-case) depending on the PROCESS_KPROBE event type starts with the `switch` keyword and contains multiple `case` sections to process various event types.
+1. The `init` function registers the detector with the Wasm host runtime. This replaces the previously used `main` function.
+   ```go
+   func init() {
+     api.RegisterDetector(Detector{})
+   }
    ```
+1. The `Info` method returns detector metadata including MITRE ATT&CK tactics covered.
+   ```go
+   func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
+     return &api.InfoResp{
+       Id:             ID,
+       Name:           Name,
+       Description:    Description,
+       Version:        Version,
+       Author:         Author,
+       License:        License,
+       TacticsCovered: mitreTactics,
+     }, nil
+   }
+   ```
+1. The section for selecting an action (switch-case) depending on the event type starts with the `switch` keyword and contains multiple `case` sections to process various event types.
+   ```go
      switch ev := event.(type) {
      case *tetragon.GetEventsResponse_ProcessExec:
        // Nothing here
@@ -59,13 +84,13 @@ The detector code is logically divided into several sections:
        function := kprobe.GetFunctionName()
    ```
 1. The section for extracting from an event a path to the `binary` file and the `function` function name starts with the `if` keyword. In this section, data is extracted from the event. Tetragon events are described using generated protobuf stubs. This allows you to manage them in the module code in the same way as if you were working with these events outside WebAssembly in a service that interacts with Tetragon directly via gRPC. As with the regular `protobuf`, we recommend that you use getters wherever possible to avoid a panic when accidentally calling a `nil` value. The target function is simultaneously being checked if it matches the `inet_csk_listen_start` value and if it is correct. If the target function does not match `inet_csk_listen_start`, the detector operation is terminated with a zero result, that is, without a detected threat.
-   ```
+   ```go
        if !(nc.Match(binary) && function == "inet_csk_listen_start") {
          return resp, nil
        }
    ```
-1. The next section starts with the `args` variable. In this section, a slice with argument object indices (`args`) is extracted and checked that its length is above the required minimum value. If the condition is not met, the detector returns an empty result and a detailed error message generated using `fmt.Errorf`. We recommend that you add similar checks to all parts of the code where index references are intended to avoid a panic when getting slice elements by index. A panic inside a specific detector does not affect other detectors or the event processor component. However, it may lead to the detector failure. The required object is first in the list. You can get it by index `0`. Then, using the `GetSockArg().GetSport()` method chain, you can get the target port number. If the target port is 8888, the threat is assigned critical severity. Then, a result that confirms threat detection is returned.
-   ```
+1. The next section starts with the `args` variable. In this section, a slice with argument object indices (`args`) is extracted and checked that its length is above the required minimum value. If the condition is not met, the detector returns an empty result and a detailed error message generated using `fmt.Errorf`. We recommend that you add similar checks to all parts of the code where index references are intended to avoid a panic when getting slice elements by index. A panic inside a specific detector does not affect other detectors or the event processor component. However, it may lead to the detector failure. The required object is first in the list. You can get it by index `0`. Then, using the `GetSockArg().GetSport()` method chain, you can get the target port number. If the target port is 8888, the threat is assigned critical severity. A `Reason` string and `TacticsCovered` are set to provide context for the detection. Then, a result that confirms threat detection is returned.
+   ```go
        args := kprobe.GetArgs()
        if len(args) < 1 {
          return nil, fmt.Errorf("unexpected args len, got %d, want >= 1", len(args))
@@ -73,9 +98,10 @@ The detector code is logically divided into several sections:
        sport := args[0].GetSockArg().GetSport()
        if sport == 8888 {
          resp.Severity = api.DetectResp_CRITICAL
+         resp.Reason = fmt.Sprintf(ReasonNetcatListen, sport, binary)
+         resp.TacticsCovered = mitreTactics
          return resp, nil
        }
-       // Nothing here
      case *tetragon.GetEventsResponse_ProcessTracepoint:
        // Nothing here
      }
@@ -103,13 +129,13 @@ To get started with detector code,
 
 For example, let us develop a detector that detects if `netcat` is used to listen to incoming connections on port 8888. This may be a sign of an attacker's lateral movement or attempts to build a reverse shell.
 
-The protector must detect if the `inet_csk_listen_start` kernel function is started. You can find data about a TCP port for incoming connections in the `sock` structure a pointer to which is passed as an argument of a detected function. The corresponding source (TracingPolicy) is already in Runtime Radar. 
+The protector must detect if the `inet_csk_listen_start` kernel function is started. You can find data about a TCP port for incoming connections in the `sock` structure a pointer to which is passed as an argument of a detected function. The corresponding source (TracingPolicy) is already in Runtime Radar.
 
 Runtime Radar has source code of detectors that process events of different types. All of them have a similar structure. Before you start developing a detector, you must find the most suitable detector for your scenario and use it as a basis. In this example, we will use the **CS_RT_SSH_TUNNEL_USE** detector code.
 
 To develop a detector:
 
-1. Copy the directory with the **CS_RT_SSH_TUNNEL_USE** detector using its `ID` as its name to a new directory, for example, **TEST_NETCAT_LISTEN**. 
+1. Copy the directory with the **CS_RT_SSH_TUNNEL_USE** detector using its `ID` as its name to a new directory, for example, **TEST_NETCAT_LISTEN**.
 
 1. In the `main.go` file, make changes in the required sections.
 
@@ -140,13 +166,13 @@ To compile the detector manually:
 1. Run the compile command:
 
    ```
-   tinygo build -target=wasip1 -scheduler=none --no-debug -o <detector filename>.wasm
+   tinygo build -target=wasip1 -scheduler=none -buildmode=c-shared --no-debug -o <detector filename>.wasm
    ```
 
    Example:
 
    ```
-   tinygo build -target=wasip1 -scheduler=none --no-debug -o TEST_NETCAT_LISTEN.wasm
+   tinygo build -target=wasip1 -scheduler=none -buildmode=c-shared --no-debug -o TEST_NETCAT_LISTEN.wasm
    ```
 
 **Adding a detector**
@@ -203,139 +229,142 @@ To check a detector:
 
 **Detector code example**
 
-```
+```go
+//go:build tinygo.wasm
+
 package main
 
 import (
-  "context"
-  "fmt"
+	"context"
+	"fmt"
 
-  "github.com/gobwas/glob"
-  "github.com/runtime-radar/runtime-radar/event-processor/detector/api"
-  "github.com/runtime-radar/runtime-radar/event-processor/detector/api/tetragon"
+	"github.com/gobwas/glob"
+	"github.com/runtime-radar/runtime-radar/event-processor/detector/api"
+	"github.com/runtime-radar/runtime-radar/event-processor/detector/api/tetragon"
 )
 
-//Change metadata for a new detector
+// Detector metadata.
 const (
-  ID = "TEST_NETCAT_LISTEN"
-  Name = "Use of netcat for creating incoming connections"
-  Description = "The detector detects network activity related to the use of netcat to create incoming connections."
-  Version = 1 Author = "CS Team"
-  Contact = "email: cs@example.com"
-  License = "Apache License 2.0"
+	ID          = "TEST_NETCAT_LISTEN"
+	Name        = "Use of netcat for creating incoming connections"
+	Description = "The detector detects network activity related to the use of netcat to create incoming connections."
+	Version     = 1
+	Author      = "CS Team"
+	License     = "Apache License 2.0"
+)
+
+// Reason format strings provide human-readable detection context.
+const (
+	ReasonNetcatListen = "Detected netcat listening on port `%d` via the `%s` process"
 )
 
 var (
-  // triggerCriteria sets Trigger Criteria as a map of event types to corresponding functions
-  // to be used by the detector. If function names are not applicable to
-  // a particular event type, such as "PROCESS_EXEC", leave the slice empty or use
-  // the wildcard "*".
-  triggerCriteria = map[string][] string {
-    "PROCESS_KPROBE": {
-      "inet_csk_listen_start"
-    },
+	// triggerCriteria sets Trigger Criteria as a map of event types to corresponding functions
+	// to be used by the detector. If function names are not applicable to
+	// a particular event type, such as "PROCESS_EXEC", leave the slice empty or use
+	// the wildcard "*".
+	triggerCriteria = map[string][]string{
+		"PROCESS_KPROBE": {"inet_csk_listen_start"},
 
-    // Examples:
-    //
-    // "PROCESS_KPROBE": {"security_file_permission", "security_mmap_file", "security_path_truncate"},
-    // In order to process all possible functions, leave the right-hand part empty or use the wildcard "*":
-    // "PROCESS_EXEC": {},
-    // same as:
-    // "PROCESS_EXEC": {"*"},
-  }
+		// Examples:
+		//
+		// "PROCESS_KPROBE": {"security_file_permission", "security_mmap_file", "security_path_truncate"},
+		// In order to process all possible functions, leave the right-hand part empty or use the wildcard "*":
+		// "PROCESS_EXEC": {},
+		// same as:
+		// "PROCESS_EXEC": {"*"},
+	}
 )
 
-//Change the section with global variables for the nc template
+// MITRE ATT&CK mapping: tactic IDs and technique IDs covered by this detector.
 var (
-  nc = glob.MustCompile("*/nc")
+	mitreTactics = []*api.MitreTactic{
+		{
+			Id:         "TA0011",
+			Techniques: []string{"T1571"},
+		},
+	}
 )
 
-// main is required for TinyGo to compile to Wasm
-func main() {
-  api.RegisterDetector(Detector {})
+var (
+	nc = glob.MustCompile("*/nc")
+)
+
+// init registers the detector with the Wasm host runtime.
+func init() {
+	api.RegisterDetector(Detector{})
 }
 
-type Detector struct {}
+type Detector struct{}
 
-func(d Detector) Info(ctx context.Context, req * api.InfoReq)( * api.InfoResp, error) {
-  return &api.InfoResp {
-    Id: ID,
-    Name: Name,
-    Description: Description,
-    Version: Version,
-    Author: Author,
-    Contact: Contact,
-    License: License,
-  }, nil
+func (d Detector) Info(ctx context.Context, req *api.InfoReq) (*api.InfoResp, error) {
+	return &api.InfoResp{
+		Id:             ID,
+		Name:           Name,
+		Description:    Description,
+		Version:        Version,
+		Author:         Author,
+		License:        License,
+		TacticsCovered: mitreTactics,
+	}, nil
 }
 
-func(d Detector) Detect(ctx context.Context, req * api.DetectReq)( * api.DetectResp, error) {
-  // Detector information is added to DetectResp because the former is always included into a response
-  // This is done to avoid an additional Wasm call on detect
-  resp: = & api.DetectResp {
-    Id: ID,
-    Name: Name,
-    Description: Description,
-    Version: Version,
-    Author: Author,
-    Contact: Contact,
+func (d Detector) TriggerCriteria(ctx context.Context, req *api.TriggerCriteriaReq) (*api.TriggerCriteriaResp, error) {
+	resp := &api.TriggerCriteriaResp{
+		Criteria: make(map[string]*api.TriggerCriteriaResp_FuncNames, len(triggerCriteria)),
+	}
 
-    // A default zero-value response means that nothing was detected. (This is redundant and put here just for reference
-    // because Severity == api.DetectResp_NONE == 0 when omitted.)
-    Severity: api.DetectResp_NONE,
-  }
+	for k, v := range triggerCriteria {
+		resp.Criteria[k] = &api.TriggerCriteriaResp_FuncNames{FuncNames: v}
+	}
 
-    event: = req.GetEvent().GetEvent()
-
-  // Depending on the event type, the corresponding action is performed
-  switch ev: = event.(type) {
-    case *tetragon.GetEventsResponse_ProcessExec:
-      // Nothing here
-    case *tetragon.GetEventsResponse_ProcessExit:
-      // Nothing here
-    case *tetragon.GetEventsResponse_ProcessKprobe:
-      kprobe: = ev.ProcessKprobe
-      binary: = kprobe.GetProcess().GetBinary()
-
-      function: = kprobe.GetFunctionName()
-        // Extract event data
-
-      /*New nc template to check the target function inet_csk_listen_start*/
-      if !(nc.Match(binary) && function == "inet_csk_listen_start") {
-        return resp, nil
-      }
-      // Check that netcat listens to port 8888
-      args: = kprobe.GetArgs()
-      if len(args) < 1 {
-        return nil, fmt.Errorf("unexpected args len, got %d, want >= 1", len(args))
-      }
-
-      sport: = args[0].GetSockArg().GetSport()
-      if sport == 8888 {
-        resp.Severity = api.DetectResp_CRITICAL
-        return resp, nil
-      }
-
-      // Nothing here
-    case *tetragon.GetEventsResponse_ProcessTracepoint:
-      // Nothing here
-  }
-
-    return resp, nil
+	return resp, nil
 }
 
-func(d Detector) TriggerCriteria(ctx context.Context, req * api.TriggerCriteriaReq)( * api.TriggerCriteriaResp, error) {
-  resp: = & api.TriggerCriteriaResp {
-    Criteria: make(map[string] * api.TriggerCriteriaResp_FuncNames, len(triggerCriteria)),
-  }
+func (d Detector) Detect(ctx context.Context, req *api.DetectReq) (*api.DetectResp, error) {
+	resp := &api.DetectResp{
+		// Default response indicates that nothing detected (this is redundant and put here just for reference,
+		// as Severity == api.DetectResp_NONE == 0 when omitted (default zero value)).
+		Severity: api.DetectResp_NONE,
+	}
 
-    for k,
-  v: = range triggerCriteria {
-    resp.Criteria[k] = & api.TriggerCriteriaResp_FuncNames {
-      FuncNames: v
-    }
-  }
+	event := req.GetEvent().GetEvent()
 
-    return resp, nil
+	// Depending on the event type, the corresponding action is performed.
+	switch ev := event.(type) {
+	case *tetragon.GetEventsResponse_ProcessExec:
+		// Nothing here
+	case *tetragon.GetEventsResponse_ProcessExit:
+		// Nothing here
+	case *tetragon.GetEventsResponse_ProcessKprobe:
+		kprobe := ev.ProcessKprobe
+		binary := kprobe.GetProcess().GetBinary()
+		function := kprobe.GetFunctionName()
+
+		// Check the nc binary template and the target function.
+		if !(nc.Match(binary) && function == "inet_csk_listen_start") {
+			return resp, nil
+		}
+
+		// Validate arguments length to avoid a panic.
+		args := kprobe.GetArgs()
+		if len(args) < 1 {
+			return nil, fmt.Errorf("unexpected args len, got %d, want >= 1", len(args))
+		}
+
+		// Check that netcat listens to port 8888.
+		sport := args[0].GetSockArg().GetSport()
+		if sport == 8888 {
+			resp.Severity = api.DetectResp_CRITICAL
+			resp.Reason = fmt.Sprintf(ReasonNetcatListen, sport, binary)
+			resp.TacticsCovered = mitreTactics
+			return resp, nil
+		}
+
+	case *tetragon.GetEventsResponse_ProcessTracepoint:
+		// Nothing here
+	}
+
+	return resp, nil
 }
 ```
