@@ -32,7 +32,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -68,7 +68,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -87,7 +87,7 @@
           },
           {
             "name": "namespaces",
-            "description": "The Namespaces parameter only supports a list of exact values.",
+            "description": "Namespaces, Node, Pod, and Container parameters can contain extract values or part of the name and support templating.\nFor example: pod-name-*",
             "in": "query",
             "required": false,
             "type": "array",
@@ -98,7 +98,6 @@
           },
           {
             "name": "nodes",
-            "description": "Node, Pod, and Container parameters can contain extract values or part of the name and support templating.\nFor example: pod-name-*",
             "in": "query",
             "required": false,
             "type": "array",
@@ -146,7 +145,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -179,7 +178,7 @@
           },
           {
             "name": "namespaces",
-            "description": "The Namespaces parameter only supports a list of exact values.",
+            "description": "Namespaces, Node, Pod, and Container parameters can contain extract values or part of the name and support templating.\nFor example: pod-name-*",
             "in": "query",
             "required": false,
             "type": "array",
@@ -190,7 +189,6 @@
           },
           {
             "name": "nodes",
-            "description": "Node, Pod, and Container parameters can contain extract values or part of the name and support templating.\nFor example: pod-name-*",
             "in": "query",
             "required": false,
             "type": "array",
@@ -240,7 +238,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -290,7 +288,7 @@
     "PodControllerKillBody": {
       "type": "object"
     },
-    "corev1Container": {
+    "coreV1Container": {
       "type": "object",
       "properties": {
         "name": {
@@ -430,7 +428,7 @@
       },
       "description": "A single application container that you want to run within a pod."
     },
-    "corev1Pod": {
+    "coreV1Pod": {
       "type": "object",
       "properties": {
         "metadata": {
@@ -447,25 +445,6 @@
         }
       },
       "description": "Pod is a collection of containers that can run on a host. This resource is created\nby clients and scheduled onto hosts."
-    },
-    "googlerpcStatus": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
     },
     "intstrIntOrString": {
       "type": "object",
@@ -500,7 +479,7 @@
       "type": "object",
       "properties": {
         "pod": {
-          "$ref": "#/definitions/corev1Pod"
+          "$ref": "#/definitions/coreV1Pod"
         }
       }
     },
@@ -555,7 +534,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/corev1Pod"
+            "$ref": "#/definitions/coreV1Pod"
           }
         },
         "total": {
@@ -581,6 +560,25 @@
         }
       },
       "description": "Quantity is a fixed-point representation of a number.\nIt provides convenient marshaling/unmarshaling in JSON and YAML,\nin addition to String() and AsInt64() accessors.\n\nThe serialization format is:\n\n```\n\u003cquantity\u003e        ::= \u003csignedNumber\u003e\u003csuffix\u003e\n\n\t(Note that \u003csuffix\u003e may be empty, from the \"\" case in \u003cdecimalSI\u003e.)\n\n\u003cdigit\u003e           ::= 0 | 1 | ... | 9\n\u003cdigits\u003e          ::= \u003cdigit\u003e | \u003cdigit\u003e\u003cdigits\u003e\n\u003cnumber\u003e          ::= \u003cdigits\u003e | \u003cdigits\u003e.\u003cdigits\u003e | \u003cdigits\u003e. | .\u003cdigits\u003e\n\u003csign\u003e            ::= \"+\" | \"-\"\n\u003csignedNumber\u003e    ::= \u003cnumber\u003e | \u003csign\u003e\u003cnumber\u003e\n\u003csuffix\u003e          ::= \u003cbinarySI\u003e | \u003cdecimalExponent\u003e | \u003cdecimalSI\u003e\n\u003cbinarySI\u003e        ::= Ki | Mi | Gi | Ti | Pi | Ei\n\n\t(International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)\n\n\u003cdecimalSI\u003e       ::= m | \"\" | k | M | G | T | P | E\n\n\t(Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)\n\n\u003cdecimalExponent\u003e ::= \"e\" \u003csignedNumber\u003e | \"E\" \u003csignedNumber\u003e\n```\n\nNo matter which of the three exponent forms is used, no quantity may represent\na number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal\nplaces. Numbers larger or more precise will be capped or rounded up.\n(E.g.: 0.1m will rounded up to 1m.)\nThis may be extended in the future if we require larger or smaller quantities.\n\nWhen a Quantity is parsed from a string, it will remember the type of suffix\nit had, and will use the same type again when it is serialized.\n\nBefore serializing, Quantity will be put in \"canonical form\".\nThis means that Exponent/suffix will be adjusted up or down (with a\ncorresponding increase or decrease in Mantissa) such that:\n\n- No precision is lost\n- No fractional digits will be emitted\n- The exponent (or suffix) is as large as possible.\n\nThe sign will be omitted unless the number is negative.\n\nExamples:\n\n- 1.5 will be serialized as \"1500m\"\n- 1.5Gi will be serialized as \"1536Mi\"\n\nNote that the quantity will NEVER be internally represented by a\nfloating point number. That is the whole point of this exercise.\n\nNon-canonical values will still parse as long as they are well formed,\nbut will be re-emitted in their canonical form. (So always use canonical\nform, or don't diff.)\n\nThis format is intended to make it difficult to use these numbers without\nwriting some sort of special handling code in the hopes that that will\ncause implementors to also use a fixed point implementation.\n\n+protobuf=true\n+protobuf.embed=string\n+protobuf.options.marshal=false\n+protobuf.options.(gogoproto.goproto_stringer)=false\n+k8s:deepcopy-gen=true\n+k8s:openapi-gen=true\n+k8s:openapi-model-package=io.k8s.apimachinery.pkg.api.resource"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
     },
     "v1AWSElasticBlockStoreVolumeSource": {
       "type": "object",
@@ -2692,7 +2690,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/corev1Container"
+            "$ref": "#/definitions/coreV1Container"
           },
           "title": "List of initialization containers belonging to the pod.\nInit containers are executed in order prior to containers being started. If any\ninit container fails, the pod is considered to have failed and is handled according\nto its restartPolicy. The name for an init container or normal container must be\nunique among all containers.\nInit containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes.\nThe resourceRequirements of an init container are taken into account during scheduling\nby finding the highest request/limit for each resource type, and then using the max of\nthat value or the sum of the normal containers. Limits are applied to init containers\nin a similar fashion.\nInit containers cannot currently be added or removed.\nCannot be updated.\nMore info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/\n+patchMergeKey=name\n+patchStrategy=merge\n+listType=map\n+listMapKey=name"
         },
@@ -2700,7 +2698,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/corev1Container"
+            "$ref": "#/definitions/coreV1Container"
           },
           "title": "List of containers belonging to the pod.\nContainers cannot currently be added or removed.\nThere must be at least one container in a Pod.\nCannot be updated.\n+patchMergeKey=name\n+patchStrategy=merge\n+listType=map\n+listMapKey=name"
         },
