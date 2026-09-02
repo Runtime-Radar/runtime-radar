@@ -63,10 +63,9 @@ message ListPodMetaReq {
   // name, created_at
   kube.Sort sort = 1;
 
-  // The Namespaces parameter only supports a list of exact values.
-  repeated string namespaces = 10;
-  // Node, Pod, and Container parameters can contain extract values or part of the name and support templating.
+  // Namespaces, Node, Pod, and Container parameters can contain extract values or part of the name and support templating.
   // For example: pod-name-*
+  repeated string namespaces = 10;
   repeated string nodes = 11;
   repeated string pods = 12;
   repeated string containers = 13;
@@ -111,10 +110,9 @@ message ListPodPageReq {
   uint32 page_num = 2;
   uint32 page_size = 3;
 
-  // The Namespaces parameter only supports a list of exact values.
-  repeated string namespaces = 10;
-  // Node, Pod, and Container parameters can contain extract values or part of the name and support templating.
+  // Namespaces, Node, Pod, and Container parameters can contain extract values or part of the name and support templating.
   // For example: pod-name-*
+  repeated string namespaces = 10;
   repeated string nodes = 11;
   repeated string pods = 12;
   repeated string containers = 13;

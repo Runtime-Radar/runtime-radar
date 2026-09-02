@@ -38,7 +38,7 @@ func New(
 	config *rest.Config,
 	syncDuration time.Duration,
 	infs ...informers.Setter,
-) (Service, error) {
+) (*Inventory, error) {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("can't create k8s client: %w", err)
@@ -107,7 +107,7 @@ func (i *Inventory) Shutdown() {
 
 func (i *Inventory) onUpdate() error {
 	allow, deny := i.updater.Maps()
-	namespaces, _ := i.List(nil)
+	namespaces, _ := i.List()
 
 	if len(allow) > 0 {
 		for _, ns := range namespaces {
