@@ -20,21 +20,34 @@ export class ApiPathService {
 
     private host = '';
 
+    private requestedHost = '';
+
     readonly host$ = new BehaviorSubject(this.host);
 
     readonly error$ = new Subject<string>();
 
     initialize() {
         // there are links which should switch cluster based on query params into email templates
-        const href = this.coreWindowService.location.href.substring(this.coreWindowService.location.href.indexOf('?'));
-        let value = this.coreWindowService.sessionStorage.getItem(API_CLUSTER_PATH_SESSION_KEY) || '';
-        if (href.includes(API_CLUSTER_URL_QUERY_PARAM_KEY)) {
-            value = decodeURIComponent(href.substring(API_CLUSTER_URL_QUERY_PARAM_KEY.length + 2));
+        const requested =
+            new URLSearchParams(this.coreWindowService.location.search).get(API_CLUSTER_URL_QUERY_PARAM_KEY) || '';
+        const stored = this.coreWindowService.sessionStorage.getItem(API_CLUSTER_PATH_SESSION_KEY) || '';
+
+        // such a link can carry any host, so it is applied only once matched against the registered clusters
+        if (FORM_VALIDATION_REG_EXP.IP_DOMAIN_SCHEME.test(requested)) {
+            this.requestedHost = requested;
         }
 
-        if (FORM_VALIDATION_REG_EXP.IP_DOMAIN_SCHEME.test(value)) {
-            this.setHost(value);
+        if (FORM_VALIDATION_REG_EXP.IP_DOMAIN_SCHEME.test(stored)) {
+            this.setHost(stored);
         }
+    }
+
+    /** Returns the yet unvalidated host from the query param and forgets it. */
+    takeRequestedHost(): string {
+        const value = this.requestedHost;
+        this.requestedHost = '';
+
+        return value;
     }
 
     get(path: string): string {
@@ -42,6 +55,11 @@ export class ApiPathService {
         const host = this.apiSingleTenantPaths.includes(segment) ? '' : this.host;
 
         return `${host}${this.apiPath}${path}`;
+    }
+
+    /** True when url targets this app or the cluster the user switched to, and may carry the token. */
+    isOwnRequest(url: string): boolean {
+        return url.startsWith(this.apiPath) || (!!this.host && url.startsWith(`${this.host}${this.apiPath}`));
     }
 
     setHost(value: string) {
