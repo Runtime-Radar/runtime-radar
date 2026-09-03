@@ -3,7 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ include "common.fullname.namespace" . }}
-  labels: {{- include "common.labels" . | nindent 4 }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
   {{- with (include "common.annotations" .) }}
   annotations:
     {{- . | nindent 4 }}
@@ -13,8 +14,7 @@ roleRef:
   kind: ClusterRole
   name: {{ include "common.fullname.namespace" . }}
 subjects:
-  - kind: ServiceAccount
-    name: {{ include "common.serviceAccountName" . }}
-    namespace: {{ include "common.namespace" . | quote }}
+- kind: ServiceAccount
+  name: {{ include "common.serviceAccountName" . }}
+  namespace: {{ include "common.namespace" . | quote }}
 {{- end }}
-
