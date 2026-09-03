@@ -24,7 +24,7 @@
     "Integration.ListPage.Header.Title": "Notification services",
     "Integration.ListPage.Button.Create": "New service",
     "Integration.ListPage.SubHeading.EmptyResult": "No services yet",
-    "Integration.ListPage.Text.EmptyResult": "To send notifications about scan results, add a notification service.",
+    "Integration.ListPage.Text.EmptyResult": "To send notifications, add a service.",
 
     "Integration.Card.Table.Recipient": "Template",
     "Integration.Card.Table.Rule": "Rule",
