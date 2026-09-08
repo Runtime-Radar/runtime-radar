@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 
 import { RuleForm } from '@cs/packages/rule';
-import { RuleBlockEntity, RuleNotifyEntity, RuleWhiteList } from '@cs/domains/rule';
+import { RuleBlockEntity, RuleNotifyEntity, RuleSeverity, RuleWhiteList } from '@cs/domains/rule';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RuleFeatureHelperService {
     static convertFormValuesToBlockEntity(form: RuleForm): RuleBlockEntity | null {
+        if (form.blockSeverity === RuleSeverity.NONE) {
+            return null;
+        }
+
         return {
             severity: form.blockSeverity,
             verdict: null
@@ -15,6 +19,10 @@ export class RuleFeatureHelperService {
     }
 
     static convertFormValuesToNotifyEntity(form: RuleForm): RuleNotifyEntity | null {
+        if (form.notifySeverity === RuleSeverity.NONE) {
+            return null;
+        }
+
         return {
             severity: form.notifySeverity,
             verdict: null,
