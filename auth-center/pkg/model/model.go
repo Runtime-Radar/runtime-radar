@@ -74,7 +74,7 @@ var (
 			RoleName: "Security engineer",
 			RolePermissions: Permissions{
 				Users: &jwt.Permission{
-					Actions:     []jwt.Action{"read", "update"},
+					Actions:     []jwt.Action{},
 					Description: "User management",
 				},
 				Roles: &jwt.Permission{
