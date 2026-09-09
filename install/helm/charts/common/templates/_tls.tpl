@@ -22,13 +22,13 @@ Params:
 {{- $crt := "" }}
 {{- $key := "" }}
 {{- $ca := "" }}
+{{- $caKey := "" }}
 {{- if (pluck "lookup" ($values.tls) ($global.tls) (((.context.Values).global).tls) (dict "lookup" true) | first) }}
   {{- $crt = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.crt" "context" .context) }}
   {{- $key = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.key" "context" .context) }}
   {{- $ca = include "common.secrets.lookup" (dict "secret" $secret "key" "ca.crt" "context" .context) }}
+  {{- $caKey = include "common.secrets.lookup" (dict "secret" $secret "key" "ca.key" "context" .context) }}
 {{- end }}
-{{- if not (and $crt $key $ca) }}
-  {{- $caGen := genCA (default (printf "%s-ca" .context.Chart.Name) .caName) (default 365 .caDaysValid) }}
   {{- $releaseNamespace := (include "common.namespace" .context) }}
   {{- $clusterDomain := default "cluster.local" .context.Values.clusterDomain }}
   {{- $fullname := include "common.fullname" .context }}
@@ -48,14 +48,38 @@ Params:
     {{- $prependNames := list (printf "*.%s.%s.svc.%s" . $releaseNamespace $clusterDomain) (printf "%s.%s.svc.%s" . $releaseNamespace $clusterDomain) . }}
     {{- $altNames = concat $prependNames $altNames }}
   {{- end }}
+  {{- if or (not (and $crt $key $ca)) (not (include "common.tls.certCoversNames" (dict "cert" $crt "altNames" $altNames))) }}
+  {{- $caGen := genCA (default (printf "%s-ca" .context.Chart.Name) .caName) (default 365 .caDaysValid) }}
+  {{- if and $ca $caKey }}
+  {{- $caGen = buildCustomCert $ca $caKey }}
+  {{- end }}
   {{- $cert := genSignedCert $fullname $ipAddrs $altNames 365 $caGen }}
   {{- $crt = $cert.Cert | b64enc }}
   {{- $key = $cert.Key | b64enc }}
   {{- $ca = $caGen.Cert | b64enc }}
+  {{- $caKey = $caGen.Key | b64enc }}
 {{- end }}
 tls.crt: {{ $crt | quote }}
 tls.key: {{ $key | quote }}
 ca.crt: {{ $ca | quote }}
+{{- with $caKey }}
+ca.key: {{ . | quote }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Return true if the certificate contains all the DNS names
+*/}}
+{{- define "common.tls.certCoversNames" -}}
+{{- $pem := regexFind "(?s)-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----" (.cert | b64dec) }}
+{{- $der := regexReplaceAll "-----[^-]+-----" $pem "" | nospace | b64dec }}
+{{- $covered := true }}
+{{- range .altNames }}
+  {{- if not (contains . $der) }}
+  {{- $covered = false }}
+  {{- end }}
+{{- end }}
+{{- if $covered }}true{{- end }}
 {{- end -}}
 
 {{/*
