@@ -15,7 +15,18 @@ import { RouterName } from '@cs/core';
 export class InventoryFeatureDetectorTableComponent {
     private readonly sidepanelService = inject(KbqSidepanelService);
 
-    @Input() detectors?: KubeManagerPodDetectorRating[] | null;
+    podDetectorCount = 0;
+    podDetectors: KubeManagerPodDetectorRating[] = [];
+    @Input() set detectors(values: KubeManagerPodDetectorRating[] | null) {
+        if (values && values.length) {
+            this.podDetectors = [...values];
+            this.podDetectorCount = values.reduce((acc, detector) => {
+                acc += detector.count;
+
+                return acc;
+            }, 0);
+        }
+    }
 
     readonly routerName = RouterName;
 
