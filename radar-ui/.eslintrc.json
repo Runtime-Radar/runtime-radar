@@ -52,6 +52,7 @@
                 ],
                 "@typescript-eslint/no-unnecessary-condition": "off",
                 "@typescript-eslint/no-unsafe-enum-comparison": "warn",
+                "@angular-eslint/prefer-standalone": "off",
                 "@angular-eslint/component-class-suffix": [
                     "error",
                     {

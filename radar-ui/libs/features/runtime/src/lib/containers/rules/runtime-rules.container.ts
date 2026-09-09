@@ -130,6 +130,13 @@ export class RuntimeFeatureRulesContainer implements OnChanges {
                     type: RuleType.TYPE_RUNTIME,
                     rule: {
                         version: '1', // @todo: create environment constant
+                        block:
+                            form.blockSeverity === RuleSeverity.NONE
+                                ? null
+                                : {
+                                      severity: form.blockSeverity,
+                                      verdict: null
+                                  },
                         notify:
                             form.notifySeverity === RuleSeverity.NONE
                                 ? null
@@ -189,6 +196,13 @@ export class RuntimeFeatureRulesContainer implements OnChanges {
                     type: RuleType.TYPE_RUNTIME,
                     rule: {
                         version: '1', // @todo: create environment constant
+                        block:
+                            form.blockSeverity === RuleSeverity.NONE
+                                ? null
+                                : {
+                                      severity: form.blockSeverity,
+                                      verdict: null
+                                  },
                         notify:
                             form.notifySeverity === RuleSeverity.NONE
                                 ? null

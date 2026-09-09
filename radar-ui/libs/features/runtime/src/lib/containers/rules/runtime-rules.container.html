@@ -113,6 +113,17 @@
                                     </span>
                                 </div>
                             }
+                            @if (ruleResponse.rule.rule.block) {
+                                <span class="layout-row layout-align-start-center">
+                                    <i kbq-icon="kbq-lock_16" class="layout-margin-right-s"></i>
+                                    <span kbqTooltip="{{ tCommon(ruleResponse.rule.rule.block.severity | ruleSeverityLocalization) }}"
+                                          [kbqPlacement]="tooltipPlacements.Right">
+                                        <cs-rule-package-severity-component
+                                                isWidthAuto
+                                                [severity]="ruleResponse.rule.rule.block.severity" />
+                                    </span>
+                                </span>
+                            }
                         </section>
 
                         @if (!ruleResponse.deleted) {
