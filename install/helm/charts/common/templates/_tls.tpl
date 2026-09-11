@@ -13,6 +13,7 @@ Params:
   - caDaysValid - String - Optional - Days validity for the certificate.
   - services - List - Optional - List of services to add as alt name.
   - altNames - List - Optional - Alt names for CA cert.
+  - altNamesChecksum - String - Optional - Checksum of alt names to re-issue the certificate when it changes.
   - prefix - String - Optional - Prefix of tls section for sane alert.
 */}}
 {{- define "common.tls.generate" -}}
@@ -26,6 +27,14 @@ Params:
   {{- $crt = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.crt" "context" .context) }}
   {{- $key = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.key" "context" .context) }}
   {{- $ca = include "common.secrets.lookup" (dict "secret" $secret "key" "ca.crt" "context" .context) }}
+  {{- if .altNamesChecksum }}
+    {{- $existingChecksum := include "common.secrets.lookupAnnotation" (dict "secret" $secret "key" "checksum/alt-names" "context" .context) }}
+    {{- if ne $existingChecksum .altNamesChecksum }}
+      {{- $crt = "" }}
+      {{- $key = "" }}
+      {{- $ca = "" }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- if not (and $crt $key $ca) }}
   {{- $caGen := genCA (default (printf "%s-ca" .context.Chart.Name) .caName) (default 365 .caDaysValid) }}
@@ -56,6 +65,16 @@ Params:
 tls.crt: {{ $crt | quote }}
 tls.key: {{ $key | quote }}
 ca.crt: {{ $ca | quote }}
+{{- end -}}
+
+{{/*
+Return checksum of alt names, stored in the "checksum/alt-names" annotation of the generated secret
+
+Usage:
+{{ include "common.tls.altNamesChecksum" (list "cs.example.com" "localhost") }}
+*/}}
+{{- define "common.tls.altNamesChecksum" -}}
+{{- . | uniq | sortAlpha | join "," | sha256sum -}}
 {{- end -}}
 
 {{/*
