@@ -149,12 +149,6 @@ To upgrade an existing installation:
 helm upgrade runtime-radar -n runtime-radar ./install/helm -f custom-values.yaml
 ```
 
-### Internal TLS certificate
-
-All components share the chart-generated `cs-crt` Secret, whose certificate lists every component in its subject alternative names. The list is recorded in the `checksum/alt-names` annotation, and the certificate (with its CA) is re-issued on `helm upgrade` when the list changes, e.g. when a release adds a component such as `kube-manager` in 0.3.0. Pods pick the new certificate up on restart, which a version upgrade triggers.
-
-A certificate you provide yourself (`global.tls.existingSecret` or inline `tls.cert`/`tls.certKey`/`tls.certCA`) is never re-issued by the chart: add new component names to its subject alternative names before upgrading, otherwise the reverse proxy gets `502 Bad Gateway` from them.
-
 ### Breaking changes
 
 The following breaking changes apply when upgrading from earlier versions:

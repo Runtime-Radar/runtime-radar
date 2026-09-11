@@ -25,23 +25,6 @@ Params:
 {{- end -}}
 
 {{/*
-Returns the annotation value of an existing secret, otherwise an empty string.
-
-Usage:
-{{ include "common.secrets.lookupAnnotation" (dict "secret" "secret-name" "key" "annotationKey" "context" $) }}
-
-Params:
-  - secret - String - Required - Name of the 'Secret' resource.
-  - key - String - Required - Name of the annotation.
-  - context - Context - Required - Parent context.
-
-*/}}
-{{- define "common.secrets.lookupAnnotation" -}}
-{{- $secretObj := lookup "v1" "Secret" (include "common.namespace" .context) .secret -}}
-{{- dig "metadata" "annotations" .key "" $secretObj -}}
-{{- end -}}
-
-{{/*
 Reuses the value from an existing password secret, otherwise sets its value to a default value.
 If default is empty new password will be generated.
 
