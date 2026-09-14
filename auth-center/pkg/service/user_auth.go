@@ -56,7 +56,7 @@ func (ua *UserAuth) Delete(ctx context.Context, req *api.DeleteUserReq) (resp *a
 }
 
 func (ua *UserAuth) ChangePassword(ctx context.Context, req *api.ChangePasswordReq) (resp *api.SignInResp, err error) {
-	if err := ua.Verifier.VerifyPermission(ctx, jwt.PermissionUsers, jwt.ActionUpdate); err != nil {
+	if err := ua.Verifier.VerifyPermission(ctx, jwt.PermissionUsers, jwt.ActionExecute); err != nil {
 		return nil, errcommon.PermissionErrorToStatus(err)
 	}
 	resp, err = ua.UserControllerServer.ChangePassword(ctx, req)
