@@ -15,7 +15,7 @@ var (
 			RoleName: "Administrator",
 			RolePermissions: Permissions{
 				Users: &jwt.Permission{
-					Actions:     []jwt.Action{"read", "update", "create", "delete"},
+					Actions:     []jwt.Action{"read", "update", "create", "delete", "execute"},
 					Description: "User management",
 				},
 				Roles: &jwt.Permission{
@@ -74,7 +74,7 @@ var (
 			RoleName: "Security engineer",
 			RolePermissions: Permissions{
 				Users: &jwt.Permission{
-					Actions:     []jwt.Action{},
+					Actions:     []jwt.Action{"execute"},
 					Description: "User management",
 				},
 				Roles: &jwt.Permission{
@@ -192,7 +192,7 @@ var (
 			RoleName: "Developer",
 			RolePermissions: Permissions{
 				Users: &jwt.Permission{
-					Actions:     []jwt.Action{},
+					Actions:     []jwt.Action{"execute"},
 					Description: "User management",
 				},
 				Roles: &jwt.Permission{
@@ -251,7 +251,7 @@ var (
 			RoleName: "Auditor",
 			RolePermissions: Permissions{
 				Users: &jwt.Permission{
-					Actions:     []jwt.Action{},
+					Actions:     []jwt.Action{"execute"},
 					Description: "User management",
 				},
 				Roles: &jwt.Permission{
