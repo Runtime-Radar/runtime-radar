@@ -151,7 +151,9 @@ helm upgrade runtime-radar -n runtime-radar ./install/helm -f custom-values.yaml
 
 ### Internal TLS certificate
 
-All components share the chart-generated `cs-crt` Secret, whose certificate lists every component in its subject alternative names. The list is recorded in the `checksum/alt-names` annotation, and the certificate (with its CA) is re-issued on `helm upgrade` when the list changes, e.g. when a release adds a component such as `kube-manager` in 0.3.0. Pods pick the new certificate up on restart, which a version upgrade triggers.
+All components share the chart-generated `cs-crt` Secret, whose certificate lists every component in its subject alternative names. The list is recorded in the `checksum/alt-names` annotation, and the certificate is re-issued on `helm upgrade` when the list changes, e.g. when a release adds a component such as `kube-manager` in 0.3.0. The CA is kept (its key is stored as `ca.key`), so components still running with the previous certificate trust the re-issued one. Pods pick the new certificate up on restart, which a version upgrade triggers.
+
+The first upgrade to a chart with this mechanism re-issues the certificate together with the CA once, because the existing Secret has no `ca.key` yet; restart all components if the upgrade did not change their images.
 
 A certificate you provide yourself (`global.tls.existingSecret` or inline `tls.cert`/`tls.certKey`/`tls.certCA`) is never re-issued by the chart: add new component names to its subject alternative names before upgrading, otherwise the reverse proxy gets `502 Bad Gateway` from them.
 
@@ -168,6 +170,11 @@ The following breaking changes apply when upgrading from earlier versions:
 - **Connection metadata moved from Secrets to ConfigMaps.** The chart-owned Secrets `postgresql`/`redis`/`rabbitmq`/`clickhouse` no longer carry `<SVC>_ADDR`/`<SVC>_SSL_*`/`<SVC>_TLS_*` keys — those moved to new ConfigMaps `cs-postgresql-config`/`cs-redis-config`/`cs-rabbitmq-config`/`cs-clickhouse-config`. Operators supplying their own auth Secret via `<svc>.auth.existingSecret` or the new `global.<svc>.auth.existingSecret` must scope it to AUTH credentials only (`<SVC>_USER`, `<SVC>_PASSWORD`, `<SVC>_DB` where applicable). Including ADDR/SSL keys in the Secret no longer has any effect; consumers read those from the ConfigMaps.
 - **Cross-subchart secret-name propagation requires `global.<svc>.auth.existingSecret`.** Setting only the top-level `postgresql.auth.existingSecret` propagates to sub-chart but NOT to consumer deployments (auth-api, history-api, etc.). To make consumer pods read from your external Secret, use `global.postgresql.auth.existingSecret` (and the corresponding global knobs for redis/rabbitmq/clickhouse). For external services where subchart isn't deployed (`<svc>.deploy=false`), only the global knob is needed.
 - **`global.keys.existingSecret` now honored by every consumer.** `cluster-manager` and `public-api` previously hardcoded `cs-keys` for `PUBLIC_ACCESS_TOKEN_SALT_KEY` / `ACCESS_TOKEN_SALT` and silently ignored `global.keys.existingSecret`. They now resolve the keys-secret name through the `common.cs.keys.secretName` helper. Operators using a custom `global.keys.existingSecret` must ensure the Secret contains the `publicAccessTokenSalt` key (in addition to `encryption` and `token`).
+- **`global.tls.existingSecret` no longer renders a Secret.** Earlier versions created a Secret with that name when it did not exist, and Helm deletes a resource that leaves the release manifest. If the Secret named in `global.tls.existingSecret` was created by the chart, keep it before upgrading:
+
+  ```bash
+  kubectl annotate secret <existingSecret> -n runtime-radar helm.sh/resource-policy=keep
+  ```
 
 ## Uninstalling
 

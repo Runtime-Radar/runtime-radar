@@ -14,6 +14,7 @@ Params:
   - services - List - Optional - List of services to add as alt name.
   - altNames - List - Optional - Alt names for CA cert.
   - altNamesChecksum - String - Optional - Checksum of alt names to re-issue the certificate when it changes.
+  - persistCAKey - Boolean - Optional - Store the CA key as ca.key to re-issue the certificate with the same CA.
   - prefix - String - Optional - Prefix of tls section for sane alert.
 */}}
 {{- define "common.tls.generate" -}}
@@ -23,21 +24,33 @@ Params:
 {{- $crt := "" }}
 {{- $key := "" }}
 {{- $ca := "" }}
+{{- $caKey := "" }}
 {{- if (pluck "lookup" ($values.tls) ($global.tls) (((.context.Values).global).tls) (dict "lookup" true) | first) }}
   {{- $crt = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.crt" "context" .context) }}
   {{- $key = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.key" "context" .context) }}
   {{- $ca = include "common.secrets.lookup" (dict "secret" $secret "key" "ca.crt" "context" .context) }}
+  {{- if .persistCAKey }}
+    {{- $caKey = include "common.secrets.lookup" (dict "secret" $secret "key" "ca.key" "context" .context) }}
+    {{- /* A secret without the CA key is re-issued once, later re-issues keep the CA */}}
+    {{- if not $caKey }}
+      {{- $ca = "" }}
+    {{- end }}
+  {{- end }}
   {{- if .altNamesChecksum }}
     {{- $existingChecksum := include "common.secrets.lookupAnnotation" (dict "secret" $secret "key" "checksum/alt-names" "context" .context) }}
     {{- if ne $existingChecksum .altNamesChecksum }}
       {{- $crt = "" }}
       {{- $key = "" }}
-      {{- $ca = "" }}
     {{- end }}
   {{- end }}
 {{- end }}
 {{- if not (and $crt $key $ca) }}
-  {{- $caGen := genCA (default (printf "%s-ca" .context.Chart.Name) .caName) (default 365 .caDaysValid) }}
+  {{- $caGen := dict }}
+  {{- if and $ca $caKey }}
+    {{- $caGen = buildCustomCert $ca $caKey }}
+  {{- else }}
+    {{- $caGen = genCA (default (printf "%s-ca" .context.Chart.Name) .caName) (default 365 .caDaysValid) }}
+  {{- end }}
   {{- $releaseNamespace := (include "common.namespace" .context) }}
   {{- $clusterDomain := default "cluster.local" .context.Values.clusterDomain }}
   {{- $fullname := include "common.fullname" .context }}
@@ -61,10 +74,14 @@ Params:
   {{- $crt = $cert.Cert | b64enc }}
   {{- $key = $cert.Key | b64enc }}
   {{- $ca = $caGen.Cert | b64enc }}
+  {{- $caKey = $caGen.Key | b64enc }}
 {{- end }}
 tls.crt: {{ $crt | quote }}
 tls.key: {{ $key | quote }}
 ca.crt: {{ $ca | quote }}
+{{- if .persistCAKey }}
+ca.key: {{ $caKey | quote }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -92,6 +109,8 @@ Params:
   - caDaysValid - String - Optional - Days validity for the certificate.
   - services - List - Optional - List of services to add as alt name.
   - altNames - List - Optional - Alt names for CA cert.
+  - altNamesChecksum - String - Optional - Checksum of alt names to re-issue the certificate when it changes.
+  - persistCAKey - Boolean - Optional - Store the CA key as ca.key to re-issue the certificate with the same CA.
   - prefix - String - Optional - Prefix of tls section for sane alert.
 */}}
 {{- define "common.tls.generateSecret" -}}
