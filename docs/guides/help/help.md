@@ -221,8 +221,8 @@ To install Runtime Radar using Helm,
 
 1. Run the following command:
 
-   ```
-   helm install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.2.0 \
+   ```bash
+   helm install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.3.0 \
 
      --set-string 'global.ownCsUrl=https://<your domain address>:32000' \
      --set-string 'global.keys.publicAccessTokenSalt=INIT-DO-NOT-USE' \
@@ -263,7 +263,7 @@ To set up access to the web interface using port forwarding,
 
 1. Run the command:
 
-   ```
+   ```bash
    kubectl -n runtime-radar port-forward svc/reverse-proxy 9000:9000
    ```
 
@@ -345,7 +345,7 @@ To configure the number of sent messages:
 
 1. Restart the event processor and history api modules sequentially by running the following command for each of them:
 
-   ```
+   ```bash
    kubectl rollout restart deployment/<module service name> -n <namespace where Runtime Radar is installed>
    ```
 
@@ -367,7 +367,7 @@ To configure the runtime monitor buffer size:
 
 1. Restart the runtime monitor service by running the following command:
 
-   ```
+   ```bash
    kubectl rollout restart daemonset/<service name> -n <namespace where Runtime Radar is installed>
    ```
 
@@ -408,7 +408,7 @@ To set a network port for the runtime monitor service:
 
 1. Apply the changes and exit the edit mode.
 
-   ```
+   ```bash
    kubectl rollout restart daemonset/<service name> -n <namespace where Runtime Radar is installed>
    ```
 
