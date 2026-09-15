@@ -41,3 +41,31 @@ func TestOnlyAdministratorManagesUsers(t *testing.T) {
 		}
 	}
 }
+
+func TestOnlyCICDLacksUserExecute(t *testing.T) {
+	for _, role := range PredeclaredRoles {
+		users := role.RolePermissions.Users
+		if users == nil {
+			t.Errorf("Role %q must declare users permission", role.RoleName)
+			continue
+		}
+
+		holdsExecute := false
+		for _, granted := range users.Actions {
+			if granted == jwt.ActionExecute {
+				holdsExecute = true
+			}
+		}
+
+		if role.RoleName == "CI/CD" {
+			if holdsExecute {
+				t.Errorf("Role %q must not hold users:%s", role.RoleName, jwt.ActionExecute)
+			}
+			continue
+		}
+
+		if !holdsExecute {
+			t.Errorf("Role %q must hold users:%s", role.RoleName, jwt.ActionExecute)
+		}
+	}
+}
