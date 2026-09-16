@@ -1,4 +1,4 @@
-# <a name="9815029643"></a>Installing and setting up RuntimeRadar
+﻿# <a name="9815029643"></a>Installing and setting up RuntimeRadar
 
 This section contains instructions on how to install and set up Runtime Radar.
 
@@ -114,27 +114,18 @@ RAM
 
 The minimum disk size is calculated using different formulas depending on the stored data.
 
-The average size of a Tetragon event is 13 KB. You can calculate the minimum HDD size for a ClickHouse server depending on the average number of events per second within the calculated period (R) and the number of days to store events for (d) using the following formula: HDD = 13 × R × 86 400 × d.
+The average size of a Tetragon event is 13 KB. You can calculate the minimum SSD size for a ClickHouse server depending on the average number of events per second within the calculated period (R) and the number of days to store events for (d) using the following formula: SSD = 13 × R × 86,400 × d.
 
-The calculateed HDD size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
+The calculated hard disk size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
 
-The minimum HDD size for a PostgreSQL server depends on the following:
+The minimum hard disk size for a PostgreSQL server depends on the following:
 * Size of an image scan event (depends on the number of components and vulnerabilities), s. The average event size is 500 KB. For images with a large number of components, we recommend that you increase this value by 25-30%.
 * Number of images to scan during a scheduled scan, I.
 * Number of scans within the retention period, N<sub>d</sub>. For example, if one scheduled scan is performed per week, 52 scans will be performed per year and 4 scans—per month. If a scan is performed twice a day, 62 scans will be performed per month.
 
-You can calculate the minimum HDD disk size for a PostgreSQL server using the following formula: HDD = s × I × N<sub>d</sub>.
+You can calculate the minimum SSD size for a PostgreSQL server using the following formula: SSD = s × I × N<sub>d</sub>.
 
-The calculateed HDD size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
-
-The minimum HDD size for a server that stores admission controller check events and configuration scans depends on the following:
-* Kubernetes API server RPS to the admission controller module, N<sub>r</sub>. The RPS can be determined using [Grafana](#9502135051).
-* Scan event size, S<sub>s</sub>. As a rule, a scan event contains information about one component (except IaC) so the average event size is 50–60 KB.
-* Event retention period, d.
-
-You can calculate the minimum HDD disk size for the server to store admission controller check events and to scan configurations using the following formula: HDD = N<sub>r</sub> × S<sub>s</sub> × 86 400 × d.
-
-The calculateed HDD size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
+The calculated hard disk size is in KB. For the size in GB, divide the value by 10<sup>6</sup>.
 
 If you use PostgreSQL, RabbitMQ, ClickHouse, or Redis obtained from somewhere other than the Runtime Radar installation distribution package, ensure that the cluster is connected to the servers of the corresponding DBMSs.
 
@@ -224,14 +215,15 @@ Use an OS whose core meets the following requirements:
 
 ## Quick installation using Helm
 
-The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the [README.md](../../install/helm/README.md) file.
+The Helm chart configuration file with the default settings will be used for installation. If you need to consider the specifics of the existing infrastructure, you can manually fill in the Helm chart configuration file prior to installation. All of the available settings are described in the `README.md` file.
 
 To install Runtime Radar using Helm,
 
 1. Run the following command:
 
    ```bash
-   helm install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.2.0 \
+   helm install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.3.0 \
+
      --set-string 'global.ownCsUrl=https://<your domain address>:32000' \
      --set-string 'global.keys.publicAccessTokenSalt=INIT-DO-NOT-USE' \
      --set-string 'global.keys.encryption=INIT-DO-NOT-USE' \
@@ -420,6 +412,39 @@ To set a network port for the runtime monitor service:
    kubectl rollout restart daemonset/<service name> -n <namespace where Runtime Radar is installed>
    ```
 
+# About the cluster map
+
+Runtime Radar allows you to view the makeup and assess the state of the cluster where the product was installed. To open the **Cluster map** page, click **Cluster map** on the main menu. The map displays information about nodes, namespaces, pods, their relations, containers, and runtime events in containers.
+
+<img src="pics/10498194955.png" title="Cluster map page"/>
+
+To view the details about a node, namespace, or pod, click it. You can view the details in the sidebar to the right.
+
+**Information about nodes**
+
+The node sidebar has the **Structure** and **Configuration** tabs. The **Structure** tab contains information about pods and the number of containers running in a pod. Information is grouped by namespaces. To navigate to a namespace or pod, click it on the cluster map. The sidebar with the details will open.
+
+**Information about a namespace**
+
+The namespace sidebar contains the following information:
+* Node
+* List of pods related to the namespace
+* Number of running containers per pod
+
+To navigate to a pod, click it on the cluster map. The sidebar with the details will open.
+
+**Information about a pod**
+
+The pod sidebar contains the following information: 
+* The **Configuration** tab with the **Vulnerability check** tab (to view information about detected vulnerabilities and their severity) and the **Code** tab (to view the YAML manifest).
+
+**Information about containers and runtime events**
+
+The container sidebar shows the total number of registered events and the table with detailed information about threats detected in events. The table contains the following:
+* Identifier of the triggered detector.
+* Threat severity.
+* Number of events where threats were detected during the check.
+
 # Managing child clusters
 
 You can use Runtime Radar to protect multiple clusters. You must first install Runtime Radar in the central cluster and then connect child clusters to the Runtime Radar central cluster. This allows you to do the following:
@@ -496,6 +521,8 @@ To install Runtime Radar in a child cluster using the installation command:
 
    ***Note.** If necessary, you can change the path to the Helm chart in the installation command manually.*
 
+   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Connected**. If the status does not change for more than 15 minutes, examine event logs for the CS manager component.
+
 To install Runtime Radar in a child cluster using the YAML installation command:
 
 1. Connect to the child cluster where to install Runtime Radar.
@@ -505,6 +532,8 @@ To install Runtime Radar in a child cluster using the YAML installation command:
 1. Go to the directory where the `values.yaml` file was saved.
 
 1. Run the YAML installation command.
+
+   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Connected**. If the status does not change for more than 15 minutes, examine event logs for the CS manager component.
 
 You can manage child clusters in the web interface of the central cluster. If self-signed certificates were generated during Runtime Radar installation in the central cluster, you will not be able to access the data of the child clusters because the connection security cannot be validated. For that reason, before selecting a child cluster, you must add the root certificate to the trusted certificates or follow the child cluster URL by adding the URL to the security exceptions or ignoring the warning about an insecure connection.
 
@@ -553,7 +582,7 @@ You can integrate Runtime Radar into existing infrastructure and container secur
 
 Email messages notify a narrow range of users (for example, the employees of one department) about information security events.
 
-Webhook notifications allow you to implement integration with services such as Slack, Mattermost, Telegram, or higher-level systems such as SOAR systems (Security Orchestration, Automation, and Response). If Runtime Radar is installed in a network segment isolated from the internet, you can implement webhook notifications through a proxy server by specifying its address during Runtime Radar installation.
+Webhook notifications allow you to implement integration with services such as Slack, Mattermost, Telegram, or higher-level systems such as SOAR systems (security orchestration, automation and response). If Runtime Radar is installed in a network segment isolated from the internet, you can implement webhook notifications through a proxy server by specifying its address during Runtime Radar installation.
 
 You can integrate Runtime Radar into information security monitoring processes through configuring of notifications to SIEM systems or ILMSs.
 
@@ -563,15 +592,15 @@ You can manage notification services and templates in the Runtime Radar web inte
 
 The page displays the **Cluster** list for selecting a cluster and the **New service** button for connecting the notification service. If child clusters are not yet connected to Runtime Radar or they are not yet in the **Installed** status, you can select only the **Central** option.
 
-The **Notification services** page displays all connected services that are used for notifications based on templates, and information about the added notification templates. Notifications are configured [in a response rule](#7481272715).
+The **Notification services** page displays all connected services that are used for notifications based on templates, and information about the added notification templates. Notifications are configured in a response rule.
 
 The connected notification services are grouped by type (for example, email, webhook, or syslog). The name of each service is displayed with the number of notification templates for which it is used. For each service, there is the ![pic](pics/9810272139.svg) button for adding a notification template and the ![pic](pics/9783588875.svg) button for editing or deleting the service.
 
 You can delete a notification service that is no longer in use. All notification templates created for the service will be deleted together with it.
 
-> **Warning.** A notification service cannot be deleted if at least one of its notification templates is used [in an existing response rule](#7481272715).
+> **Warning.** A notification service cannot be deleted if at least one of its notification templates is used in an existing response rule.
 
-If a notification template was created by mistake or notification recipients no longer need to be notified, you can delete the template. You can delete a notification template that is not specified in any [response rule](#7481272715).
+If a notification template was created by mistake or notification recipients no longer need to be notified, you can delete the template. You can delete a notification template that is not specified in any response rule.
 
 This section provides instructions on how to manage notification services and templates and a description of notification template settings.
 
@@ -1006,49 +1035,46 @@ Example of checking whether a value is set:
 {{end}}
 ```
 
-## <a name="7481272715"></a>Managing response rules
+# Managing response rules
 
-Response rules determine how to respond when threats or vulnerabilities are detected in the specified objects.
+Response rules determine how to respond when threats or vulnerabilities are detected in objects.
 
-You can manage response rules in the Runtime Radar web interface on the **Response rules** page, which opens as you select the **Rules** section on the main menu.
+You can manage response rules in the Runtime Radar web interface on the **Response rules** page, which opens when you select the **Rules** section on the main menu.
 
 ***Note.** Which features are available on the page depends on the user role.*
 
 The page displays the following elements:
 * **Cluster** list to select a cluster to manage. If child clusters are not yet connected to Runtime Radar or they are not yet in the **Installed** status, you can select only the **Central** option.
 * Box to search for rules by name
-* **Type** list to filter by rule types
 * **Block** list to filter rules by the vulnerability severity that must be reached to block an image
 * **Notify** list to filter rules by the vulnerability severity that must be reached to send a notification
 * List of rules where you can view the details of each rule by clicking it
 * **Create** button to create a response rule
 * Buttons to edit or delete each rule
 
-**Creating a rule for monitoring of and response to runtime events**
+**Creating response rules**
 
-To set up automatic responses to the detection of threats during runtime event monitoring, you must create a response rule.
-
-When you specify a pod name with a digest in the specification, the pod name can be displayed in different ways. This depends on the container runtime used. For example, a pod manifest contains the following image:
+When you create a rule, you must consider that, in the pod specification, the image name with a digest can be displayed in different ways. This depends on the container runtime used. For example, a pod manifest contains the following image:
 
 ```
-registry.k8s.io/ingress-nginx/controller@sha256:d56f135b6462cfc476447cfe564b83a45e8bb7da2774963b00d12161112270b7
+registry.k8s.io/ingress-nginx/controller@sha256:d56f....270b7
 ```
 
-If Containerd is used, the `image` parameter contains only the image ID hash (in `sha256:<hash>`), without a registry, path, or digest. Example: 
+If Containerd is used, the `image` parameter contains only the image ID hash (in `sha256:<hash>`), without a registry, path, or digest. Example:
 
 ```
-sha256:2d37f5a3dd01b3f22912802cdcbf8739693d2774f7e9d7c6f704ae3bd34fa0b0
+sha256:2d37f...fa0b0
 ```
 
 If CRI-O is used, the `image` parameter contains a full link to the image, including the registry, path, and digest. Example:
 
 ```
-registry.k8s.io/ingress-nginx/controller@sha256:62b61c42ec8dd877b85c0aa24c4744ce44d274bc16cc5d2364edfe67964ba
+registry.k8s.io/ingress-nginx/controller@sha256:62b61....964ba
 ```
 
 Runtime Radar receives data about containers from the status generated by the container runtime. This is due to the specifics of the container runtime implementation. Incorrect configuration of rules (without taking into account the runtime in use) may result in false positives or missed events. We recommend that you explicitly check the `image` value format in your runtime and take it into account when creating rules.
 
-To create a rule for monitoring of and response to runtime events:
+To create a response rule:
 
 1. On the main menu, select **Rules**.
 
@@ -1060,29 +1086,25 @@ To create a rule for monitoring of and response to runtime events:
 
 1. Enter a unique name for the response rule.
 
-1. Enter the parameter values based on the container runtime in use.
+1. Set the values.
 
-   ***Note.** In name templates, you can use an asterisk (`*`) for any number of any character and a question mark (`?`) for any single character. For example, the `default-*` template matches the namespaces whose names start with `default`. Templates are case-sensitive. Regular expressions are not supported.*
+1. Select a severity that must be reached to block an event.
 
-1. Select the threat severity that must be reached to block a runtime event.
+   ***Note.** A runtime event is blocked by deleting the pod where the event occurred.*
 
-   ***Note.** An event is blocked by deleting the pod where the event occured.*
-
-1. Select the threat severity that must be reached to send a notification.
+1. Select the severity that must be reached to send a notification.
 
 1. Select a notification template.
 
-   If **Do not notify** is selected under **Notify**, the templates are not available.
+   If **Do not notify** is selected under **Notify** or notifications are disabled, the templates are not available.
 
-   ***Note.** You can select a template if at least one notification template is created in Runtime Radar.*
+   ***Note.** You can select a template if at least one notification template for the event type corresponding to the rule is created in the system.*
 
-1. If required, under **Exclusions**, select threats for the rule to skip.
-
-1. If required, under **Exclusions**, enter paths or templates of paths to executable files for the rule to skip.
+1. If required, under **Exclusions**, select exclusions for the rule to skip.
 
 1. Click **Create**.
 
-## Monitoring of and responding to runtime events
+# Monitoring of and responding to runtime events
 
 You can set up monitoring of and responding to runtime events. Monitoring of runtime events allows tracking of events at the level of individual pods or containers in Kubernetes clusters, including the start of processes, system calls, and requests to specific kernel functions. During monitoring of and responding to events, they are checked through a chain of detectors that detect threats in an event and assign a severity to them. Response rules created in Runtime Radar allow you to configure responses to be performed when a threat is detected.
 
@@ -1090,11 +1112,9 @@ A detector is a program written in a Turing-complete programming language (for e
 
 You can configure tracking of runtime events from specific sources to get check results of only required events and reduce the flow of events processed by Runtime Radar.
 
-A source is a description of operation logic for eBPF programs in a special language (TracingPolicy). The programs are loaded to and executed in an OS kernel on a host and can track runtime events using the `kprobe`, `uprobe`, `tracepoint`, and `BPF-LSM` mechanisms of the Linux kernel. Sources use the mechanisms described above to track the activity of processes in containers (monitoring of system calls and requests to specific kernel functions) and detect threats. Events that start and stop processes in cluster containers are always tracked. Using the expert mode, you can edit existing sources or add new sources.
+> **Warning.** Configure sources and event filters taking into account the actual load on protected clusters to avoid excessive load on Runtime Radar. If the load increases, consider scaling the system.
 
-> **Warning.**[Configure sources and event filters](#7786230795) taking into account the actual load on protected clusters to avoid excessive load on Runtime Radar. If the load increases, consider scaling the system.
-
-This section describes how Runtime Radar monitors and responses to runtime events, and provides instructions on how to manage such events in the system.
+This section describes how Runtime Radar monitors and responses to runtime events and provides instructions on how to manage such events in the system.
 
 The process of monitoring of and responding to runtime events comprises the following stages:
 1. Checking runtime events through a chain of detectors and setting a severity for detected threats.
@@ -1132,10 +1152,16 @@ Outgoing TCP connections
 This source tracks the `tcp_connect`, `tcp_close`, and `tcp_sendmsg` functions, allowing detection of outgoing TCP connections (including the connection establishment, termination, and sending of TCP packets). Enabling this source can significantly increase the event flow and load on the system. In this case, we recommend that you narrow the flow using more accurate filters (for example, by specifying only certain pods)
 </td></tr><tr><td align="left">
 
-Privilege escalation
+Actions with access permissions for files and processes
 </td><td align="left">
 
-This source tracks the `commit_creds` function allowing detection of privilege escalation, including superuser (root) privileges
+The source tracks calls of the Linux kernel function `commit_creds()`, which could indicate attempts to elevate process privileges, including obtaining superuser (root) permissions. In addition, the source tracks calls of the LSM function `security_path_chmod()` with a set of permissions that includes execution permissions
+</td></tr><tr><td align="left">
+
+Access to important system files
+</td><td align="left">
+
+The source tracks calls of the Linux kernel functions `security_file_permission()`, `security_mmap_file()`, `security_path_truncate()`, `security_path_link()`, and `security_path_rename()` for important system directories and files. These include, for example, `/boot`, `/root/.ssh`, `/etc/shadow`, `/etc/profile`, `/etc/sudoers`, and `/etc/pam.conf`. For different files, different actions are monitored (reading only, writing only, reading and writing, and creating hard links). To examine source operation details, we recommend that you enable the expert mode
 </td></tr><tr><td align="left">
 
 Using tools for debugging and reverse engineering (`ptrace`)
@@ -1156,22 +1182,22 @@ Loading and unloading of kernel modules
 This source tracks the `do_init_module`, `free_module`, `security_kernel_module_request`, and `security_kernel_read_file` calls, allowing detection of explicit or implicit (automatic) loading and unloading of modules, as well as attempts to manipulate modules and other malicious activity
 </td></tr><tr><td align="left">
 
-Opening of a socket for incoming connections
+Monitoring sockets
 </td><td align="left">
 
-This source tracks the `inet_csk_listen_start` call, revealing possible activity of unwanted networking tools. The source also detects legitimate activity in a container; therefore, in addition to opening of a socket, detectors also track other event parameters
+The source tracks calls of the Linux kernel functions `inet_csk_listen_start()` and `security_socket_create()`, which indicate that sockets for incoming connections or sockets of specific protocol families were created. This helps detect suspicious network activity related to exploitation of kernel vulnerabilities or use of non-standard protocols
 </td></tr><tr><td align="left">
 
 Device mounting
 </td><td align="left">
 
-This source tracks the `do_mount` call, allowing detection of potentially unwanted events related to device mounting
+The source tracks the `mount` call, allowing detection of potentially unwanted events related to device mounting
 </td></tr><tr><td align="left">
 
-Copying of file descriptors
+Actions with standard I/O streams
 </td><td align="left">
 
-This source tracks calls to functions that copy file descriptors. The source tracks the copying of the standard input file descriptor (stdin), which may indicate an attempt to build a pipe required for various hacking tools
+The source tracks calls of the Linux kernel function `do_dup2()`, which copies the standard input file descriptor (STDIN) as well as creation of a named pipe file (S_IFIFO) via the LSM function `security_path_mknod()`. Such actions often indicate that an attacker is attempting to start a reverse shell, a hidden communication channel, or another attack tool
 </td></tr><tr><td align="left">
 
 Monitoring the `io_uring` interface
@@ -1304,7 +1330,13 @@ You can edit the filter by clicking ![pic](pics/9777620363.svg) and delete the f
 
 The Runtime Radar distribution kit includes a set of detectors covered by the Runtime Radar license. Customers, third-party vendors, and community members also can develop detectors and upload them to the system.
 
-You can manage detectors on the **Runtime** page on the **Detectors** tab. Information about all detectors (the identifier, name, version, and description) is presented as a table.
+You can manage detectors on the **Runtime** page on the **Detectors** tab. Information about all detectors (identifier, name, version, description, and corresponding MITRE ATT&CK tactics and techniques) is presented as a table.
+
+**Detector information**
+
+Clicking a detector opens a sidebar that displays its ID, name, version, description, and information about the corresponding tactics and techniques in the MITRE ATT&CK matrix.
+
+Clicking **Go to detector events** shows the list of events where threats were detected using this detector.
 
 **Adding a detector**
 
@@ -1392,6 +1424,7 @@ The following dashboards are included in the distribution package:
 * Public API. For monitoring the public API. Shows the external interface health and performance to help control its availability and quality of provided services.
 * Reverse proxy. Provides information about the availability and operation of the reverse proxy component. All internal and external requests to Runtime Radar are routed through the reverse proxy component. The dashboard allows you to detect anomalies in the service and promptly react to possible issues.
 * Runtime. For managing metrics of services dedicated to the in-cluster deployment. If you use external components, such as RabbitMQ or ClickHouse, for correct filtering by the **Cluster** parameter and if there is Grafana configuration for several clusters, add the "cluster" label to the metrics of these components (similar to other system metrics). You can also view information about the runtime monitor service connection to RabbitMQ.
+* Container registry. Provides information about the time of completing a scheduled scan task (without scanning time), number of requests from the container registry integrator module to the policy enforcer module to check if there are response rules for a specific image, number of successful and failed requests to image artifactories, and number of requests to the scanner to check an image for vulnerabilities during a scheduled scan task. This information allows you to monitor load related to scheduled scan task processing as well as detect module anomalies and respond to possible issues in a timely manner.
 
 Each dashboard contains annotations and notifications that help promptly respond to changes in the component state.
 
@@ -1411,81 +1444,124 @@ To import the Runtime Radar dashboard to Grafana:
 
 1. Click **Load**.
 
-# Updating Runtime Radar
+# Configuring a user account
 
-To update Runtime Radar from version 0.1.0 to version 0.2.0:
+When using the Runtime Radar interface, each user works with their own account. You can change your account password as well as create and revoke tokens for accessing the public Runtime Radar API.
 
-1. Get the PostgreSQL connection data by running the following command:
+## Changing your password
 
-   ```bash
-   kubectl get secret -n <namespace> postgresql -o json | jq '.data | map_values(@base64d)'
+You can change your Runtime Radar password.
+
+To change your password:
+
+1. Enter the new password.
+
+   ***Note.** The new password must not be empty or too simple, must not be the same as the previous password, and must contain 8 to 16 characters, uppercase and lowercase Latin letters, and digits.*
+
+1. Click **Save**.
+
+## Managing access tokens
+
+The access token is used to authorize requests to the REST API.
+
+***Note.** Which features are available on the page depends on the user role.*
+
+<img src="pics/9583841163.png" title="Access tokens page"/>
+
+The page displays the following elements:
+* **Create** button to create a token.
+* Sections with the access token parameters.
+
+Each section has the following information:
+* Access token name
+* Expiration
+* Available permissions
+
+You can create several access tokens for your account.
+
+To create an access token:
+
+1. In the top right corner of the page, select the cluster for requests to which to create the token.
+
+1. Click **Create**.
+
+1. Enter the name of the access token.
+
+1. Select the token expiration date.
+
+1. Enable the permissions required for the token.
+
+   ***Note.** You can only enable permissions that are available to your account role.*
+
+1. Click **Create**.
+
+   > **Warning.** Copy and save the received access token. You will not be able to view and copy the token after reloading the page.
+
+# Upgrading Runtime Radar
+
+To upgrade Runtime Radar from version 0.2.0 to version 0.3.0:
+
+1. Create a backup copy of the PostgreSQL database by running the following command:
+
+   ```
+   pg_dump -h <PostgreSQL server address> -U <PostgreSQL username> -d <database name> -F c -f backup_v0.2.0.dump
    ```
 
-   Example of the command output:
-
-   ```bash
-   {
-
-     "postgres-addr": "postgresql",
-     "postgres-db": "ptcs",
-     "postgres-password": "admin",
-     "postgres-ssl-check-cert": "true",
-     "postgres-ssl-mode": "true",
-     "postgres-user": "admin"
-   }
-   ```
-
-1. Connect to the PostgreSQL database using the credentials that you obtained.
-
-1. Delete the `detectors` table by executing the following query:
+1. Create a backup copy of the ClickHouse database (for the history-api service) by running the following command:
 
    ```
-   drop table detectors
+   clickhouse-client --host <ClickHouse server address> --query "SELECT * FROM runtime_events FORMAT Native" > runtime_events_backup.native
    ```
 
-   > **Warning.** If detectors that are not included in the Runtime Radar distribution package were used, they will be deleted together with the table. You can back up the `detectors` table or load detectors in the web interface after the update.
+1. Delete the contents of the `detectors` table by running the following command:
 
-1. Fetch the `encryption`, `publicAccessTokenSalt`, and `token` parameters from the previous installation by running the following command:
-
-   ```bash
-   $ kubectl get secret cs-keys -n runtime-radar -o json | jq -r '.data | to_entries[] | "\(.key): \(.value | @base64d)"'
+   ```
+   TRUNCATE TABLE detectors
    ```
 
-   Example of the command output:
+   ***Note.** You must clear the table before upgrading the product to ensure that new detectors are added to the database during the upgrade process. Detectors are copied to the database when the event-processor service starts. Copying occurs only to an empty "detectors" table.*
 
-   ```bash
-   encryption: 3b2ef...e99ba
+1. If the web interface is hosted in a different domain, specify the domain by adding the `global.corsAllowedOrigins` setting to the Helm chart configuration file `values.yaml`:
 
-   publicAccessTokenSalt: 22ea3...03583
-   token: 30d17...d99ge
    ```
+   global:
+     corsAllowedOrigins: "https://runtimeradar.example.com"
+   ```
+
+   ***Note.** The `global.corsAllowedOrigins` setting specifies the domains from which API requests are allowed. If the web interface is hosted in a different domain (CDN or separate host), specify that domain. Otherwise, the browser will block requests to the API. If the web interface and the API run in the same domain, leave the setting empty.*
+
+1. If detectors that are not included in the distribution were loaded in earlier versions, rename the `main` function to `init` in the detector code.
+
+   ***Note.** For detailed information about detector development, see the [Developer help](https://github.com/Runtime-Radar/runtime-radar/blob/main/docs/guides/detectors/guide.md).*
+
+1. Recompile the detectors using tinygo version 0.41.1.
+
+1. Make sure that the `values.yaml` file has a section for the kube-manager service and the `nodeSelector` and `replicas` settings are specified:
+
+   ```
+   # install/helm/values.yaml
+   kube-manager:
+     nodeSelector: {}
+     replicas: 1
+   ```
+
+   ***Note.** The permissions required for the kube-manager service are described in the [clusterrole.yaml](https://github.com/Runtime-Radar/runtime-radar/blob/main/kube-manager/.helm/templates) file.*
+
+1. Check the current permissions for the **Security specialist** role by running the following query in the auth-center DB:
+
+   ```
+   SELECT id, name, permissions FROM roles WHERE name ILIKE '%specialist%';
+   ```
+
+1. If workflows depend on this role for creating and editing users, reassign those tasks to the **Administrator** role.
 
 1. Run the command to install new Runtime Radar package:
 
-   ```bash
-   helm upgrade --install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.2.0 \
-     --set-string 'global.ownCsUrl=<address of your domain>:32000' \
-     --set-string 'global.keys.publicAccessTokenSalt=22ea3...03583' \
-     --set-string 'global.keys.encryption=3b2ef...e99ba' \
-     --set-string 'global.keys.token=30d17...d99ge' \
-     --set global.administrator.username=admin \
-     --set global.administrator.password=Password \
-     --set-string 'reverse-proxy.service.type=NodePort' \
-     --set-string 'reverse-proxy.service.nodePorts.http=32000' \
-     --set 'prometheus.deploy=true' \
-     --set 'prometheus.persistence.enabled=false' \
-     --set 'grafana.deploy=true' \
-     --set-string 'grafana.auth.username=<username>' \
-     --set-string 'grafana.auth.password=<password>' \
-     --set 'grafana.persistence.enabled=false' \
-     --set 'metrics.enabled=true'
+   ```
+   helm upgrade --install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.3.0 \
    ```
 
-   ***Note. **In version 0.2.0, instead of the `auth-center.administrator.username` and `auth-center.administrator.password` parameters, the `global.administrator.username` and `global.administrator.password` parameters are used respectively.*
-
-   ***Note.** You do not need to specify the `prometheus.deploy`, `prometheus.persistence.enabled`, `grafana.deploy`, `grafana.auth.username`, `grafana.auth.password`, `grafana.persistence.enabled`, and `metrics.enabled` parameters if you do not plan to use the [integration with Grafana](#9502135051) to monitor the health and integrity of the system and its services.*
-
-If you use Runtime Radar to protect multiple clusters, you must do the following:
+If you use Runtime Radar to protect multiple clusters, do the following:
 1. Update Runtime Radar in the central cluster according to the instructions above.
 1. [Connect the child clusters](#9839873547) in the Runtime Radar web interface.
-1. Update Runtime Radar in the child clusters using commands received after their connection.
+1. Upgrade Runtime Radar in the child clusters using commands received after the clusters were connected.
