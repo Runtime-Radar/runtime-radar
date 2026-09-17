@@ -108,16 +108,26 @@ export class ClusterEffectStore {
                 switchMap(({ list }) =>
                     this.apiPathService.host$.pipe(
                         take(1),
-                        map((host) => list.some((item) => item.own_cs_url === host))
+                        map((host) => {
+                            const target = this.apiPathService.takeRequestedHost() || host;
+
+                            return { host, target, isHostExist: list.some((item) => item.own_cs_url === target) };
+                        })
                     )
                 ),
-                tap((isHostExist) => {
+                tap(({ host, target, isHostExist }) => {
                     if (!isHostExist) {
                         this.apiPathService.setHost('');
                         this.toastService.show({
                             style: KbqToastStyle.Warning,
                             title: this.i18nService.translate('Common.Pseudo.Notification.HostValidationFailed')
                         });
+
+                        return;
+                    }
+
+                    if (target !== host) {
+                        this.apiPathService.setHost(target);
                     }
                 }),
                 concatMap(() => NEVER)
