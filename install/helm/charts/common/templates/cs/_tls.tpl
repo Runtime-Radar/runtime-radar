@@ -71,6 +71,15 @@ Return true if TLS is enabled for CS
 {{- end -}}
 
 {{/*
+Return true if the generated certificate is re-issued on every upgrade
+*/}}
+{{- define "common.cs.tls.forceRegenerate" -}}
+{{- if and (eq (include "common.cs.tls.enabled" .) "true") ((.Values.global).tls).forceRegenerate (not ((.Values.global).tls).existingSecret) -}}
+    {{- true -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return certificates secret name
 */}}
 {{- define "common.cs.tls.secretName" -}}
