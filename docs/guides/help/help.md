@@ -1559,7 +1559,10 @@ To upgrade Runtime Radar from version 0.2.0 to version 0.3.0:
 
    ```
    helm upgrade --install runtime-radar -n runtime-radar --create-namespace oci://ghcr.io/runtime-radar/runtime-radar:v0.3.0 \
+     --set global.tls.forceRegenerate=true \
    ```
+
+   ***Note.** The `global.tls.forceRegenerate` parameter re-issues the internal TLS certificate so that it covers the components added in version 0.3.0, and restarts the Runtime Radar components. If you use your own certificate (`global.tls.existingSecret` or `tls.cert`), add `kube-manager` to its subject alternative names before upgrading.*
 
 If you use Runtime Radar to protect multiple clusters, do the following:
 1. Update Runtime Radar in the central cluster according to the instructions above.
