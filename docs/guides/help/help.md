@@ -1485,6 +1485,16 @@ To update Runtime Radar from version 0.1.0 to version 0.2.0:
 
    ***Note.** You do not need to specify the `prometheus.deploy`, `prometheus.persistence.enabled`, `grafana.deploy`, `grafana.auth.username`, `grafana.auth.password`, `grafana.persistence.enabled`, and `metrics.enabled` parameters if you do not plan to use the [integration with Grafana](#9502135051) to monitor the health and integrity of the system and its services.*
 
+To update Runtime Radar from version 0.2.0 to version 0.3.0, run the command to install the new Runtime Radar package with the parameters of your installation:
+
+```bash
+helm upgrade --install runtime-radar -n runtime-radar oci://ghcr.io/runtime-radar/runtime-radar:v0.3.0 \
+  --set global.tls.forceRegenerate=true \
+  ...
+```
+
+***Note.** The `global.tls.forceRegenerate` parameter re-issues the internal TLS certificate so that it covers the components added in version 0.3.0, and restarts the Runtime Radar components. If you use your own certificate (`global.tls.existingSecret` or `tls.cert`), add `kube-manager` to its subject alternative names before updating.*
+
 If you use Runtime Radar to protect multiple clusters, you must do the following:
 1. Update Runtime Radar in the central cluster according to the instructions above.
 1. [Connect the child clusters](#9839873547) in the Runtime Radar web interface.

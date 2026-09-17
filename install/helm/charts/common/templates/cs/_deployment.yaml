@@ -18,13 +18,17 @@ spec:
     metadata:
       {{- $podAnnotations := include "common.podAnnotations" . }}
       {{- $authEnabled := eq (include "common.cs.auth.enabled" .) "true" }}
-      {{- if or $podAnnotations $authEnabled }}
+      {{- $forceRegenerate := eq (include "common.cs.tls.forceRegenerate" .) "true" }}
+      {{- if or $podAnnotations $authEnabled $forceRegenerate }}
       annotations:
         {{- with $podAnnotations }}
         {{- . | nindent 8 }}
         {{- end }}
         {{- if $authEnabled }}
         checksum/keys: {{ default (randAlphaNum 32) ((.Values.global).keys).token | sha256sum | quote }}
+        {{- end }}
+        {{- if $forceRegenerate }}
+        checksum/tls: {{ .Release.Revision | quote }}
         {{- end }}
       {{- end }}
       labels:

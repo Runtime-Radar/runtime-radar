@@ -12,6 +12,9 @@ spec:
     metadata:
       annotations:
         checksum/configmap: {{ toJson .Values.tetragon | sha256sum }}
+        {{- if eq (include "common.cs.tls.forceRegenerate" .) "true" }}
+        checksum/tls: {{ .Release.Revision | quote }}
+        {{- end }}
         {{- include "common.podAnnotations" . | indent 8 }}
       labels:
         {{- include "common.podLabels" . | nindent 8 }}
