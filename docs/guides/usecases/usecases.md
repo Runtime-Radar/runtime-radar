@@ -1,9 +1,8 @@
-﻿# 
-## Use cases
+﻿# Use cases
 
 This section describes the most popular Runtime Radar use cases.
 
-### Integration of container runtime monitoring into SOCs
+## Integration of container runtime monitoring into SOCs
 
 Integration of container runtime monitoring into SOCs allows you to detect threats in real time and send information about them to SIEM systems.
 
@@ -52,7 +51,7 @@ To create a response rule:
 
 1. Click **New**.
 
-### Automation of responding to information security incidents in container environments
+## Automation of responding to information security incidents in container environments
 
 You can automate responses to information security incidents in container environments using a webhook. Webhook is a method of integration in which an initiating system sends a notification to the recipient in the form of an HTTP request that contains all the necessary information.
 
@@ -103,7 +102,7 @@ To create a response rule:
 
 1. Click **New**.
 
-### Protection of multicluster environments
+## Protection of multicluster environments
 
 With the product, you can deploy all security agents in each infrastructure cluster and have centrilized control over container security. This reduces incident response time and makes it easier to investigate and analyze them.
 
@@ -155,7 +154,7 @@ To install Runtime Radar in a child cluster using the installation command:
 
    ***Note.** If necessary, you can change the path to the Helm chart in the installation command manually.*
 
-   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Installed**. If the status does not change for more than 15 minutes, examine event logs for the cs-manager module.
+   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Connected**. If the status does not change for more than 15 minutes, examine event logs for the CS manager component.
 
 To install Runtime Radar in a child cluster using the YAML installation command:
 
@@ -167,7 +166,7 @@ To install Runtime Radar in a child cluster using the YAML installation command:
 
 1. Run the YAML installation command.
 
-   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Installed**. If the status does not change for more than 15 minutes, examine event logs for the cs-manager module.
+   After Runtime Radar is installed, the child cluster must be registered automatically. After successful registration, on the **Cluster** page in the web interface, the installation status will change to **Connected**. If the status does not change for more than 15 minutes, examine event logs for the CS manager component.
 
 You can manage child clusters in the web interface of the central cluster. If self-signed certificates were generated during Runtime Radar installation in the central cluster, you will not be able to access the data of the child clusters because the connection security cannot be validated. For that reason, before selecting a child cluster, you must add the root certificate to the trusted certificates or follow the child cluster URL by adding the URL to the security exceptions or ignoring the warning about an insecure connection.
 
