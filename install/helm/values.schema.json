@@ -623,8 +623,9 @@
                             "properties": {
                                 "address": {
                                     "type": "string",
-                                    "description": "Set address of Tetragon grpc connection in host:port format",
-                                    "default": "localhost:54321"
+                                    "description": "Set address of the Tetragon gRPC connection. Only Unix sockets on the tetragon-run hostPath (unix:///path/to/socket) are supported.",
+                                    "default": "unix:///var/run/tetragon/tetragon.sock",
+                                    "pattern": "^unix://"
                                 }
                             }
                         },

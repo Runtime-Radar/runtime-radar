@@ -371,11 +371,11 @@ To configure the runtime monitor buffer size:
    kubectl rollout restart daemonset/<service name> -n <namespace where Runtime Radar is installed>
    ```
 
-**Changing network ports for the runtime monitor service**
+**Changing network ports and the Tetragon socket path for the runtime monitor service**
 
-The runtime monitor service operates in the hostNetwork mode—that is, it uses a network namespace of the host. If a host port is already in use, the service will not track runtime events. You can set ports for the service in the Helm chart configuration file `values.yaml` before installing Runtime Radar. You can also set a port for the tetragon container of the runtime monitor service if the default host port is already in use.
+The runtime monitor service operates in the hostNetwork mode—that is, it uses a network namespace of the host. If a host port is already in use, the service will not track runtime events. You can set ports for the service in the Helm chart configuration file `values.yaml` before installing Runtime Radar. The tetragon container of the runtime monitor service no longer uses a network port for the gRPC connection: it accepts gRPC connections over a Unix socket on the host. If necessary, you can change the path to this socket. The tetragon container still exposes Prometheus metrics on a host port (2112 by default). If this port is already in use, set another one by specifying the `runtime-monitor.tetragon.prometheus.port` value.
 
-To set a network port for the runtime monitor service:
+To set a network port or the Tetragon socket path for the runtime monitor service:
 
 1. Open the `values.yaml` file in edit mode.
 
@@ -391,7 +391,9 @@ To set a network port for the runtime monitor service:
            gops: 7000
    ```
 
-1. If necessary, specify a port for the tetragon container.
+1. If necessary, specify the Unix socket path for the tetragon container.
+
+   The address must be specified in the `unix:///path/to/socket` format, and the socket must be located in `/var/run/tetragon`. This is the host directory that both the tetragon container and the runtime monitor container mount, so only the socket file name can be changed. TCP addresses are not supported.
 
    Example:
 
@@ -403,7 +405,7 @@ To set a network port for the runtime monitor service:
            gops: 7000
        tetragon:
            grpc:
-               address: "localhost:54321"
+               address: "unix:///var/run/tetragon/tetragon.sock"
    ```
 
 1. Apply the changes and exit the edit mode.
