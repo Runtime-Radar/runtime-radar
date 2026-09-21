@@ -12,7 +12,7 @@ spec:
     metadata:
       annotations:
         checksum/configmap: {{ toJson .Values.tetragon | sha256sum }}
-        {{- if eq (include "common.cs.tls.forceRegenerate" .) "true" }}
+        {{- if and (eq (include "common.cs.tls.enabled" .) "true") ((.Values.global).tls).force }}
         checksum/tls: {{ .Release.Revision | quote }}
         {{- end }}
         {{- include "common.podAnnotations" . | indent 8 }}
