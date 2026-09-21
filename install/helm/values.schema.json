@@ -33,7 +33,7 @@
                             "description": "Name of the existing secret with TLS certificates",
                             "default": ""
                         },
-                        "forceRegenerate": {
+                        "force": {
                             "type": "boolean",
                             "description": "Re-issue the generated TLS certificate and restart RR components on every upgrade",
                             "default": true
