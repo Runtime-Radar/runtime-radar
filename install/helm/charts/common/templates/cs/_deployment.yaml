@@ -18,8 +18,8 @@ spec:
     metadata:
       {{- $podAnnotations := include "common.podAnnotations" . }}
       {{- $authEnabled := eq (include "common.cs.auth.enabled" .) "true" }}
-      {{- $forceRegenerate := eq (include "common.cs.tls.forceRegenerate" .) "true" }}
-      {{- if or $podAnnotations $authEnabled $forceRegenerate }}
+      {{- $force := and (eq (include "common.cs.tls.enabled" .) "true") ((.Values.global).tls).force }}
+      {{- if or $podAnnotations $authEnabled $force }}
       annotations:
         {{- with $podAnnotations }}
         {{- . | nindent 8 }}
@@ -27,7 +27,7 @@ spec:
         {{- if $authEnabled }}
         checksum/keys: {{ default (randAlphaNum 32) ((.Values.global).keys).token | sha256sum | quote }}
         {{- end }}
-        {{- if $forceRegenerate }}
+        {{- if $force }}
         checksum/tls: {{ .Release.Revision | quote }}
         {{- end }}
       {{- end }}

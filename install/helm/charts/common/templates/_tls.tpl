@@ -13,7 +13,7 @@ Params:
   - caDaysValid - String - Optional - Days validity for the certificate.
   - services - List - Optional - List of services to add as alt name.
   - altNames - List - Optional - Alt names for CA cert.
-  - forceRegenerate - Boolean - Optional - Ignore the existing certificate and generate a new one.
+  - force - Boolean - Optional - Ignore the existing certificate and generate a new one.
   - prefix - String - Optional - Prefix of tls section for sane alert.
 */}}
 {{- define "common.tls.generate" -}}
@@ -23,7 +23,7 @@ Params:
 {{- $crt := "" }}
 {{- $key := "" }}
 {{- $ca := "" }}
-{{- if and (not .forceRegenerate) (pluck "lookup" ($values.tls) ($global.tls) (((.context.Values).global).tls) (dict "lookup" true) | first) }}
+{{- if and (not .force) (pluck "lookup" ($values.tls) ($global.tls) (((.context.Values).global).tls) (dict "lookup" true) | first) }}
   {{- $crt = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.crt" "context" .context) }}
   {{- $key = include "common.secrets.lookup" (dict "secret" $secret "key" "tls.key" "context" .context) }}
   {{- $ca = include "common.secrets.lookup" (dict "secret" $secret "key" "ca.crt" "context" .context) }}
@@ -74,7 +74,7 @@ Params:
   - caDaysValid - String - Optional - Days validity for the certificate.
   - services - List - Optional - List of services to add as alt name.
   - altNames - List - Optional - Alt names for CA cert.
-  - forceRegenerate - Boolean - Optional - Ignore the existing certificate and generate a new one.
+  - force - Boolean - Optional - Ignore the existing certificate and generate a new one.
   - prefix - String - Optional - Prefix of tls section for sane alert.
 */}}
 {{- define "common.tls.generateSecret" -}}
