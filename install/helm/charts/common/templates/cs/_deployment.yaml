@@ -28,7 +28,7 @@ spec:
         checksum/keys: {{ default (randAlphaNum 32) ((.Values.global).keys).token | sha256sum | quote }}
         {{- end }}
         {{- if $force }}
-        checksum/tls: {{ .Release.Revision | quote }}
+        tls-revision: {{ .Release.Revision | quote }}
         {{- end }}
       {{- end }}
       labels:

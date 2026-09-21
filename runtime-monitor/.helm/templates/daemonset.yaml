@@ -13,7 +13,7 @@ spec:
       annotations:
         checksum/configmap: {{ toJson .Values.tetragon | sha256sum }}
         {{- if and (eq (include "common.cs.tls.enabled" .) "true") ((.Values.global).tls).force }}
-        checksum/tls: {{ .Release.Revision | quote }}
+        tls-revision: {{ .Release.Revision | quote }}
         {{- end }}
         {{- include "common.podAnnotations" . | indent 8 }}
       labels:
