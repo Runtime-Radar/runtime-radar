@@ -200,6 +200,13 @@ export class RuntimeFeatureEventsGridContainer {
                     type: RuleType.TYPE_RUNTIME,
                     rule: {
                         version: '1', // @todo: create environment constant
+                        block:
+                            form.blockSeverity === RuleSeverity.NONE
+                                ? null
+                                : {
+                                      severity: form.blockSeverity,
+                                      verdict: null
+                                  },
                         notify:
                             form.notifySeverity === RuleSeverity.NONE
                                 ? null

@@ -14,6 +14,8 @@ global:
     enabled: true
     # -- Name of the existing secret with TLS certificates
     existingSecret: ""
+    # -- Re-issue the generated TLS certificate and restart RR components on every upgrade
+    force: true
 
   auth:
     # -- Enable authentication for RR components
