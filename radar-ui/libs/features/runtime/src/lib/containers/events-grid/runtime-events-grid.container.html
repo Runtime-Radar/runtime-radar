@@ -116,18 +116,20 @@
                     </button>
                 }
                 @if (item.threats.length && !item.is_incident) {
-                    <button kbq-button
-                            kbqStyle="transparent"
-                            color="contrast"
-                            type="button"
-                            class="kbq-button-icon"
-                            [disabled]="!rulePermissions.has(permissionType.CREATE)"
-                            (click)="openCreateRuleSidepanel(item, entity); $event.stopPropagation()"
-                            kbqTooltip="{{ tRuntime('Runtime.EventsPage.Hint.NoRules') }}"
-                            [kbqPlacement]="tooltipPlacements.Left"
-                            data-testid="runtime-open-sidepanel-rule-form-button">
-                        <i kbq-icon="kbq-shield-o_16" class="cs-text-gray"></i>
-                    </button>
+                    <ng-container *ngrxLet="notifications$ as notifications">
+                        <button kbq-button
+                                kbqStyle="transparent"
+                                color="contrast"
+                                type="button"
+                                class="kbq-button-icon"
+                                [disabled]="!rulePermissions.has(permissionType.CREATE)"
+                                (click)="openCreateRuleSidepanel(item, entity, notifications); $event.stopPropagation()"
+                                kbqTooltip="{{ tRuntime('Runtime.EventsPage.Hint.NoRules') }}"
+                                [kbqPlacement]="tooltipPlacements.Left"
+                                data-testid="runtime-open-sidepanel-rule-form-button">
+                            <i kbq-icon="kbq-shield-o_16" class="cs-text-gray"></i>
+                        </button>
+                    </ng-container>
                 }
             </td>
             <td>

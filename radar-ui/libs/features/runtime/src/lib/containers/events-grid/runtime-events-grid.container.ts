@@ -1,6 +1,6 @@
 import { PopUpPlacements } from '@koobiq/components/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, filter, take } from 'rxjs';
+import { BehaviorSubject, Observable, filter, take } from 'rxjs';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -23,6 +23,7 @@ import {
     RuleType
 } from '@cs/domains/rule';
 import { GridColumnKey, GridColumns } from '@cs/packages/grid';
+import { Notification, NotificationStoreService } from '@cs/domains/notification';
 import {
     RUNTIME_CONTEXT,
     RuntimeCapabilityType,
@@ -63,6 +64,7 @@ export class RuntimeFeatureEventsGridContainer {
     private readonly router = inject(Router);
     private readonly sidepanelService = inject(KbqSidepanelService);
 
+    private readonly notificationStoreService = inject(NotificationStoreService);
     private readonly ruleStoreService = inject(RuleStoreService);
 
     localEvents: RuntimeEventExtended[] = [];
@@ -89,6 +91,10 @@ export class RuntimeFeatureEventsGridContainer {
     @Output() filterChange = new EventEmitter<RuntimeEventFilterContextDropdown>();
 
     @Output() columnChange = new EventEmitter<GridColumnKey>();
+
+    readonly notifications$: Observable<Notification[]> = this.notificationStoreService.notificationsByEventType$(
+        RuleType.TYPE_RUNTIME
+    );
 
     private activeViewCodeGridIndex = 0;
 
@@ -155,7 +161,7 @@ export class RuntimeFeatureEventsGridContainer {
             .subscribe();
     }
 
-    openCreateRuleSidepanel(event: RuntimeEventExtended, process: RuntimeEventProcess) {
+    openCreateRuleSidepanel(event: RuntimeEventExtended, process: RuntimeEventProcess, notifications: Notification[]) {
         const config: KbqSidepanelConfig<Partial<RuleSidepanelFormProps>> = {
             position: KbqSidepanelPosition.Right,
             hasBackdrop: true,
@@ -166,7 +172,8 @@ export class RuntimeFeatureEventsGridContainer {
                         version: '1', // @todo: create environment constant
                         notify: {
                             targets: [],
-                            severity: event.threatSeverity || RuleSeverity.NONE,
+                            severity:
+                                notifications.length && event.threatSeverity ? event.threatSeverity : RuleSeverity.NONE,
                             verdict: null
                         },
                         whitelist: {
