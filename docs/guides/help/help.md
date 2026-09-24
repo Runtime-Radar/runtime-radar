@@ -1516,10 +1516,8 @@ To upgrade Runtime Radar from version 0.2.0 to version 0.3.0:
 1. Delete the contents of the `detectors` table by running the following command:
 
    ```
-   TRUNCATE TABLE detectors
+   DROP TABLE detectors
    ```
-
-   ***Note.** You must clear the table before upgrading the product to ensure that new detectors are added to the database during the upgrade process. Detectors are copied to the database when the event-processor service starts. Copying occurs only to an empty "detectors" table.*
 
 1. If the web interface is hosted in a different domain, specify the domain by adding the `global.corsAllowedOrigins` setting to the Helm chart configuration file `values.yaml`:
 
@@ -1534,18 +1532,7 @@ To upgrade Runtime Radar from version 0.2.0 to version 0.3.0:
 
    ***Note.** For detailed information about detector development, see the [Developer help](https://github.com/Runtime-Radar/runtime-radar/blob/main/docs/guides/detectors/guide.md).*
 
-1. Recompile the detectors using tinygo version 0.41.1.
-
-1. Make sure that the `values.yaml` file has a section for the kube-manager service and the `nodeSelector` and `replicas` settings are specified:
-
-   ```
-   # install/helm/values.yaml
-   kube-manager:
-     nodeSelector: {}
-     replicas: 1
-   ```
-
-   ***Note.** The permissions required for the kube-manager service are described in the [clusterrole.yaml](https://github.com/Runtime-Radar/runtime-radar/blob/main/kube-manager/.helm/templates) file.*
+1. Recompile the detectors that are not included in the distribution using tinygo version 0.41.1 and upload them via UI.
 
 1. Check the current permissions for the **Security specialist** role by running the following query in the auth-center DB:
 
