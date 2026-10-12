@@ -15,10 +15,6 @@ COPY go.mod go.sum ./
 COPY vendor/ vendor/
 ENV GOCACHE=/root/.cache/go-build
 
-RUN --mount=type=cache,target="/root/.cache/go-build" \
-    mkdir -p bin && \
-    GOBIN=/go/src/repo/bin go install github.com/google/gops
-
 COPY --from=tools /usr/bin/task /usr/bin
 COPY public-api/ public-api/
 COPY lib/ lib/
@@ -39,7 +35,6 @@ ARG APP_NAME=public-api
 
 COPY --from=builder /go/src/repo/${APP_NAME}/cmd/${APP_NAME}/${APP_NAME} /app
 COPY --from=builder /go/src/repo/${APP_NAME}/cmd/${APP_NAME}/*.pem /
-COPY --from=builder /go/src/repo/bin/gops /usr/bin/gops
 
 # Certificates are loaded by relative paths, so run from the directory they are copied to.
 WORKDIR /
