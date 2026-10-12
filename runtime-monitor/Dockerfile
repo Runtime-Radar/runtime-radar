@@ -27,7 +27,8 @@ COPY lib/ lib/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d runtime-monitor build
 
-FROM debian:12.0-slim AS runner
+# Runs as root: runtime-monitor talks to Tetragon, which runs as root in the same pod.
+FROM gcr.io/distroless/static-debian13 AS runner
 
 LABEL org.opencontainers.image.source=https://github.com/runtime-radar/runtime-radar
 LABEL org.opencontainers.image.description="Runtime monitor monitors runtime events in k8s"

@@ -25,7 +25,7 @@ COPY lib/ lib/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d auth-center build
 
-FROM debian:12.0-slim AS runner
+FROM gcr.io/distroless/static-debian13:nonroot AS runner
 
 LABEL org.opencontainers.image.source=https://github.com/runtime-radar/runtime-radar
 LABEL org.opencontainers.image.description="Auth center service exposes Users, Role and Auth control interfaces"
@@ -37,6 +37,11 @@ COPY --from=builder /go/src/repo/${APP_NAME}/cmd/${APP_NAME}/${APP_NAME} /app
 COPY --from=builder /go/src/repo/${APP_NAME}/cmd/${APP_NAME}/*.pem /
 COPY --from=builder /go/src/repo/${APP_NAME}/*.txt /
 COPY --from=builder /go/src/repo/bin/gops /usr/bin/gops
+
+# Certificates are loaded by relative paths, so run from the directory they are copied to.
+WORKDIR /
+# Numeric UID lets Kubernetes verify runAsNonRoot.
+USER 65532:65532
 
 EXPOSE 8000 9000
 ENTRYPOINT ["/app"]
