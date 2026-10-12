@@ -17,10 +17,6 @@ COPY pkg/tools/tools.go pkg/tools/
 
 ENV GOCACHE=/root/.cache/go-build
 
-RUN --mount=type=cache,target="/root/.cache/go-build" \
-    mkdir -p bin && \
-    GOBIN=/go/src/repo/bin go install github.com/google/gops
-
 COPY --from=tools /usr/bin/task /usr/bin
 COPY runtime-monitor/ runtime-monitor/
 COPY lib/ lib/
@@ -38,7 +34,6 @@ ARG APP_NAME=runtime-monitor
 
 COPY --from=builder /go/src/repo/${APP_NAME}/cmd/${APP_NAME}/${APP_NAME} /app
 COPY --from=builder /go/src/repo/${APP_NAME}/cmd/${APP_NAME}/*.pem /
-COPY --from=builder /go/src/repo/bin/gops /usr/bin/gops
 
 EXPOSE 8000 9000
 ENTRYPOINT ["/app"]
