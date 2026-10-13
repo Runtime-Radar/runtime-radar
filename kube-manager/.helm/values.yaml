@@ -24,10 +24,87 @@ podSecurityContext:
   sysctls: []
   supplementalGroups: []
 excludeCSFromClusterScan: true
+autoscaler:
+  enabled: false
+  interval: 10s
+  cooldown: 60s
+  # Queue names must match both chart values naming the same queue: runtime_events is
+  # runtime-monitor.rabbitmq.queue and event-processor.rabbitmq.runtimeEventsQueue, history_events
+  # is event-processor.rabbitmq.historyEventsQueue and history-api.rabbitmq.queue.
+  # minReplicas should equal each target's replicas, and must be at least 1: zero is not a legal
+  # floor and is rejected at startup.
+  # At least one target must stay enabled while autoscaler.enabled is set; turning both off makes
+  # kube-manager refuse to start. Switch the loop off with autoscaler.enabled=false instead.
+  eventProcessor:
+    enabled: true
+    deployment: event-processor
+    queue: runtime_events
+    minReplicas: 1
+    maxReplicas: 20
+    scaleUpBacklog: 1000
+    scaleUpWindow: 4
+    scaleDownBacklog: 10
+    scaleDownWindow: 10
+  historyApi:
+    enabled: true
+    deployment: history-api
+    queue: history_events
+    minReplicas: 1
+    maxReplicas: 20
+    scaleUpBacklog: 20000
+    scaleUpWindow: 4
+    scaleDownBacklog: 200
+    scaleDownWindow: 10
 env:
   - name: GOPS_CONFIG_DIR
     value: "/tmp"
+  - name: CS_NAMESPACE
+    value: "{{ .Release.Namespace }}"
+  - name: AUTOSCALER_ENABLED
+    value: "{{ .Values.autoscaler.enabled }}"
+  - name: AUTOSCALER_INTERVAL
+    value: "{{ .Values.autoscaler.interval }}"
+  - name: AUTOSCALER_COOLDOWN
+    value: "{{ .Values.autoscaler.cooldown }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_ENABLED
+    value: "{{ .Values.autoscaler.eventProcessor.enabled }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_DEPLOYMENT
+    value: "{{ .Values.autoscaler.eventProcessor.deployment }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_QUEUE
+    value: "{{ .Values.autoscaler.eventProcessor.queue }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_MIN_REPLICAS
+    value: "{{ .Values.autoscaler.eventProcessor.minReplicas }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_MAX_REPLICAS
+    value: "{{ .Values.autoscaler.eventProcessor.maxReplicas }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_SCALE_UP_BACKLOG
+    value: "{{ .Values.autoscaler.eventProcessor.scaleUpBacklog }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_SCALE_UP_WINDOW
+    value: "{{ .Values.autoscaler.eventProcessor.scaleUpWindow }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_SCALE_DOWN_BACKLOG
+    value: "{{ .Values.autoscaler.eventProcessor.scaleDownBacklog }}"
+  - name: AUTOSCALER_EVENT_PROCESSOR_SCALE_DOWN_WINDOW
+    value: "{{ .Values.autoscaler.eventProcessor.scaleDownWindow }}"
+  - name: AUTOSCALER_HISTORY_API_ENABLED
+    value: "{{ .Values.autoscaler.historyApi.enabled }}"
+  - name: AUTOSCALER_HISTORY_API_DEPLOYMENT
+    value: "{{ .Values.autoscaler.historyApi.deployment }}"
+  - name: AUTOSCALER_HISTORY_API_QUEUE
+    value: "{{ .Values.autoscaler.historyApi.queue }}"
+  - name: AUTOSCALER_HISTORY_API_MIN_REPLICAS
+    value: "{{ .Values.autoscaler.historyApi.minReplicas }}"
+  - name: AUTOSCALER_HISTORY_API_MAX_REPLICAS
+    value: "{{ .Values.autoscaler.historyApi.maxReplicas }}"
+  - name: AUTOSCALER_HISTORY_API_SCALE_UP_BACKLOG
+    value: "{{ .Values.autoscaler.historyApi.scaleUpBacklog }}"
+  - name: AUTOSCALER_HISTORY_API_SCALE_UP_WINDOW
+    value: "{{ .Values.autoscaler.historyApi.scaleUpWindow }}"
+  - name: AUTOSCALER_HISTORY_API_SCALE_DOWN_BACKLOG
+    value: "{{ .Values.autoscaler.historyApi.scaleDownBacklog }}"
+  - name: AUTOSCALER_HISTORY_API_SCALE_DOWN_WINDOW
+    value: "{{ .Values.autoscaler.historyApi.scaleDownWindow }}"
 postgresql:
+  enabled: true
+rabbitmq:
   enabled: true
 serviceAccount:
   create: true

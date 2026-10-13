@@ -245,6 +245,54 @@ kube-manager:
   nodeSelector: {}
   # -- Number of replicas for the kube-manager component
   replicas: 1
+  # Autoscaler parameters. Kube-manager scales the target deployments from their RabbitMQ backlog.
+  autoscaler:
+    # -- Enable autoscaling of the event-processor and history-api deployments
+    enabled: false
+    # -- Interval between backlog measurements
+    interval: 10s
+    # -- Period after a scaling action during which no further action is taken
+    cooldown: 60s
+    # Event-processor scaling target. The queue name must match both `runtime-monitor.rabbitmq.queue` and `event-processor.rabbitmq.runtimeEventsQueue`.
+    eventProcessor:
+      # -- Enable autoscaling of the event-processor deployment. At least one target must stay enabled while `kube-manager.autoscaler.enabled` is set, otherwise kube-manager refuses to start.
+      enabled: true
+      # -- Name of the event-processor deployment to scale
+      deployment: event-processor
+      # -- RabbitMQ queue whose backlog drives event-processor scaling. Keep in sync with `runtime-monitor.rabbitmq.queue` and `event-processor.rabbitmq.runtimeEventsQueue`.
+      queue: runtime_events
+      # -- Minimum number of event-processor replicas. Keep equal to `event-processor.replicas`. Must be at least 1, zero is not a legal floor.
+      minReplicas: 1
+      # -- Maximum number of event-processor replicas
+      maxReplicas: 20
+      # -- Number of ready messages above which event-processor scales up
+      scaleUpBacklog: 1000
+      # -- Number of consecutive samples above the scale up backlog required to scale event-processor up
+      scaleUpWindow: 4
+      # -- Number of ready messages below which event-processor scales down
+      scaleDownBacklog: 10
+      # -- Number of consecutive samples below the scale down backlog required to scale event-processor down
+      scaleDownWindow: 10
+    # History-api scaling target. The queue name must match both `event-processor.rabbitmq.historyEventsQueue` and `history-api.rabbitmq.queue`.
+    historyApi:
+      # -- Enable autoscaling of the history-api deployment. At least one target must stay enabled while `kube-manager.autoscaler.enabled` is set, otherwise kube-manager refuses to start.
+      enabled: true
+      # -- Name of the history-api deployment to scale
+      deployment: history-api
+      # -- RabbitMQ queue whose backlog drives history-api scaling. Keep in sync with `event-processor.rabbitmq.historyEventsQueue` and `history-api.rabbitmq.queue`.
+      queue: history_events
+      # -- Minimum number of history-api replicas. Keep equal to `history-api.replicas`. Must be at least 1, zero is not a legal floor.
+      minReplicas: 1
+      # -- Maximum number of history-api replicas
+      maxReplicas: 20
+      # -- Number of ready messages above which history-api scales up
+      scaleUpBacklog: 20000
+      # -- Number of consecutive samples above the scale up backlog required to scale history-api up
+      scaleUpWindow: 4
+      # -- Number of ready messages below which history-api scales down
+      scaleDownBacklog: 200
+      # -- Number of consecutive samples below the scale down backlog required to scale history-api down
+      scaleDownWindow: 10
 
 # @section Runtime-monitor component parameters
 runtime-monitor:

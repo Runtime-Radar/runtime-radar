@@ -629,10 +629,31 @@ clickhouse:
 
 ### Kube-manager component parameters
 
-| Name                        | Description                                                | Value |
-|-----------------------------|------------------------------------------------------------| ----- |
-| `kube-manager.nodeSelector` | Template to specify the labels of nodes for pod assignment | `{}`  |
-| `kube-manager.replicas`     | Number of replicas for the kube-manager component           | `1`   |
+| Name                                                      | Description                                                                                                                                                                          | Value             |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| `kube-manager.nodeSelector`                               | Template to specify the labels of nodes for pod assignment                                                                                                                           | `{}`              |
+| `kube-manager.replicas`                                   | Number of replicas for the kube-manager component                                                                                                                                    | `1`               |
+| `kube-manager.autoscaler.enabled`                         | Enable autoscaling of the event-processor and history-api deployments                                                                                                                | `false`           |
+| `kube-manager.autoscaler.interval`                        | Interval between backlog measurements                                                                                                                                                | `10s`             |
+| `kube-manager.autoscaler.cooldown`                        | Period after a scaling action during which no further action is taken                                                                                                                | `60s`             |
+| `kube-manager.autoscaler.eventProcessor.enabled`          | Enable autoscaling of the event-processor deployment. At least one target must stay enabled while `kube-manager.autoscaler.enabled` is set, otherwise kube-manager refuses to start. | `true`            |
+| `kube-manager.autoscaler.eventProcessor.deployment`       | Name of the event-processor deployment to scale                                                                                                                                      | `event-processor` |
+| `kube-manager.autoscaler.eventProcessor.queue`            | RabbitMQ queue whose backlog drives event-processor scaling. Keep in sync with `runtime-monitor.rabbitmq.queue` and `event-processor.rabbitmq.runtimeEventsQueue`.                   | `runtime_events`  |
+| `kube-manager.autoscaler.eventProcessor.minReplicas`      | Minimum number of event-processor replicas. Keep equal to `event-processor.replicas`. Must be at least 1, zero is not a legal floor.                                                 | `1`               |
+| `kube-manager.autoscaler.eventProcessor.maxReplicas`      | Maximum number of event-processor replicas                                                                                                                                           | `20`              |
+| `kube-manager.autoscaler.eventProcessor.scaleUpBacklog`   | Number of ready messages above which event-processor scales up                                                                                                                       | `1000`            |
+| `kube-manager.autoscaler.eventProcessor.scaleUpWindow`    | Number of consecutive samples above the scale up backlog required to scale event-processor up                                                                                        | `4`               |
+| `kube-manager.autoscaler.eventProcessor.scaleDownBacklog` | Number of ready messages below which event-processor scales down                                                                                                                     | `10`              |
+| `kube-manager.autoscaler.eventProcessor.scaleDownWindow`  | Number of consecutive samples below the scale down backlog required to scale event-processor down                                                                                    | `10`              |
+| `kube-manager.autoscaler.historyApi.enabled`              | Enable autoscaling of the history-api deployment. At least one target must stay enabled while `kube-manager.autoscaler.enabled` is set, otherwise kube-manager refuses to start.     | `true`            |
+| `kube-manager.autoscaler.historyApi.deployment`           | Name of the history-api deployment to scale                                                                                                                                          | `history-api`     |
+| `kube-manager.autoscaler.historyApi.queue`                | RabbitMQ queue whose backlog drives history-api scaling. Keep in sync with `event-processor.rabbitmq.historyEventsQueue` and `history-api.rabbitmq.queue`.                           | `history_events`  |
+| `kube-manager.autoscaler.historyApi.minReplicas`          | Minimum number of history-api replicas. Keep equal to `history-api.replicas`. Must be at least 1, zero is not a legal floor.                                                         | `1`               |
+| `kube-manager.autoscaler.historyApi.maxReplicas`          | Maximum number of history-api replicas                                                                                                                                               | `20`              |
+| `kube-manager.autoscaler.historyApi.scaleUpBacklog`       | Number of ready messages above which history-api scales up                                                                                                                           | `20000`           |
+| `kube-manager.autoscaler.historyApi.scaleUpWindow`        | Number of consecutive samples above the scale up backlog required to scale history-api up                                                                                            | `4`               |
+| `kube-manager.autoscaler.historyApi.scaleDownBacklog`     | Number of ready messages below which history-api scales down                                                                                                                         | `200`             |
+| `kube-manager.autoscaler.historyApi.scaleDownWindow`      | Number of consecutive samples below the scale down backlog required to scale history-api down                                                                                        | `10`              |
 
 ### Runtime-monitor component parameters
 

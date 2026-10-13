@@ -22,6 +22,10 @@ func NewKubernetes(cfg *rest.Config) (*Kubernetes, error) {
 	return &Kubernetes{client}, nil
 }
 
+func (k *Kubernetes) Clientset() kubernetes.Interface {
+	return k.client
+}
+
 func (k *Kubernetes) DeletePod(ctx context.Context, namespace, name string, force bool) error {
 	var gracePeriod *int64
 	if force {
