@@ -1,0 +1,89 @@
+version: '3'
+
+vars:
+  IMAGE_TAG:
+    sh: echo "${IMAGE_TAG:-$(date +%Y%m%d)}"
+  # ghcr.io/wolfi-dev/apko publishes only a rolling `latest` tag, so pin by digest (apko v1.2.17).
+  APKO_IMAGE: ghcr.io/wolfi-dev/apko@sha256:a1b1b11f504122eaa61da63eb9d07ca58d4287938adb99bb18c5135ba0ada99a
+
+tasks:
+  build-one:
+    internal: true
+    requires:
+      vars: [APKO_CONFIG, IMAGE_NAME]
+    vars:
+      FINAL_REF: '{{if .IMAGE_REGISTRY}}{{trimSuffix "/" .IMAGE_REGISTRY}}/{{end}}{{.IMAGE_NAME}}:{{.IMAGE_TAG}}'
+    cmds:
+      - |
+        set -e
+        APKO_REF={{.IMAGE_NAME}}:{{.IMAGE_TAG}}
+        INTERMEDIATE="${APKO_REF}-amd64"
+        FINAL_REF={{.FINAL_REF}}
+        TMP=$(mktemp -d)
+
+        trap 'rm -rf "$TMP"; [ "$INTERMEDIATE" != "$FINAL_REF" ] && docker rmi -f "$INTERMEDIATE" 2>/dev/null || true' EXIT
+
+        docker run --rm -v "$PWD:/work:ro" -v "$TMP:/out" -w /work \
+          {{.APKO_IMAGE}} \
+          build "{{.APKO_CONFIG}}" "$APKO_REF" /out/image.tar --arch amd64 --sbom-path /out
+
+        docker load < "$TMP/image.tar"
+
+        USER=$(docker inspect --format '{{`{{.Config.User}}`}}' "$INTERMEDIATE")
+        if [ "$USER" != "65532" ]; then
+          echo "ERROR: $INTERMEDIATE runs as user '$USER', expected '65532' (non-root)" >&2
+          exit 1
+        fi
+
+        docker tag "$INTERMEDIATE" "$FINAL_REF"
+
+        if [ "$INTERMEDIATE" != "$FINAL_REF" ]; then
+          docker rmi "$INTERMEDIATE"
+        fi
+
+  build:
+    desc: "Build all apko base images, sequentially"
+    cmds:
+      - for: [base, base-busybox]
+        task: build-one
+        vars:
+          APKO_CONFIG: "{{.ITEM}}.apko.yaml"
+          IMAGE_NAME: "runtime-radar-{{.ITEM}}"
+          IMAGE_REGISTRY: "{{.IMAGE_REGISTRY}}"
+          IMAGE_TAG: "{{.IMAGE_TAG}}"
+
+  push-one:
+    internal: true
+    requires:
+      vars: [IMAGE_NAME, IMAGE_REGISTRY]
+    vars:
+      FINAL_REF: '{{if .IMAGE_REGISTRY}}{{trimSuffix "/" .IMAGE_REGISTRY}}/{{end}}{{.IMAGE_NAME}}:{{.IMAGE_TAG}}'
+    cmds:
+      - docker push {{.FINAL_REF}}
+
+  push:
+    desc: "Push all apko base images (requires IMAGE_REGISTRY; build them first)"
+    requires:
+      vars: [IMAGE_REGISTRY]
+    cmds:
+      - for: [base, base-busybox]
+        task: push-one
+        vars:
+          IMAGE_NAME: "runtime-radar-{{.ITEM}}"
+          IMAGE_REGISTRY: "{{.IMAGE_REGISTRY}}"
+          IMAGE_TAG: "{{.IMAGE_TAG}}"
+
+  patch:
+    desc: "Bump the runtime-radar-base* tag in every service Dockerfile's `FROM ... AS runner` line to IMAGE_TAG"
+    cmds:
+      - |
+        set -e
+        ROOT=$(git rev-parse --show-toplevel)
+        TAG='{{.IMAGE_TAG}}'
+        FILES=$(cd "$ROOT" && git grep -lE '^FROM [^[:space:]]*runtime-radar-base[a-z0-9-]*:[^[:space:]]+ AS runner$' -- '*Dockerfile')
+        for f in $FILES; do
+          path="$ROOT/$f"
+          sed -i.bak -E "s#^(FROM [^[:space:]]*runtime-radar-base[a-z0-9-]*:)[^[:space:]]+( AS runner)\$#\\1${TAG}\\2#" "$path"
+          rm -f "$path.bak"
+          echo "patched $f -> ${TAG}"
+        done
