@@ -1,0 +1,32 @@
+# Shares its structure with base.apko.yaml.
+# apko has no include/templating mechanism, so changes to repositories, keyring,
+# accounts, or the shared package pins (wolfi-baselayout, ca-certificates-bundle,
+# tzdata) MUST be applied to both configs by hand to keep them in sync.
+contents:
+  repositories:
+    - https://packages.wolfi.dev/os
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+  packages:
+    # All top-level packages are pinned to an exact version for reproducibility.
+    # Only these top-level packages are pinned; the transitive closure is
+    # resolved by apko against the live repository at build time, so builds are
+    # NOT fully bit-reproducible. Use `apko lock` / an apko lockfile if full
+    # reproducibility is later required.
+    - wolfi-baselayout=20230201-r30
+    - ca-certificates-bundle=20260909-r2
+    - tzdata=2026e-r0
+    - busybox=1.38.0-r3
+
+accounts:
+  groups:
+    - groupname: nonroot
+      gid: 65532
+  users:
+    - username: nonroot
+      uid: 65532
+      gid: 65532
+  run-as: nonroot
+
+archs:
+  - amd64

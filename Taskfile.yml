@@ -54,6 +54,11 @@ includes:
   kube-manager:
     taskfile: ./kube-manager/Taskfile.yml
     dir: ./kube-manager
+  # Build-tooling, not a service: minimal apko base images (see install/images/).
+  images:
+    taskfile: ./install/images/Taskfile.yml
+    dir: ./install/images
+    optional: true
 
 tasks:
   proto:
