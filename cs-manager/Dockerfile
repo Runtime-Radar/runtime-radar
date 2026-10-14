@@ -22,7 +22,7 @@ COPY cluster-manager/api/ cluster-manager/api/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d cs-manager build
 
-FROM gcr.io/distroless/static-debian13:nonroot AS runner
+FROM ghcr.io/runtime-radar/runtime-radar-base:20261014 AS runner
 
 LABEL org.opencontainers.image.source=https://github.com/runtime-radar/runtime-radar
 LABEL org.opencontainers.image.description="CS Manager is responsible for installation-wide tasks such as child cluster registration, serving /api/v1/info/* endpoints, etc"

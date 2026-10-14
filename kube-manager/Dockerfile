@@ -21,7 +21,7 @@ COPY lib/ lib/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d kube-manager build
 
-FROM gcr.io/distroless/static-debian13:nonroot AS runner
+FROM ghcr.io/runtime-radar/runtime-radar-base:20261014 AS runner
 
 LABEL org.opencontainers.image.source=https://github.com/runtime-radar/runtime-radar
 LABEL org.opencontainers.image.description="The Kube Manager service collects information about entities in the K8S cluster and provides interfaces for obtaining this data"
