@@ -24,7 +24,7 @@ COPY policy-enforcer/pkg/model/ policy-enforcer/pkg/model/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d history-api build
 
-FROM gcr.io/distroless/static-debian13:nonroot AS runner
+FROM ghcr.io/runtime-radar/runtime-radar-base:20261014 AS runner
 
 LABEL org.opencontainers.image.source=https://github.com/runtime-radar/runtime-radar
 LABEL org.opencontainers.image.description="History API service saves and retrieves historic data in the system"

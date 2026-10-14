@@ -21,7 +21,7 @@ COPY lib/ lib/
 
 RUN --mount=type=cache,target="/root/.cache/go-build" task -d policy-enforcer build
 
-FROM gcr.io/distroless/static-debian13:nonroot AS runner
+FROM ghcr.io/runtime-radar/runtime-radar-base:20261014 AS runner
 
 LABEL org.opencontainers.image.source=https://github.com/runtime-radar/runtime-radar
 LABEL org.opencontainers.image.description="Policy Enforcer service evaluates Policy and exposes Scope and Rule control interfaces"
