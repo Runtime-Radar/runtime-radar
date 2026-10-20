@@ -32,6 +32,22 @@ env:
     value: "1000"
   - name: TETRAGON_ADDR
     value: "{{ .Values.tetragon.grpc.address }}"
+volumeMounts:
+  - name: tetragon-run
+    mountPath: /var/run/tetragon
+    readOnly: true
+containerSecurityContext:
+  seLinuxOptions: {}
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: "RuntimeDefault"
+  runAsGroup: 0
+podSecurityContext:
+  enabled: true
+  supplementalGroups:
+    - 0
 postgresql:
   enabled: true
 rabbitmq:
@@ -80,7 +96,6 @@ serviceAccount:
   annotations: {}
   name: ""
 podAnnotations: {}
-podSecurityContext: {}
 nodeSelector: {}
 tolerations:
   - operator: Exists
@@ -265,8 +280,8 @@ tetragon:
     # -- Whether to enable exposing Tetragon gRPC.
     enabled: true
     # -- The address at which to expose gRPC. Examples: localhost:54321, unix:///var/run/tetragon/tetragon.sock
-    # Do not change
-    address: "localhost:54321"
+    # Do not switch to TCP
+    address: "unix:///var/run/tetragon/tetragon.sock"
   gops:
     # -- Whether to enable exposing gops server.
     enabled: true
