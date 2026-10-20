@@ -12,7 +12,7 @@ import {
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, filter, map, switchMap, tap, throwError } from 'rxjs';
 
-import { API_PATH, ApiErrorCode, ApiUtilsService as apiUtils } from '@cs/api';
+import { API_PATH, ApiErrorCode, ApiPathService, ApiUtilsService as apiUtils } from '@cs/api';
 
 import { AuthJwtData } from '../interfaces/contract/auth-jwt-contract.interface';
 import { AuthLocalStorageService } from '../services/auth-local-storage.services';
@@ -26,12 +26,14 @@ import { EXPIRE_AUTH_TOKENS_TODO_ACTION, EXPIRE_PASSWORD_TODO_ACTION } from '../
 })
 export class AuthHeadersInterceptor implements HttpInterceptor {
     private readonly apiPath = inject(API_PATH);
+    private readonly apiPathService = inject(ApiPathService);
     private readonly authLocalStorageService = inject(AuthLocalStorageService);
     private readonly authRequestService = inject(AuthRequestService);
     private readonly store = inject<Store<AuthState>>(Store);
 
     intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-        if (!request.url.includes(this.apiPath)) {
+        // matching the api path alone would also match it inside a foreign host, sending the token there
+        if (!request.url.includes(this.apiPath) || !this.apiPathService.isOwnRequest(request.url)) {
             return next.handle(request);
         }
 
