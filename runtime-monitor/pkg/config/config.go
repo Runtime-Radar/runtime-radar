@@ -7,6 +7,12 @@ import (
 	"github.com/runtime-radar/runtime-radar/lib/config"
 )
 
+// DefaultTetragonAddr is the default Tetragon gRPC target: a Unix socket on the tetragon-run
+// hostPath that both the Tetragon and the runtime-monitor containers mount. TCP targets are not
+// supported in Kubernetes, where they are reachable unauthenticated from any hostNetwork pod
+// on the node (CVE-2026-65960).
+const DefaultTetragonAddr = "unix:///var/run/tetragon/tetragon.sock"
+
 // Config represents system configuration.
 type Config struct {
 	NewDB                bool          // forces recreation of DB
@@ -24,7 +30,7 @@ type Config struct {
 	TLS                  bool          // is TLS enabled?
 	TokenKey             string        // key for jwt token
 	Auth                 bool          // is auth enabled?
-	TetragonAddr         string        // address of Tetragon in host:port format (it should be 127.0.0.1:54321 most of the time)
+	TetragonAddr         string        // address of Tetragon in unix:///path/to/socket format (production; unix:///var/run/tetragon/tetragon.sock in Kubernetes) or host:port (local/compose use only, unsupported in Kubernetes)
 	TetragonEventsBuffer int           // size of Tetragon events buffer
 	ConfigUpdateInterval time.Duration // interval for Tetragon config periodic update check
 	RabbitAddr           string        // RabbitMQ address in host[:port] format
@@ -54,7 +60,7 @@ func New() *Config {
 	flag.BoolVar(&c.TLS, "tls", config.LookupEnvBool("TLS", false), "Set to enable TLS.")
 	flag.StringVar(&c.TokenKey, "tokenKey", config.LookupEnvString("TOKEN_KEY", ""), "Hex encoded token key to verify jwt token. Supported key sizes are 16, 24 and 32 bytes.")
 	flag.BoolVar(&c.Auth, "auth", config.LookupEnvBool("AUTH", false), "Set to enable JWT auth.")
-	flag.StringVar(&c.TetragonAddr, "tetragonAddr", config.LookupEnvString("TETRAGON_ADDR", "127.0.0.1:54321"), "Set address of Tetragon in host:port format (it should be 127.0.0.1:54321 most of the time).")
+	flag.StringVar(&c.TetragonAddr, "tetragonAddr", config.LookupEnvString("TETRAGON_ADDR", DefaultTetragonAddr), "Set address of Tetragon in unix:///path/to/socket format (production, unix:///var/run/tetragon/tetragon.sock in Kubernetes). The host:port form is for local/compose use only and is not supported in Kubernetes.")
 	flag.IntVar(&c.TetragonEventsBuffer, "tetragonEventsBuffer", config.LookupEnvInt("TETRAGON_EVENTS_BUFFER", 1000), "Set size of Tetragon events buffer.")
 	flag.DurationVar(&c.ConfigUpdateInterval, "configUpdateInterval", config.LookupEnvDuration("CONFIG_UPDATE_INTERVAL", 30*time.Second), "Set interval for Tetragon config periodic update check.")
 	flag.StringVar(&c.RabbitAddr, "rabbitAddr", config.LookupEnvString("RABBIT_ADDR", "rabbitmq.default:5672"), "Set RabbitMQ address in host[:port] format.")

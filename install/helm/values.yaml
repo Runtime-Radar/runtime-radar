@@ -277,8 +277,11 @@ runtime-monitor:
     exportAllowList: |
       {"pod_regex":["deathstar"],"event_set":["PROCESS_EXEC", "PROCESS_EXIT", "PROCESS_KPROBE", "PROCESS_UPROBE", "PROCESS_TRACEPOINT"]}
     grpc:
-      # -- Set address of Tetragon grpc connection in host:port format
-      address: "localhost:54321"
+      # values.schema.json pins "pattern": "^unix://" on this key so a TCP override is
+      # rejected (CVE-2026-65960). readme-generator cannot emit the constraint, so
+      # re-apply it by hand after regenerating values.schema.json.
+      # -- Set address of the Tetragon gRPC connection. Only Unix sockets on the tetragon-run hostPath (unix:///path/to/socket) are supported.
+      address: "unix:///var/run/tetragon/tetragon.sock"
     prometheus:
       # -- Whether to enable exposing Tetragon metrics.
       enabled: true
