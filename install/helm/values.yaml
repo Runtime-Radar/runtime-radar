@@ -4,7 +4,7 @@
 global:
   # -- Global Docker image registry
   imageRegistry: ""
-  # -- Global Docker image tag to use for RR components
+  # -- Global Docker image tag for RR components. Does not change the version they report or install on child clusters
   imageTag: ""
   # -- Logging level for components
   logLevel: INFO
@@ -110,8 +110,10 @@ global:
   isChildCluster: false
   # -- Comma separated origins allowed cross-origin. Empty means same-origin only; child clusters fall back to `centralCsUrl`
   corsAllowedOrigins: ""
+  # Image tag for RR components, and the version they report and install on child clusters.
+  # Must match the chart version in Chart.yaml; CI blocks publishing when they diverge.
   # @skip global.csVersion
-  csVersion: ""
+  csVersion: "v0.3.0"
 
 # @section Common RR parameters
 # -- String to fully override common.fullname
