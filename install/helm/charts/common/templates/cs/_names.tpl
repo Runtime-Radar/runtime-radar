@@ -43,9 +43,7 @@ Return central cs url
 
 {{/*
 Return cs version.
-Falls back to .Chart.Version (subchart's 0.0.1 placeholder) when neither
-csVersion nor global.imageTag is set — which produces a non-existent image tag.
-Always pass global.imageTag explicitly for a working install.
+.Chart.Version is the subchart's own 0.0.1 placeholder, correct only standalone.
 */}}
 {{- define "common.cs.csVersion" -}}
 {{- default (.Values.global).csVersion .Values.csVersion | default .Chart.Version -}}

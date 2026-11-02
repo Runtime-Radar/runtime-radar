@@ -45,6 +45,21 @@ jobs:
         echo "chart_version=${CHART_VERSION}" >> $GITHUB_OUTPUT
         echo "registry_path=${{ env.REGISTRY }}/${{ env.REPO }}/${{ env.CHART_NAME }}" >> $GITHUB_OUTPUT
 
+    - name: Verify image tag matches chart version
+      env:
+        CHART_VERSION: ${{ steps.version.outputs.chart_version }}
+      run: |
+        CS_VERSION=$(helm show values ${{ env.CHART_PATH }} | yq '.global.csVersion')
+        if [ "${CS_VERSION}" != "${CHART_VERSION}" ]; then
+          echo "::error::global.csVersion (${CS_VERSION}) in ${{ env.CHART_PATH }}/values.yaml does not match chart version (${CHART_VERSION}). Components would deploy with a non-existent image tag."
+          exit 1
+        fi
+        if [ "${{ github.ref_type }}" = "tag" ] && [ "${CHART_VERSION}" != "${{ github.ref_name }}" ]; then
+          echo "::error::chart version (${CHART_VERSION}) does not match the git tag (${{ github.ref_name }}). Images are published under the git tag, so the chart would reference a non-existent image tag."
+          exit 1
+        fi
+        echo "Chart version, global.csVersion and the git ref agree on ${CHART_VERSION}."
+
     # - name: Lint Helm chart
     #   run: |
     #     helm lint ${{ env.CHART_PATH }}
