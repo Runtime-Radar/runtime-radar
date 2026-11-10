@@ -157,8 +157,9 @@ autoscaler values: the chart mounts the shared `rabbitmq` Secret and ConfigMap i
 ### RBAC
 
 The autoscaler only ever touches the release namespace, so its permissions are a namespaced Role,
-rendered next to the pre-existing ClusterRole when `autoscaler.enabled` and `serviceAccount.create`
-are both set. It grants, in the release namespace:
+rendered next to the pre-existing ClusterRole whenever `serviceAccount.create` is set — regardless
+of `autoscaler.enabled`, so turning the autoscaler on through `AUTOSCALER_ENABLED` alone (e.g.
+`kubectl set env`) needs no chart change. It grants, in the release namespace:
 
 - `apps` / `deployments`: `get`, `update`, narrowed by `resourceNames` to the two target deployments
   (on top of the cluster-wide `list` and `watch` the cache already needs);
@@ -166,8 +167,8 @@ are both set. It grants, in the release namespace:
 - core / `events`: `create`, `patch` — for the Kubernetes Events of the scaling actions.
 
 With `serviceAccount.create=false` neither the Role nor the RoleBinding is rendered: grant the same
-rules in the release namespace to the ServiceAccount you pre-created, or every tick fails with
-`forbidden`.
+rules in the release namespace to the ServiceAccount you pre-created, or the leader election and
+every tick fail with `forbidden`.
 
 ### Observability
 
