@@ -12,6 +12,10 @@ const (
 	Add       = "add"
 	Update    = "update"
 	Delete    = "delete"
+
+	Target    = "target"
+	Queue     = "queue"
+	Direction = "direction"
 )
 
 var (
@@ -25,6 +29,27 @@ var (
 		Name: "informer_errors_count",
 		Help: "The number of errors that occurred while attempting to sync with Kubernetes API",
 	}, []string{K8SEntity}))
+
+	AutoscalerQueueBacklog = addToCommon(prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "autoscaler_queue_backlog",
+		Help: "The number of messages ready for delivery in the queue of an autoscaler target",
+	}, []string{Target, Queue}))
+	AutoscalerQueueConsumers = addToCommon(prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "autoscaler_queue_consumers",
+		Help: "The number of consumers attached to the queue of an autoscaler target",
+	}, []string{Target, Queue}))
+	AutoscalerReplicas = addToCommon(prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "autoscaler_replicas",
+		Help: "The number of replicas of a target deployment observed at the last sample",
+	}, []string{Target}))
+	AutoscalerScaleActionsCount = addToCommon(prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "autoscaler_scale_actions_count",
+		Help: "The number of scaling actions the autoscaler performed",
+	}, []string{Target, Direction}))
+	AutoscalerIsLeader = addToCommon(prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "autoscaler_is_leader",
+		Help: "Whether this instance holds the autoscaler leader lease",
+	}))
 
 	// Example addToCommon definition:
 	//

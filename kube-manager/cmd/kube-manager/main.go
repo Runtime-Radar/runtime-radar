@@ -15,6 +15,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/rs/zerolog/log"
 	"github.com/runtime-radar/runtime-radar/kube-manager/api"
+	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/autoscaler"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/build"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/client"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/config"
@@ -26,6 +27,7 @@ import (
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/service"
 	"github.com/runtime-radar/runtime-radar/kube-manager/pkg/updater"
 	"github.com/runtime-radar/runtime-radar/lib/logger"
+	"github.com/runtime-radar/runtime-radar/lib/rabbit"
 	"github.com/runtime-radar/runtime-radar/lib/security"
 	"github.com/runtime-radar/runtime-radar/lib/security/jwt"
 	"github.com/runtime-radar/runtime-radar/lib/server/healthcheck"
@@ -35,8 +37,12 @@ import (
 	"google.golang.org/grpc/reflection"
 	"gorm.io/gorm"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
+	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/record"
 )
 
 const (
@@ -62,6 +68,10 @@ func main() {
 
 	log.Info().Str("build_release", build.Release).Str("build_branch", build.Branch).Str("build_commit", build.Commit).Str("build_date", build.Date).Msgf("-> %s started", build.AppName)
 	defer log.Info().Msgf("<- %s exited", build.AppName)
+
+	if err := cfg.ValidateAutoscaler(); err != nil {
+		log.Fatal().Msgf("### Invalid autoscaler config: %v", err)
+	}
 
 	if err := agent.Listen(agent.Options{
 		Addr: cfg.GopsAddr,
@@ -164,6 +174,41 @@ func main() {
 	}
 	defer inv.Shutdown()
 
+	autoscalerCtx, cancelAutoscaler := context.WithCancel(context.Background())
+	defer cancelAutoscaler()
+
+	autoscalerDone := make(chan struct{})
+
+	if cfg.AutoscalerEnabled {
+		identity, err := os.Hostname()
+		if err != nil {
+			log.Fatal().Msgf("### Failed to get hostname: %v", err)
+		}
+
+		clientset := k8sClient.Clientset()
+
+		newProber, closeProbers := rabbitProbers(cfg)
+		defer closeProbers()
+
+		broadcaster := record.NewBroadcaster()
+		broadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: clientset.CoreV1().Events("")})
+		defer broadcaster.Shutdown()
+
+		autoscalerSrv := buildAutoscaler(cfg, clientset, newProber,
+			broadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: autoscaler.LeaseName}))
+
+		go func() {
+			defer close(autoscalerDone)
+
+			if err := autoscaler.RunLeader(autoscalerCtx, clientset, cfg.CSNamespace, identity, autoscalerSrv.Run); err != nil {
+				log.Fatal().Msgf("### Autoscaler leader election failed: %v", err)
+			}
+		}()
+	} else {
+		close(autoscalerDone)
+		log.Info().Msg("Autoscaler disabled")
+	}
+
 	api.RegisterPodControllerServer(grpcSrv, podService)
 	api.RegisterNodeControllerServer(grpcSrv, nodeService)
 	api.RegisterConfigControllerServer(grpcSrv, configService)
@@ -218,17 +263,97 @@ func main() {
 
 	<-shutdown
 
-	log.Info().Msg("gRPC server stopping gracefully")
-	grpcSrv.GracefulStop()
+	cancelAutoscaler()
 
+	// One budget for the whole sequence: the pod is killed when the termination grace period ends,
+	// however the steps below divide it up.
 	ctx, cancel := context.WithTimeout(context.Background(), gracefulTimeout)
 	defer cancel()
+
+	log.Info().Msg("gRPC server stopping gracefully")
+	grpcSrv.GracefulStop()
 
 	log.Info().Msg("HTTP server stopping gracefully")
 	_ = httpSrv.Shutdown(ctx) // we don't care about errors here
 
 	log.Info().Msg("Instrumentation HTTP server stopping gracefully")
 	_ = iSrv.Shutdown(ctx)
+
+	// Releasing the lease is an API call that must finish before the process exits; it runs while
+	// the servers above drain.
+	select {
+	case <-autoscalerDone:
+
+	case <-ctx.Done():
+		log.Warn().Msg("Autoscaler didn't stop in time")
+	}
+}
+
+// rabbitProbers returns a factory of per-target queue probers, each backed by its own message
+// broker opened on the first probe, and a closer for the brokers that were opened. Nothing dials
+// until the replica leads and starts sampling, so an unreachable broker delays the scaling instead
+// of holding up the rest of the service.
+func rabbitProbers(cfg *config.Config) (newProber func(queue string) autoscaler.Prober, closeProbers func()) {
+	var probers []*autoscaler.LazyProber
+
+	newProber = func(queue string) autoscaler.Prober {
+		p := &autoscaler.LazyProber{
+			Dial: func() (autoscaler.ProberCloser, error) {
+				return rabbit.NewMessageBroker(cfg.RabbitAddr, cfg.RabbitUser, cfg.RabbitPassword, queue)
+			},
+		}
+		probers = append(probers, p)
+
+		return p
+	}
+
+	closeProbers = func() {
+		for _, p := range probers {
+			_ = p.Close()
+		}
+	}
+
+	return newProber, closeProbers
+}
+
+// buildAutoscaler wires the enabled targets, taking one prober per target from newProber.
+func buildAutoscaler(
+	cfg *config.Config,
+	k8s kubernetes.Interface,
+	newProber func(queue string) autoscaler.Prober,
+	recorder record.EventRecorder,
+) *autoscaler.Autoscaler {
+	var targets []autoscaler.TargetConfig
+
+	for _, target := range cfg.AutoscalerTargets() {
+		if !target.Enabled {
+			continue
+		}
+
+		targets = append(targets, autoscaler.TargetConfig{
+			Name:        target.Name,
+			Deployment:  target.Deployment,
+			Queue:       target.Queue,
+			Min:         int32(target.MinReplicas),
+			Max:         int32(target.MaxReplicas),
+			UpBacklog:   target.ScaleUpBacklog,
+			UpWindow:    target.ScaleUpWindow,
+			DownBacklog: target.ScaleDownBacklog,
+			DownWindow:  target.ScaleDownWindow,
+			Prober:      newProber(target.Queue),
+		})
+	}
+
+	return &autoscaler.Autoscaler{
+		Targets: targets,
+		Scaler: &autoscaler.Scaler{
+			Client:    k8s,
+			Recorder:  recorder,
+			Namespace: cfg.CSNamespace,
+		},
+		Interval: cfg.AutoscalerInterval,
+		Cooldown: cfg.AutoscalerCooldown,
+	}
 }
 
 func composeServices(

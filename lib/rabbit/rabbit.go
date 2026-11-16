@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/url"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -23,6 +24,7 @@ const (
 var (
 	ErrClosedUnexpectedly = errors.New("channel closed unexpectedly")
 	ErrNotInitialized     = errors.New("not initialized")
+	ErrReconnecting       = errors.New("broker is reconnecting")
 )
 
 type PublishConsumer interface {
@@ -42,6 +44,8 @@ type MessageBroker struct {
 	withConsumer  bool
 	consumerName  string
 	prefetchCount int
+
+	closed atomic.Bool
 
 	stateReporter func(bool)
 }
@@ -85,6 +89,12 @@ func NewMessageBroker(address, user, password, queue string, opts ...ConfigOptio
 			nc, ok := <-notifyClose
 			mb.Lock()
 			mb.reportState(false)
+
+			if mb.closed.Load() {
+				mb.Unlock()
+
+				return
+			}
 
 			// According to documentation channel will be closed only on clean shutdown
 			reason := "shutdown"
@@ -149,9 +159,20 @@ func (mb *MessageBroker) init(url, queue string) error {
 	return nil
 }
 
+// Close does not wait out a reconnect: it returns ErrReconnecting with the broker still open, so
+// SIGTERM can't hang on a broker outage.
 func (mb *MessageBroker) Close() error {
-	mb.RLock()
+	if !mb.TryRLock() {
+		return ErrReconnecting
+	}
 	defer mb.RUnlock()
+
+	// Set before the close fires NotifyClose, or the reconnect loop redials and redeclares the queue.
+	mb.closed.Store(true)
+
+	if mb.Connection == nil {
+		return ErrNotInitialized
+	}
 
 	if err := mb.Connection.Close(); err != nil {
 		return err
@@ -200,6 +221,34 @@ func (mb *MessageBroker) Consume(ctx context.Context, out proto.Message) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+}
+
+// InspectQueue passively inspects the queue and reports the number of messages ready for delivery
+// and the number of attached consumers. Like Close, it returns ErrReconnecting rather than blocking
+// while the reconnect loop holds the lock.
+func (mb *MessageBroker) InspectQueue(ctx context.Context) (messages, consumers int, err error) {
+	if err := ctx.Err(); err != nil {
+		return 0, 0, err
+	}
+
+	if !mb.TryRLock() {
+		return 0, 0, ErrReconnecting
+	}
+	defer mb.RUnlock()
+
+	if mb.Channel == nil || mb.Queue == nil {
+		return 0, 0, ErrNotInitialized
+	}
+
+	q, err := mb.Channel.QueueDeclarePassive(mb.Queue.Name, true, false, false, false, nil)
+	if err != nil {
+		// A failed passive declare kills the channel, which only the reconnect loop recreates.
+		_ = mb.Connection.Close()
+
+		return 0, 0, fmt.Errorf("inspect queue %q: %w", mb.Queue.Name, err)
+	}
+
+	return q.Messages, q.Consumers, nil
 }
 
 func (mb *MessageBroker) reportState(isAlive bool) {

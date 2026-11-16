@@ -559,6 +559,126 @@
                     "type": "number",
                     "description": "Number of replicas for the kube-manager component",
                     "default": 1
+                },
+                "autoscaler": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Enable autoscaling of the event-processor and history-api deployments",
+                            "default": false
+                        },
+                        "interval": {
+                            "type": "string",
+                            "description": "Interval between backlog measurements",
+                            "default": "10s"
+                        },
+                        "cooldown": {
+                            "type": "string",
+                            "description": "Period after a scaling action during which no further action is taken",
+                            "default": "60s"
+                        },
+                        "eventProcessor": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Enable autoscaling of the event-processor deployment. At least one target must stay enabled while `kube-manager.autoscaler.enabled` is set, otherwise kube-manager refuses to start.",
+                                    "default": true
+                                },
+                                "deployment": {
+                                    "type": "string",
+                                    "description": "Name of the event-processor deployment to scale",
+                                    "default": "event-processor"
+                                },
+                                "queue": {
+                                    "type": "string",
+                                    "description": "RabbitMQ queue whose backlog drives event-processor scaling. Keep in sync with `runtime-monitor.rabbitmq.queue` and `event-processor.rabbitmq.runtimeEventsQueue`.",
+                                    "default": "runtime_events"
+                                },
+                                "minReplicas": {
+                                    "type": "integer",
+                                    "description": "Minimum number of event-processor replicas. Keep equal to `event-processor.replicas`. Must be at least 1, zero is not a legal floor.",
+                                    "default": 1
+                                },
+                                "maxReplicas": {
+                                    "type": "integer",
+                                    "description": "Maximum number of event-processor replicas",
+                                    "default": 20
+                                },
+                                "scaleUpBacklog": {
+                                    "type": "integer",
+                                    "description": "Number of ready messages above which event-processor scales up",
+                                    "default": 1000
+                                },
+                                "scaleUpWindow": {
+                                    "type": "integer",
+                                    "description": "Number of consecutive samples above the scale up backlog required to scale event-processor up",
+                                    "default": 4
+                                },
+                                "scaleDownBacklog": {
+                                    "type": "integer",
+                                    "description": "Number of ready messages below which event-processor scales down",
+                                    "default": 10
+                                },
+                                "scaleDownWindow": {
+                                    "type": "integer",
+                                    "description": "Number of consecutive samples below the scale down backlog required to scale event-processor down",
+                                    "default": 10
+                                }
+                            }
+                        },
+                        "historyApi": {
+                            "type": "object",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Enable autoscaling of the history-api deployment. At least one target must stay enabled while `kube-manager.autoscaler.enabled` is set, otherwise kube-manager refuses to start.",
+                                    "default": true
+                                },
+                                "deployment": {
+                                    "type": "string",
+                                    "description": "Name of the history-api deployment to scale",
+                                    "default": "history-api"
+                                },
+                                "queue": {
+                                    "type": "string",
+                                    "description": "RabbitMQ queue whose backlog drives history-api scaling. Keep in sync with `event-processor.rabbitmq.historyEventsQueue` and `history-api.rabbitmq.queue`.",
+                                    "default": "history_events"
+                                },
+                                "minReplicas": {
+                                    "type": "integer",
+                                    "description": "Minimum number of history-api replicas. Keep equal to `history-api.replicas`. Must be at least 1, zero is not a legal floor.",
+                                    "default": 1
+                                },
+                                "maxReplicas": {
+                                    "type": "integer",
+                                    "description": "Maximum number of history-api replicas",
+                                    "default": 20
+                                },
+                                "scaleUpBacklog": {
+                                    "type": "integer",
+                                    "description": "Number of ready messages above which history-api scales up",
+                                    "default": 20000
+                                },
+                                "scaleUpWindow": {
+                                    "type": "integer",
+                                    "description": "Number of consecutive samples above the scale up backlog required to scale history-api up",
+                                    "default": 4
+                                },
+                                "scaleDownBacklog": {
+                                    "type": "integer",
+                                    "description": "Number of ready messages below which history-api scales down",
+                                    "default": 200
+                                },
+                                "scaleDownWindow": {
+                                    "type": "integer",
+                                    "description": "Number of consecutive samples below the scale down backlog required to scale history-api down",
+                                    "default": 10
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },

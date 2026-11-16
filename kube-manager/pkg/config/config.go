@@ -30,6 +30,16 @@ type Config struct {
 	K8SSyncInterval      time.Duration // Kube Manager cache periodic synchronization interval with K8S API
 	KubeConfig           string        // Path to your kube config file
 	HistoryAPIGRPCAddr   string        // address of history-api gRPC service
+	CSNamespace          string        // namespace where the product is installed
+	RabbitAddr           string        // RabbitMQ address in host[:port] format
+	RabbitUser           string        // RabbitMQ user
+	RabbitPassword       string        // RabbitMQ password
+	AutoscalerEnabled    bool          // is queue driven autoscaling enabled?
+	AutoscalerInterval   time.Duration // interval between queue backlog samples
+	AutoscalerCooldown   time.Duration // minimum time between two scaling actions on the same target
+
+	AutoscalerEventProcessor *AutoscalerTarget // scaling settings of the event-processor deployment
+	AutoscalerHistoryAPI     *AutoscalerTarget // scaling settings of the history-api deployment
 
 	// for tests only
 	TestInCompose bool
@@ -60,6 +70,16 @@ func New() *Config {
 	flag.DurationVar(&c.K8SSyncInterval, "k8sSyncInterval", config.LookupEnvDuration("K8S_SYNC_INTERVAL", 0), "Kube Manager cache periodic synchronization interval with K8S API.")
 	flag.StringVar(&c.KubeConfig, "kubeconfig", config.LookupEnvString("KUBECONFIG", ""), "Path to your kube config file.")
 	flag.StringVar(&c.HistoryAPIGRPCAddr, "historyAPIGRPCAddr", config.LookupEnvString("HISTORY_API_GRPC_ADDR", "history-api:8000"), "Address of history-api gRPC service.")
+	flag.StringVar(&c.CSNamespace, "csNamespace", config.LookupEnvString("CS_NAMESPACE", ""), "Namespace where the product is installed.")
+	flag.StringVar(&c.RabbitAddr, "rabbitAddr", config.LookupEnvString("RABBIT_ADDR", "rabbitmq.default:5672"), "Set RabbitMQ address in host[:port] format.")
+	flag.StringVar(&c.RabbitUser, "rabbitUser", config.LookupEnvString("RABBIT_USER", "guest"), "Set RabbitMQ user.")
+	flag.StringVar(&c.RabbitPassword, "rabbitPassword", config.LookupEnvString("RABBIT_PASSWORD", "guest"), "Set RabbitMQ password.")
+	flag.BoolVar(&c.AutoscalerEnabled, "autoscalerEnabled", config.LookupEnvBool("AUTOSCALER_ENABLED", false), "Set to enable queue driven autoscaling of the event consuming deployments.")
+	flag.DurationVar(&c.AutoscalerInterval, "autoscalerInterval", config.LookupEnvDuration("AUTOSCALER_INTERVAL", 10*time.Second), "Interval between queue backlog samples.")
+	flag.DurationVar(&c.AutoscalerCooldown, "autoscalerCooldown", config.LookupEnvDuration("AUTOSCALER_COOLDOWN", 60*time.Second), "Minimum time between two scaling actions on the same target.")
+
+	c.AutoscalerEventProcessor = registerAutoscalerTarget(flag.CommandLine, eventProcessorEnvPrefix, eventProcessorFlagPrefix, eventProcessorDefaults())
+	c.AutoscalerHistoryAPI = registerAutoscalerTarget(flag.CommandLine, historyAPIEnvPrefix, historyAPIFlagPrefix, historyAPIDefaults())
 
 	// For tests only
 	flag.BoolVar(&c.TestInCompose, "useCompose", config.LookupEnvBool("TEST_IN_COMPOSE", false), `For integration tests, use docker compose or docker test`)

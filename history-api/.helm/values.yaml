@@ -28,7 +28,7 @@ env:
   - name: RABBIT_QUEUE_PREFETCH_COUNT
     value: "100"
   - name: RUNTIME_EVENTS_BATCH_SIZE
-    value: "10000"
+    value: "5000"
   - name: RUNTIME_EVENTS_SAVE_INTERVAL
     value: "5s"
   - name: RETENTION_INTERVAL

@@ -69,7 +69,7 @@ func New() *Config {
 	flag.StringVar(&c.RabbitPassword, "rabbitPassword", config.LookupEnvString("RABBIT_PASSWORD", "guest"), "Set RabbitMQ password.")
 	flag.StringVar(&c.RabbitQueue, "rabbitQueue", config.LookupEnvString("RABBIT_QUEUE", "history_events"), "Set RabbitMQ queue name to consume runtime events from.")
 	flag.IntVar(&c.RabbitQueuePrefetchCount, "rabbitQueuePrefetchCount", config.LookupEnvInt("RABBIT_QUEUE_PREFETCH_COUNT", 100), "Set RabbitMQ prefetch count for queue to consume events from.")
-	flag.IntVar(&c.RuntimeEventsBatchSize, "runtimeEventsBatchSize", config.LookupEnvInt("RUNTIME_EVENTS_BATCH_SIZE", 10000), "Size of runtime events buffer.")
+	flag.IntVar(&c.RuntimeEventsBatchSize, "runtimeEventsBatchSize", config.LookupEnvInt("RUNTIME_EVENTS_BATCH_SIZE", 5000), "Size of runtime events buffer.")
 	flag.DurationVar(&c.RuntimeEventsSaveInterval, "runtimeEventsSaveInterval", config.LookupEnvDuration("RUNTIME_EVENTS_SAVE_INTERVAL", 5*time.Second), `Interval between savings of runtime buffer, as a duration string which is compatibale with time.ParseDuraion, for example "1s"`)
 	flag.IntVar(&c.RuntimeEventsLimit, "runtimeEventsLimit", config.LookupEnvInt("RUNTIME_EVENTS_LIMIT", 100000000), "Maximum number of runtime events to be stored in database.")
 	flag.DurationVar(&c.RuntimeEventsCleanInterval, "runtimeEventsCleanInterval", config.LookupEnvDuration("RUNTIME_EVENTS_CLEAN_INTERVAL", time.Hour), `Interval between cleans of runtime events table, as a duration string which is compatibale with time.ParseDuraion, for example "1s"`)
